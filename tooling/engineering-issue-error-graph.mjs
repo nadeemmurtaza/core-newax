@@ -1,4 +1,5 @@
 import { githubRequest, listAll } from './engineering-learning-core.mjs';
+import { ensureExplanationSection, renderExplanationSection } from './explanation-verification.mjs';
 import {
   createErrorGraphContext,
   parseErrorGraphMetadata,
@@ -88,8 +89,10 @@ export async function attachErrorRelationshipGraph(issueNumber, event, options =
     event,
     issues.filter((candidate) => candidate.pull_request === undefined),
   );
-  const section = renderErrorGraphSection(event, context);
-  const body = replaceErrorGraphSection(issue.body, section);
+  const graphSection = renderErrorGraphSection(event, context);
+  const explanationSection = renderExplanationSection(event);
+  const withGraph = replaceErrorGraphSection(issue.body, graphSection);
+  const body = ensureExplanationSection(withGraph, explanationSection);
   await githubRequest(`/issues/${issueNumber}`, {
     ...options,
     method: 'PATCH',
@@ -102,5 +105,6 @@ export async function attachErrorRelationshipGraph(issueNumber, event, options =
     rootAncestorIds: context.rootAncestorIds,
     primaryCommonAncestorId: context.primaryCommonAncestorId,
     relatedIssueNumbers: context.relatedIssueNumbers,
+    explanationDecision: 'challenged',
   };
 }
