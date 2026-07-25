@@ -2,12 +2,19 @@ import { readFileSync } from 'node:fs';
 
 import {
   FAILURE_CONCLUSIONS,
+  githubRequest,
   listAll,
   loadCatalog,
   parseMetadata,
   parsePullRequestField,
 } from './engineering-learning-core.mjs';
-import { evaluateLearningOutcome, verifyRootCauseExplanation } from './root-cause-engine.mjs';
+import { verifyGithubExplanationEvidence } from './explanation-evidence-github.mjs';
+import {
+  evaluateLearningOutcome,
+  parseExplanationEvidenceRecord,
+  verifyExplanation,
+  verifyRootCauseExplanation,
+} from './root-cause-engine.mjs';
 
 function fail(messages) {
   console.error('Root-cause governance verification failed:');
@@ -82,6 +89,7 @@ const outcomeDecision = evaluateLearningOutcome({
 });
 const errors = [...outcomeDecision.errors];
 const catalog = loadCatalog();
+const explanationDecisions = [];
 
 for (const issue of linkedIssues) {
   const metadata = parseMetadata(issue.body);
@@ -140,6 +148,49 @@ for (const issue of linkedIssues) {
       errors.push(`Issue #${issue.number}: ${message}`);
     }
   }
+
+  const explanationRecord = parseExplanationEvidenceRecord(issue.body);
+  if (explanationRecord === null) {
+    errors.push(`Issue #${issue.number}: explanation-evidence record is missing or invalid.`);
+    continue;
+  }
+  if (explanationRecord.explanation?.rootCauseId !== rootCauseId) {
+    errors.push(`Issue #${issue.number}: explanation root-cause ID differs from issue metadata.`);
+    continue;
+  }
+
+  try {
+    const provenance = await verifyGithubExplanationEvidence({
+      evidence: explanationRecord.evidence,
+      githubRequest,
+      listAll,
+    });
+    const explanationVerification = verifyExplanation({
+      assessment: explanationRecord.assessment,
+      explanation: explanationRecord.explanation,
+      evidence: provenance.evidence,
+    });
+    explanationDecisions.push({
+      issueNumber: issue.number,
+      status: explanationVerification.status,
+      confidenceScore: explanationVerification.confidenceScore,
+    });
+
+    if (explanationVerification.status !== 'accepted') {
+      errors.push(
+        `Issue #${issue.number}: explanation decision is ${explanationVerification.status} at ${explanationVerification.confidenceScore}/100.`,
+      );
+      for (const message of [
+        ...provenance.errors,
+        ...explanationVerification.errors,
+        ...explanationVerification.challenges,
+      ]) {
+        errors.push(`Issue #${issue.number}: ${message}`);
+      }
+    }
+  } catch (error) {
+    errors.push(`Issue #${issue.number}: explanation verification failed: ${String(error)}`);
+  }
 }
 
 if (errors.length > 0) {
@@ -151,7 +202,8 @@ console.log(
     failedRuns: failedRuns.map((run) => run.id),
     linkedIssues: linkedIssues.map((issue) => issue.number),
     outcome: declaredOutcome,
+    explanationDecisions,
     semanticTruthAutomaticallyVerified: false,
-    status: 'root-cause-governance-verified',
+    status: 'root-cause-and-explanation-governance-verified',
   }),
 );
