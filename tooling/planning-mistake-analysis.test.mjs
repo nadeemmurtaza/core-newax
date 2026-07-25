@@ -50,9 +50,7 @@ test('reports undated architecture approval as insufficient evidence', () => {
     false,
   );
   assert.ok(
-    result.notices.some(
-      (notice) => notice.code === 'architecture-review-timestamp-missing',
-    ),
+    result.notices.some((notice) => notice.code === 'architecture-review-timestamp-missing'),
   );
 });
 
@@ -73,7 +71,5 @@ test('reports undated scope approval as insufficient evidence', () => {
     result.findings.some((finding) => finding.type === 'scope-creep'),
     false,
   );
-  assert.ok(
-    result.notices.some((notice) => notice.code === 'scope-approval-timestamp-missing'),
-  );
+  assert.ok(result.notices.some((notice) => notice.code === 'scope-approval-timestamp-missing'));
 });

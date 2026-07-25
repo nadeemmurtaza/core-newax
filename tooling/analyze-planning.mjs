@@ -8,7 +8,7 @@ import {
 
 function argumentValue(name) {
   const index = process.argv.indexOf(name);
-  return index === -1 ? null : process.argv[index + 1] ?? null;
+  return index === -1 ? null : (process.argv[index + 1] ?? null);
 }
 
 async function readInput() {
@@ -38,11 +38,7 @@ async function readInput() {
 const history = await readInput();
 const result = analyzePlanningMistakes(history);
 console.log(
-  JSON.stringify(
-    { history: { planningIssues: history.planningIssues ?? [] }, result },
-    null,
-    2,
-  ),
+  JSON.stringify({ history: { planningIssues: history.planningIssues ?? [] }, result }, null, 2),
 );
 if (!process.argv.includes('--report-only') && result.blockers.length > 0) {
   process.exitCode = 1;

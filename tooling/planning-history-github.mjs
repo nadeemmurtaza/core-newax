@@ -109,7 +109,12 @@ function parseHeadingScope(body) {
     extractSection(body, 'Declared scope paths') || extractSection(body, 'Declared scope');
   return section
     .split('\n')
-    .map((line) => line.replace(/^\s*[-*]\s+/, '').replace(/^`|`$/g, '').trim())
+    .map((line) =>
+      line
+        .replace(/^\s*[-*]\s+/, '')
+        .replace(/^`|`$/g, '')
+        .trim(),
+    )
     .filter((line) => line.length > 0 && !line.startsWith('_'));
 }
 
@@ -176,12 +181,8 @@ export function parsePlanningIssue(issue, comments = []) {
 export function parsePlanningIssueNumbers(pullRequestBody) {
   const value = parsePullRequestField(pullRequestBody, '- Planning issues:');
   if (value !== null) return parseIssueNumbers(value);
-  const matches = String(pullRequestBody ?? '').matchAll(
-    /planning issue(?:s)?\s*[:#]?\s*#(\d+)/gi,
-  );
-  return [
-    ...new Set([...matches].map((match) => Number(match[1])).filter(Number.isSafeInteger)),
-  ];
+  const matches = String(pullRequestBody ?? '').matchAll(/planning issue(?:s)?\s*[:#]?\s*#(\d+)/gi);
+  return [...new Set([...matches].map((match) => Number(match[1])).filter(Number.isSafeInteger))];
 }
 
 function combinePlans(plans) {
