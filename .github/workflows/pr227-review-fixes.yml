@@ -1,0 +1,92 @@
+name: Apply PR 227 review fixes
+
+on:
+  push:
+    branches:
+      - automation/pr227-review-fixes
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repair branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply, format, lint, and verify review fixes
+        shell: bash
+        run: |
+          set -o pipefail
+          {
+            node .github/pr227-review-fixes.mjs
+            pnpm exec prettier --write \
+              .github/pull_request_template.md \
+              .github/workflows/planning-evidence-revalidation.yml \
+              tooling/planning-history-github.mjs \
+              tooling/planning-history-github.test.mjs \
+              tooling/planning-mistake-detector.mjs \
+              tooling/planning-mistake-detector.test.mjs \
+              tooling/planning-mistake-analysis.mjs \
+              tooling/planning-governance.test.mjs \
+              tooling/revalidate-planning-pull-requests.mjs \
+              tooling/revalidate-planning-pull-requests.test.mjs \
+              tooling/verify-pr-planning.mjs
+            pnpm exec eslint \
+              tooling/planning-history-github.mjs \
+              tooling/planning-history-github.test.mjs \
+              tooling/planning-mistake-detector.mjs \
+              tooling/planning-mistake-detector.test.mjs \
+              tooling/planning-mistake-analysis.mjs \
+              tooling/planning-governance.test.mjs \
+              tooling/revalidate-planning-pull-requests.mjs \
+              tooling/revalidate-planning-pull-requests.test.mjs \
+              tooling/verify-pr-planning.mjs
+            node --test \
+              tooling/planning-history-github.test.mjs \
+              tooling/planning-mistake-detector.test.mjs \
+              tooling/planning-mistake-analysis.test.mjs \
+              tooling/planning-governance.test.mjs \
+              tooling/revalidate-planning-pull-requests.test.mjs
+            pnpm test
+            pnpm build
+          } 2>&1 | tee .github/pr227-review-fixes.log
+
+      - name: Preserve failure diagnostics
+        if: failure()
+        run: |
+          git config user.name 'NEWAX Engineering Automation'
+          git config user.email 'engineering@newax.co'
+          git add .github/pr227-review-fixes.error.txt .github/pr227-review-fixes.log 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m 'Capture PR 227 review-fix diagnostics'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+
+      - name: Preserve verified review fixes
+        if: success()
+        run: |
+          rm .github/workflows/pr227-review-fixes.yml
+          rm .github/pr227-review-fixes.mjs
+          rm .github/pr227-review-fixes.log
+          git config user.name 'NEWAX Engineering Automation'
+          git config user.email 'engineering@newax.co'
+          git add -A
+          git commit -m 'Resolve planning governance review findings'
+          git push origin HEAD:${GITHUB_REF_NAME}
