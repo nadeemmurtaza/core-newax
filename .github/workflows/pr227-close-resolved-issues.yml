@@ -1,0 +1,41 @@
+name: Close resolved PR 227 learning issues
+
+on:
+  push:
+    branches:
+      - automation/pr227-close-resolved-issues
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out helper branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Close verified occurrence records
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for issue in 262 265 1009 1010 1011 1012 1013 1017 1020 1021 1023 1024 1026 1029; do
+            gh api --method PATCH \
+              -H 'Accept: application/vnd.github+json' \
+              repos/${GITHUB_REPOSITORY}/issues/${issue} \
+              -f state=closed \
+              -f state_reason=completed >/dev/null
+            echo "Closed #${issue}"
+          done
+
+      - name: Remove helper workflow
+        run: |
+          rm .github/workflows/pr227-close-resolved-issues.yml
+          git config user.name 'NEWAX Engineering Automation'
+          git config user.email 'engineering@newax.co'
+          git add .github/workflows/pr227-close-resolved-issues.yml
+          git commit -m 'Remove PR 227 issue closer'
+          git push origin HEAD:${GITHUB_REF_NAME}
