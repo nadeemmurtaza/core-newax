@@ -15,6 +15,17 @@ State the business or engineering outcome this change must produce.
 - Applicable standards:
 - Applicable learning-ledger entries:
 
+## Planning evidence
+
+- Planning issues: `#123`, comma-separated issues, or `not-required` only for an explicitly exempt maintenance change
+- Declared scope source: Identify the planning issue containing the repository path boundaries.
+- Task sequence source: Identify the planning issue containing ordered tasks and dependencies.
+- Architecture review evidence: Identify the approval event or write `not-required` when every task explicitly says review is not required.
+- Estimate source: Identify the task estimates and any approved revisions.
+- Scope-change approvals: Identify approval events or write `none`.
+
+Review-ready pull requests require at least one planning issue, a declared task sequence, and declared scope paths. Planning mistake governance evaluates the issue history and commit sequence; these fields do not override that evidence.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.
