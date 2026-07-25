@@ -27,7 +27,7 @@
     "lint:fix": "eslint . --fix",
     "operation:validate": "node tooling/validate-operation-intent.mjs",
     "test": "pnpm test:learning && pnpm -r --if-present run test",
-    "test:learning": "node --test tooling/engineering-event-upgrade.test.mjs tooling/engineering-explanation-integration.test.mjs tooling/engineering-issue-error-graph.test.mjs tooling/engineering-learning-core.test.mjs tooling/error-relationship-graph.test.mjs tooling/explanation-evidence-github.test.mjs tooling/explanation-verification.test.mjs tooling/external-failure-intake.test.mjs tooling/root-cause-engine.test.mjs tooling/workflow-failure-intake-controls.test.mjs",
+    "test:learning": "node --test tooling/engineering-event-upgrade.test.mjs tooling/engineering-explanation-integration.test.mjs tooling/engineering-issue-error-graph.test.mjs tooling/engineering-learning-core.test.mjs tooling/error-relationship-graph.test.mjs tooling/explanation-evidence-github.test.mjs tooling/explanation-verification.test.mjs tooling/external-failure-intake.test.mjs tooling/learning-outcome-rule-engine.test.mjs tooling/pr-governance-learning-outcome.test.mjs tooling/root-cause-engine.test.mjs tooling/workflow-failure-intake-controls.test.mjs",
     "typecheck": "pnpm -r --if-present run typecheck",
     "verify": "node tooling/run-engineering-command.mjs -- pnpm verify:raw",
     "verify:raw": "pnpm format:check && pnpm verify:workflow-intake && pnpm lint && pnpm typecheck && pnpm test && pnpm build",

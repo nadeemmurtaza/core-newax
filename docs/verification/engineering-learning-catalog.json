@@ -228,6 +228,18 @@
       "unsuccessfulMethod": "Use one expected ancestor value for nearest-common-ancestor and common-root-ancestor assertions.",
       "successfulMethod": "Build a multi-level causal chain and assert nearest and canonical-root ancestry independently.",
       "preventionControl": "Every multi-level relationship-graph test must verify nearest and canonical-root ancestor outputs separately."
+    },
+    {
+      "id": "ROOT-GOVERNANCE-MANUAL-LEARNING-OUTCOME",
+      "ledgerEntry": "EL-0023",
+      "category": "documentation-evidence-management",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": ["Learning outcome: none", "manual learning outcome", "new prevention control"],
+      "rootCause": "Pull-request governance trusted an author-selected learning outcome instead of calculating the requirement from the diff and reconciled evidence.",
+      "unsuccessfulMethod": "Allow the pull-request author to choose new, existing, or none from a free-text field.",
+      "successfulMethod": "Calculate required or not-required from rule, checklist, process, template, automation, and failure evidence, then infer ledger classification.",
+      "preventionControl": "The manual learning-outcome field is prohibited and trusted reconciliation enforces the rule-engine decision."
     }
   ]
 }

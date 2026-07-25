@@ -1,10 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-import {
-  parseIssueNumbers,
-  parseLedgerEntries,
-  parsePullRequestField,
-} from './engineering-learning-core.mjs';
+import { parsePullRequestField } from './engineering-learning-core.mjs';
 
 const REQUIRED_HEADINGS = [
   '## Scope',
@@ -17,7 +13,6 @@ const REQUIRED_HEADINGS = [
 ];
 
 const REQUIRED_FIELDS = [
-  '- Learning outcome:',
   '- Ledger entries:',
   '- Learning issues:',
   '- Root-cause status:',
@@ -65,11 +60,7 @@ for (const field of REQUIRED_FIELDS) {
   }
 }
 
-const learningOutcome = parsePullRequestField(body, '- Learning outcome:');
-const ledgerEntriesValue = parsePullRequestField(body, '- Ledger entries:');
-const ledgerEntries = parseLedgerEntries(ledgerEntriesValue);
-const learningIssuesValue = parsePullRequestField(body, '- Learning issues:');
-const learningIssues = parseIssueNumbers(learningIssuesValue);
+const manualLearningOutcome = parsePullRequestField(body, '- Learning outcome:');
 const rootCauseStatus = parsePullRequestField(body, '- Root-cause status:');
 const ledgerConsulted = parsePullRequestField(body, '- Ledger consulted before implementation:');
 const failureHistoryReconciled = parsePullRequestField(body, '- Failure history reconciled:');
@@ -86,32 +77,14 @@ const wrongMetadataAction = parsePullRequestField(
   '- Repository file action used for pull-request metadata:',
 );
 
-if (!['existing', 'new', 'none'].includes(learningOutcome ?? '')) {
-  errors.push('Learning outcome must be `new`, `existing`, or `none`.');
+if (manualLearningOutcome !== null) {
+  errors.push(
+    'Remove the `Learning outcome` field. The trusted rule engine calculates `required` or `not-required`; an author cannot choose `none`.',
+  );
 }
 
-if (learningOutcome === 'new' || learningOutcome === 'existing') {
-  if (ledgerEntries.length === 0) {
-    errors.push('A learning outcome requires at least one ledger entry such as EL-0019.');
-  }
-  if (learningIssues.length === 0) {
-    errors.push('A learning outcome requires at least one linked learning issue such as #123.');
-  }
-  if (!['confirmed', 'machine-supported'].includes(rootCauseStatus ?? '')) {
-    errors.push('A learning outcome requires a confirmed or machine-supported root cause.');
-  }
-}
-
-if (learningOutcome === 'none') {
-  if (ledgerEntriesValue !== 'not-required') {
-    errors.push('A `none` outcome requires `not-required` as the ledger entries.');
-  }
-  if (learningIssuesValue !== 'not-required') {
-    errors.push('A `none` outcome requires `not-required` as the learning issues.');
-  }
-  if (rootCauseStatus !== 'not-required') {
-    errors.push('A `none` outcome requires `not-required` as the root-cause status.');
-  }
+if (!['confirmed', 'machine-supported', 'not-required'].includes(rootCauseStatus ?? '')) {
+  errors.push('Root-cause status must be `confirmed`, `machine-supported`, or `not-required`.');
 }
 
 if (ledgerConsulted !== 'yes') {
@@ -134,4 +107,6 @@ if (errors.length > 0) {
   fail(errors);
 }
 
-console.log('Pull-request governance record is structurally valid.');
+console.log(
+  'Pull-request governance record is structurally valid; learning outcome is machine-evaluated.',
+);
