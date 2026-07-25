@@ -1,0 +1,99 @@
+name: PR 227 source formatter
+
+on:
+  push:
+    branches:
+      - automation/pr227-format-source
+
+permissions:
+  contents: write
+
+jobs:
+  format-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Replace EL-0024 catalog entry
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'docs/verification/engineering-learning-catalog.json';
+          const catalog = JSON.parse(fs.readFileSync(path, 'utf8'));
+          catalog.rootCauses = catalog.rootCauses.filter(
+            (entry) =>
+              entry.ledgerEntry !== 'EL-0024' &&
+              entry.id !== 'ROOT-PLANNING-HISTORY-NOT-ANALYZED' &&
+              entry.id !== 'ROOT-PLANNING-EVIDENCE-NOT-CORRELATED',
+          );
+          catalog.rootCauses.push({
+            id: 'ROOT-PLANNING-EVIDENCE-NOT-CORRELATED',
+            ledgerEntry: 'EL-0024',
+            category: 'planning-decision-quality',
+            confidence: 'high',
+            deterministic: false,
+            signatures: [
+              'manual retrospective',
+              'planning evidence',
+              'commit history',
+              'issue history',
+              'task sequencing',
+            ],
+            rootCause:
+              'Planning evidence existed in separate repository and issue records but no trusted engine correlated those records into enforceable findings.',
+            unsuccessfulMethod:
+              'Rely on manual retrospective reporting without reconstructing commit history, issue history, and declared task sequencing.',
+            successfulMethod:
+              'Build a trusted detector and adapter that evaluate planning evidence from repository and issue records rather than trusting retrospective prose.',
+            preventionControl:
+              'Planning governance must include an automated detector that correlates commit history, issue history, and task sequencing into enforceable findings.',
+          });
+          fs.writeFileSync(path, `${JSON.stringify(catalog, null, 2)}\n`);
+          NODE
+
+      - name: Apply exact repository formatting
+        run: |
+          pnpm exec prettier --write \
+            docs/verification/engineering-learning-catalog.json \
+            tooling/analyze-planning.mjs \
+            tooling/planning-governance.test.mjs \
+            tooling/planning-history-github.mjs \
+            tooling/planning-mistake-analysis.mjs \
+            tooling/planning-mistake-analysis.test.mjs \
+            tooling/planning-mistake-detector.mjs \
+            tooling/planning-mistake-detector.test.mjs \
+            tooling/verify-pr-planning.mjs
+
+      - name: Preserve formatted blobs
+        run: |
+          rm .github/workflows/pr227-format-source.yml
+          git config user.name 'NEWAX Engineering Automation'
+          git config user.email 'engineering@newax.co'
+          git add \
+            docs/verification/engineering-learning-catalog.json \
+            tooling/analyze-planning.mjs \
+            tooling/planning-governance.test.mjs \
+            tooling/planning-history-github.mjs \
+            tooling/planning-mistake-analysis.mjs \
+            tooling/planning-mistake-analysis.test.mjs \
+            tooling/planning-mistake-detector.mjs \
+            tooling/planning-mistake-detector.test.mjs \
+            tooling/verify-pr-planning.mjs \
+            .github/workflows/pr227-format-source.yml
+          git commit -m 'Prepare exact formatted PR 227 source blobs'
+          git push origin HEAD:${GITHUB_REF_NAME}
