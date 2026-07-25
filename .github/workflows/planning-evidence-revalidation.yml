@@ -1,0 +1,38 @@
+name: Planning Evidence Revalidation
+
+on:
+  issues:
+    types:
+      - edited
+      - closed
+      - reopened
+  issue_comment:
+    types:
+      - created
+      - edited
+      - deleted
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+concurrency:
+  group: planning-evidence-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  revalidate-linked-pull-requests:
+    if: github.event.issue.pull_request == null
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out trusted planning controls
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Revalidate linked pull requests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tooling/revalidate-planning-pull-requests.mjs
