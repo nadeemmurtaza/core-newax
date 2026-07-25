@@ -107,7 +107,9 @@ declared-scope: src
     ['/issues/7/comments', []],
   ]);
   const request = async (path) => {
-    if (!responses.has(path)) throw new Error(`Unexpected path ${path}`);
+    if (!responses.has(path)) {
+      throw new Error(`Unexpected path ${path}`);
+    }
     return responses.get(path);
   };
   const result = await collectPlanningHistory({

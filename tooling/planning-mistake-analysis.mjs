@@ -8,7 +8,9 @@ function asArray(value) {
 }
 
 function validTimestamp(value) {
-  if (typeof value !== 'string' || value.trim().length === 0) return false;
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return false;
+  }
   return !Number.isNaN(Date.parse(value));
 }
 
@@ -145,11 +147,15 @@ export function analyzePlanningMistakes(input = {}) {
     const firstCommitByFile = new Map();
     for (const commit of commits) {
       for (const filename of commitFiles(commit)) {
-        if (!firstCommitByFile.has(filename)) firstCommitByFile.set(filename, commit);
+        if (!firstCommitByFile.has(filename)) {
+          firstCommitByFile.set(filename, commit);
+        }
       }
     }
     for (const [filename, firstCommit] of firstCommitByFile) {
-      if (pathMatchesScope(filename, declaredScopePaths)) continue;
+      if (pathMatchesScope(filename, declaredScopePaths)) {
+        continue;
+      }
       const approval = events.find(
         (event) =>
           eventType(event) === 'scope-approved' &&

@@ -12,8 +12,6 @@ export const PLANNING_MISTAKE_TYPES = Object.freeze([
 
 const MIGRATION_PATH_PATTERN =
   /(?:^|\/)(?:migrations?|database\/migrations?)(?:\/|$)|migration\.sql$/i;
-const SCHEMA_PATH_PATTERN =
-  /(?:^|\/)(?:schema\.prisma|schema\.(?:sql|ts|json)|models?\.(?:ts|js))$/i;
 const MANIFEST_PATH_PATTERN =
   /(?:^|\/)(?:package\.json|pyproject\.toml|requirements(?:-[^/]*)?\.txt|go\.mod|Cargo\.toml|Gemfile|composer\.json)$/i;
 const LOCKFILE_PATH_PATTERN =
@@ -31,22 +29,34 @@ function normalizeString(value) {
 }
 
 function normalizeBoolean(value) {
-  if (typeof value === 'boolean') return value;
+  if (typeof value === 'boolean') {
+    return value;
+  }
   const normalized = normalizeString(value).toLowerCase();
-  if (['yes', 'true', 'required'].includes(normalized)) return true;
-  if (['no', 'false', 'not-required', 'none'].includes(normalized)) return false;
+  if (['yes', 'true', 'required'].includes(normalized)) {
+    return true;
+  }
+  if (['no', 'false', 'not-required', 'none'].includes(normalized)) {
+    return false;
+  }
   return null;
 }
 
 function normalizeDate(value) {
-  if (value === null || value === undefined || value === '') return null;
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 function normalizeArray(value) {
-  if (Array.isArray(value)) return value;
-  if (value === null || value === undefined || value === '') return [];
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value === null || value === undefined || value === '') {
+    return [];
+  }
   return String(value)
     .split(',')
     .map((item) => item.trim())
@@ -58,7 +68,9 @@ function normalizeFile(file, index) {
     throw new TypeError(`files[${index}] must be an object.`);
   }
   const filename = normalizeString(file.filename ?? file.path);
-  if (filename.length === 0) throw new TypeError(`files[${index}] requires filename.`);
+  if (filename.length === 0) {
+    throw new TypeError(`files[${index}] requires filename.`);
+  }
   return {
     filename,
     status: normalizeString(file.status).toLowerCase() || 'modified',
@@ -88,7 +100,9 @@ function normalizeTask(task, index) {
     throw new TypeError(`tasks[${index}] must be an object.`);
   }
   const id = normalizeString(task.id ?? task.taskId);
-  if (id.length === 0) throw new TypeError(`tasks[${index}] requires id.`);
+  if (id.length === 0) {
+    throw new TypeError(`tasks[${index}] requires id.`);
+  }
   const estimate = Number(task.estimateMinutes ?? task.estimate);
   return {
     id,
@@ -114,7 +128,9 @@ function normalizeRequirement(requirement, index) {
     throw new TypeError(`requirements[${index}] must be an object.`);
   }
   const id = normalizeString(requirement.id ?? requirement.requirementId);
-  if (id.length === 0) throw new TypeError(`requirements[${index}] requires id.`);
+  if (id.length === 0) {
+    throw new TypeError(`requirements[${index}] requires id.`);
+  }
   return {
     id,
     text: normalizeString(requirement.text ?? requirement.title),
@@ -162,7 +178,9 @@ function commitsChronologically(commits) {
   return [...commits].sort((left, right) => {
     if (left.timestamp !== null && right.timestamp !== null) {
       const difference = Date.parse(left.timestamp) - Date.parse(right.timestamp);
-      if (difference !== 0) return difference;
+      if (difference !== 0) {
+        return difference;
+      }
     } else if (left.timestamp !== null) {
       return -1;
     } else if (right.timestamp !== null) {
@@ -177,7 +195,9 @@ function firstCommitMatching(commits, predicate) {
 }
 
 function commitsForTask(task, commits) {
-  if (task.scopePaths.length === 0) return [];
+  if (task.scopePaths.length === 0) {
+    return [];
+  }
   return commits.filter((commit) =>
     commit.files.some((file) => pathMatchesScope(file.filename, task.scopePaths)),
   );
@@ -691,7 +711,9 @@ export function detectPlanningMistakes(input = {}) {
     });
   } else {
     for (const filename of finalFiles) {
-      if (pathMatchesScope(filename, declaredScopePaths)) continue;
+      if (pathMatchesScope(filename, declaredScopePaths)) {
+        continue;
+      }
       const firstCommit = firstCommitMatching(commits, (file) => file.filename === filename);
       const approval = latestEvent(
         events,
