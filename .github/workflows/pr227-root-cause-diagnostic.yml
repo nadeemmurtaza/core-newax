@@ -1,0 +1,54 @@
+name: PR 227 root-cause diagnostic
+
+on:
+  push:
+    branches:
+      - automation/pr227-root-cause-diagnostic
+
+permissions:
+  actions: read
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out trusted controls
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build current PR event payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api repos/${GITHUB_REPOSITORY}/pulls/227 > pr-event.json
+
+      - name: Run trusted verifier and capture full output
+        env:
+          GITHUB_EVENT_PATH: ${{ github.workspace }}/pr-event.json
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          node tooling/verify-root-cause-governance.mjs > root-cause-diagnostic.txt 2>&1
+          status=$?
+          set -e
+          printf '\nEXIT_STATUS=%s\n' "$status" >> root-cause-diagnostic.txt
+          cat root-cause-diagnostic.txt
+
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr227-root-cause-diagnostic
+          path: root-cause-diagnostic.txt
+          if-no-files-found: error
+
+      - name: Remove helper workflow
+        run: |
+          rm .github/workflows/pr227-root-cause-diagnostic.yml
+          git config user.name 'NEWAX Engineering Automation'
+          git config user.email 'engineering@newax.co'
+          git add .github/workflows/pr227-root-cause-diagnostic.yml
+          git commit -m 'Remove PR 227 root-cause diagnostic'
+          git push origin HEAD:${GITHUB_REF_NAME}
