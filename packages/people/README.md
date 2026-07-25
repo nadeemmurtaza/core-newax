@@ -4,11 +4,11 @@
 
 Draft reusable foundation module.
 
-Version: `0.1.0`
+Version: `0.2.0`
 
 ## Purpose
 
-The People module maintains one stable identity record for each real person used across NEWAX business infrastructure.
+The People module maintains one stable identity record for each real person and governed, tenant-scoped relationships between people used across NEWAX business infrastructure.
 
 A person may participate in multiple organizations, hold multiple memberships, and have a login account, but those concerns remain outside this module. Domain modules such as LMS, HR, Healthcare, Legal, CRM, and Finance reference the shared person through `person_id` instead of duplicating identity data.
 
@@ -20,6 +20,8 @@ The module owns:
 - Person lifecycle status.
 - Person identifiers such as national identifiers, passports, and professional registration numbers.
 - Identity validation and duplicate-sensitive identifier assignment.
+- Tenant-scoped person relationships such as parent, guardian, spouse, sibling, and dependent links.
+- Relationship validity, verification, provenance, and cycle protection.
 - A bounded current-person self-profile projection.
 - People permission definitions.
 - Person lifecycle and identifier events.
@@ -28,6 +30,7 @@ Database ownership:
 
 - `core_people`
 - `core_person_identifiers`
+- `core_person_relationships`
 
 The module does not own users, authentication, memberships, roles, contacts, addresses, student profiles, employee profiles, patient profiles, or business transactions.
 
@@ -97,6 +100,34 @@ Roles may bundle these permissions, but the module never authorizes actions thro
 
 The module deliberately does not perform probabilistic person matching based on names or dates of birth. Similarity is not identity, despite humanity’s recurring optimism about spreadsheets.
 
+## Person relationship rules
+
+A relationship is stored once as a directed statement from one person to another.
+
+Example:
+
+```text
+Iqbal Hussain -- parent_of / father / biological --> Zahra Iqbal
+```
+
+The relationship record stores only person identifiers and relationship meaning. CNIC, CRC, passport, and other official identifier values remain in `core_person_identifiers` and are never copied into the relationship row.
+
+Database rules:
+
+- Every relationship belongs to one Tenant so family and dependency information cannot leak across customers.
+- Source and target must be two different people.
+- `relationship_type` defines direction, such as `parent_of`, `guardian_of`, `spouse_of`, `sibling_of`, or `dependent_of`.
+- `relationship_role` adds human meaning where needed, such as `father`, `mother`, `parent`, or `legal_guardian`.
+- `relationship_basis` records the basis, such as `biological`, `adoptive`, `step`, `legal`, or `declared`.
+- At most one active record may express the same directed relationship, role, and basis within one Tenant, even when an end date is scheduled.
+- Validity end dates cannot precede start dates.
+- Verified relationships require a verification time and source; unverified relationships cannot claim a verification actor or time.
+- Active `parent_of` relationships cannot create ancestry cycles, including concurrent writes within the same Tenant.
+- A family relationship never grants organization membership, login access, a role, or a permission.
+- `source_reference` is an optional opaque evidence reference. It must not be used to duplicate a person's CNIC or CRC.
+
+The database stores the relationship foundation only. Service operations, authorization, HTTP exposure, reciprocal-display rules, and evidence-file linking remain separate controlled slices.
+
 ## Events
 
 The module publishes:
@@ -148,7 +179,7 @@ Arbitrary person lookup, search, administration, identifiers, contacts, addresse
 
 ## Testing
 
-Unit tests cover:
+Tests cover:
 
 - Permission rejection for organization-wide operations.
 - Person input normalization.
@@ -156,6 +187,9 @@ Unit tests cover:
 - Identifier normalization.
 - Cross-person identifier conflict handling.
 - Identifier verification and event publication.
+- Person-relationship schema ownership and migration constraint coverage.
+- Successful verified parent-relationship persistence against PostgreSQL.
+- PostgreSQL rejection of self-links, duplicate active links, unverifiable claims, and active parentage cycles.
 - Successful current-person self-profile retrieval without `people.view`.
 - Trusted actor and linked-person UUID integrity.
 - Missing linked-person context.
@@ -176,6 +210,8 @@ Client fields must not be added directly to `core_people` unless they are univer
 
 ## Known limitations
 
+- Person relationships currently have no service or HTTP operations.
+- Reciprocal display, symmetric-relation canonicalization, and evidence-file linking remain deferred.
 - Only the bounded authenticated current-person read endpoint is exposed.
 - Contacts and addresses remain separate planned modules.
 - Authentication and membership consequences of person archival are not yet automated.

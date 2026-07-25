@@ -1,9 +1,9 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.15",
+  "registry_version": "0.1.16",
   "registry_status": "draft",
-  "last_updated": "2026-07-14",
+  "last_updated": "2026-07-15",
   "owner": "NEWAX Engineering",
   "purpose": "Internal source of truth for planned, draft, active, deprecated, replaced, and archived NEWAX modules.",
   "governance": {
@@ -38,10 +38,10 @@
       "module_name": "People",
       "module_key": "people",
       "module_layer": "foundation",
-      "module_version": "0.1.0",
+      "module_version": "0.2.0",
       "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Maintains one central record for each real person across NEWAX project domains.",
+      "description": "Maintains central person identity and tenant-scoped, verified relationships between people across NEWAX project domains.",
       "dependencies": [],
       "required_permissions": [
         "people.view",
@@ -60,11 +60,11 @@
       ],
       "consumed_events": [],
       "configuration_options": ["person_status_values", "identity_deduplication_policy"],
-      "database_ownership": ["core_people", "core_person_identifiers"],
+      "database_ownership": ["core_people", "core_person_identifiers", "core_person_relationships"],
       "tenant_scope": "mixed_global_and_organization_context",
       "documentation_path": "packages/people/README.md",
       "changelog_path": "packages/people/CHANGELOG.md",
-      "compatibility_notes": "Shared identity foundation. Domain modules must reference people through person_id instead of duplicating identity data."
+      "compatibility_notes": "Shared identity and relationship foundation. Domain modules must reference people through person_id, keep CNIC and CRC values in person identifiers, and use governed relationship records instead of duplicating parent, guardian, spouse, sibling, or dependent names."
     },
     {
       "module_name": "Organizations",

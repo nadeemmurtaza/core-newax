@@ -35,6 +35,13 @@
       'Employee number, student number, or patient number.',
       'people',
     ],
+
+    CorePersonRelationship: [
+      'Person relationship',
+      'A governed connection between two real people, stored once without copying either person or their official identifiers.',
+      'A parent linked to a child, or a legal guardian linked to a dependent.',
+      'people',
+    ],
     CoreUser: [
       'User account',
       'The platform access account connected to a person. It controls whether that person can sign in and act.',
@@ -190,7 +197,7 @@
     [
       'people',
       'People',
-      'Stores real human beings and the business identifiers used to recognize them.',
+      'Stores real human beings, the identifiers used to recognize them, and governed relationships such as parent, guardian, spouse, sibling, and dependent.',
     ],
     [
       'identity',
@@ -237,6 +244,12 @@
         'CoreRole',
         'CorePermission',
       ],
+    ],
+
+    [
+      'How a family relationship avoids duplicate people',
+      'Each human is stored once. A tenant-scoped relationship links two existing people, while CNIC, CRC, passport, and other identifiers remain attached to the correct person.',
+      ['CoreTenant', 'CorePerson', 'CorePersonIdentifier', 'CorePersonRelationship'],
     ],
     [
       'How sign-in remains separate from the human record',
@@ -344,6 +357,15 @@
       'CoreMembershipRole.role': 'A role assignment grants one role to that membership.',
       'CoreRolePermission.role': 'A role-permission link belongs to one role.',
       'CoreRolePermission.permission': 'A role-permission link grants one specific permission.',
+
+      'CorePersonRelationship.tenant':
+        'A person relationship belongs to one customer account, keeping sensitive family links inside the correct Tenant.',
+      'CorePersonRelationship.sourcePerson':
+        'The source person starts the directed relationship, such as the parent in a parent-of link.',
+      'CorePersonRelationship.targetPerson':
+        'The target person receives the directed relationship, such as the child in a parent-of link.',
+      'CorePersonRelationship.verifiedByUser':
+        'A verified relationship may record which authorized user completed verification.',
       'CorePerson.user':
         'A person may have a platform user account, but the person can exist without login access.',
       'CoreFile.createdByUser': 'A file may record which user created its database record.',

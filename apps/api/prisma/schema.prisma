@@ -20,6 +20,7 @@ model CoreTenant {
 
   organizations             CoreOrganization[]
   organizationRelationships CoreOrganizationRelationship[]
+  personRelationships       CorePersonRelationship[]
   objects                   CoreObject[]
   files                     CoreFile[]
   auditLogs                 CoreAuditLog[]
@@ -99,11 +100,13 @@ model CorePerson {
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  identifiers     CorePersonIdentifier[]
-  user            CoreUser?
-  memberships     CoreMembership[]
-  personContacts  CorePersonContactMethod[]
-  personAddresses CorePersonAddress[]
+  identifiers         CorePersonIdentifier[]
+  user                CoreUser?
+  memberships         CoreMembership[]
+  personContacts      CorePersonContactMethod[]
+  personAddresses     CorePersonAddress[]
+  sourceRelationships CorePersonRelationship[]  @relation("PersonRelationshipSource")
+  targetRelationships CorePersonRelationship[]  @relation("PersonRelationshipTarget")
 
   @@index([lastName, firstName])
   @@index([status])
@@ -131,6 +134,38 @@ model CorePersonIdentifier {
   @@map("core_person_identifiers")
 }
 
+model CorePersonRelationship {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  sourcePersonId     String    @map("source_person_id") @db.Uuid
+  targetPersonId     String    @map("target_person_id") @db.Uuid
+  relationshipType   String    @map("relationship_type") @db.VarChar(64)
+  relationshipRole   String    @default("unspecified") @map("relationship_role") @db.VarChar(64)
+  relationshipBasis  String    @default("unspecified") @map("relationship_basis") @db.VarChar(64)
+  status             String    @default("active") @db.VarChar(32)
+  validFrom          DateTime? @map("valid_from") @db.Date
+  validUntil         DateTime? @map("valid_until") @db.Date
+  isVerified         Boolean   @default(false) @map("is_verified")
+  verifiedAt         DateTime? @map("verified_at") @db.Timestamptz(6)
+  verifiedByUserId   String?   @map("verified_by_user_id") @db.Uuid
+  verificationSource String?   @map("verification_source") @db.VarChar(128)
+  sourceReference    String?   @map("source_reference") @db.VarChar(255)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant         CoreTenant @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sourcePerson   CorePerson @relation("PersonRelationshipSource", fields: [sourcePersonId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  targetPerson   CorePerson @relation("PersonRelationshipTarget", fields: [targetPersonId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  verifiedByUser CoreUser?  @relation("PersonRelationshipVerifiedBy", fields: [verifiedByUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  // Self-links, validity, verification consistency, active-link uniqueness, and
+  // active parentage cycles are enforced by migration-owned PostgreSQL constraints.
+  @@index([tenantId, sourcePersonId, relationshipType, status])
+  @@index([tenantId, targetPersonId, relationshipType, status])
+  @@index([verifiedByUserId])
+  @@map("core_person_relationships")
+}
+
 model CoreUser {
   id          String    @id @default(uuid()) @db.Uuid
   personId    String    @unique @map("person_id") @db.Uuid
@@ -141,17 +176,18 @@ model CoreUser {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  person                   CorePerson                  @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  identities               CoreUserIdentity[]
-  credentials              CoreUserCredential[]
-  sessions                 CoreUserSession[]
-  authenticationAttempts   CoreAuthenticationAttempt[]
-  rolePermissionsCreated   CoreRolePermission[]        @relation("RolePermissionCreatedBy")
-  membershipRolesAssigned  CoreMembershipRole[]        @relation("MembershipRoleAssignedBy")
-  membershipRolesRevoked   CoreMembershipRole[]        @relation("MembershipRoleRevokedBy")
-  objectAssignmentsCreated CoreObjectAssignment[]      @relation("ObjectAssignmentCreatedBy")
-  filesCreated             CoreFile[]                  @relation("FileCreatedBy")
-  auditLogs                CoreAuditLog[]              @relation("AuditActor")
+  person                      CorePerson                  @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  identities                  CoreUserIdentity[]
+  credentials                 CoreUserCredential[]
+  sessions                    CoreUserSession[]
+  authenticationAttempts      CoreAuthenticationAttempt[]
+  rolePermissionsCreated      CoreRolePermission[]        @relation("RolePermissionCreatedBy")
+  membershipRolesAssigned     CoreMembershipRole[]        @relation("MembershipRoleAssignedBy")
+  membershipRolesRevoked      CoreMembershipRole[]        @relation("MembershipRoleRevokedBy")
+  objectAssignmentsCreated    CoreObjectAssignment[]      @relation("ObjectAssignmentCreatedBy")
+  filesCreated                CoreFile[]                  @relation("FileCreatedBy")
+  auditLogs                   CoreAuditLog[]              @relation("AuditActor")
+  personRelationshipsVerified CorePersonRelationship[]    @relation("PersonRelationshipVerifiedBy")
 
   @@index([status])
   @@map("core_users")
