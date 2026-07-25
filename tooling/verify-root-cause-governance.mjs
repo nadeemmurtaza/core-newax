@@ -6,11 +6,10 @@ import {
   listAll,
   loadCatalog,
   parseMetadata,
-  parsePullRequestField,
 } from './engineering-learning-core.mjs';
 import { verifyGithubExplanationEvidence } from './explanation-evidence-github.mjs';
+import { evaluateLearningRequirement } from './learning-outcome-rule-engine.mjs';
 import {
-  evaluateLearningOutcome,
   parseExplanationEvidenceRecord,
   verifyExplanation,
   verifyRootCauseExplanation,
@@ -69,9 +68,10 @@ if (pullRequest === undefined) {
   fail(['The pull_request payload is unavailable.']);
 }
 
-const [issues, commits] = await Promise.all([
+const [issues, commits, changedFiles] = await Promise.all([
   listAll('/issues?state=all'),
   listAll(`/pulls/${pullRequest.number}/commits`),
+  listAll(`/pulls/${pullRequest.number}/files`),
 ]);
 const linkedIssues = issues.filter((issue) => {
   if (issue.pull_request !== undefined) {
@@ -81,13 +81,12 @@ const linkedIssues = issues.filter((issue) => {
 });
 const runs = await listPullRequestRuns(commits);
 const failedRuns = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
-const declaredOutcome = parsePullRequestField(pullRequest.body ?? '', '- Learning outcome:');
-const outcomeDecision = evaluateLearningOutcome({
-  declaredOutcome,
-  failedRuns,
-  linkedIssues,
+const learningRequirement = evaluateLearningRequirement({
+  changedFiles,
+  failedWorkflowRuns: failedRuns,
+  linkedLearningIssues: linkedIssues,
 });
-const errors = [...outcomeDecision.errors];
+const errors = [];
 const catalog = loadCatalog();
 const explanationDecisions = [];
 
@@ -201,7 +200,7 @@ console.log(
   JSON.stringify({
     failedRuns: failedRuns.map((run) => run.id),
     linkedIssues: linkedIssues.map((issue) => issue.number),
-    outcome: declaredOutcome,
+    outcome: learningRequirement.learningOutcome,
     explanationDecisions,
     semanticTruthAutomaticallyVerified: false,
     status: 'root-cause-and-explanation-governance-verified',
