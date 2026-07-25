@@ -1,0 +1,61 @@
+name: PR 227 root-cause diagnostic node
+
+on:
+  push:
+    branches:
+      - automation/pr227-root-cause-diagnostic
+
+permissions:
+  actions: read
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out trusted controls
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build current pull-request event payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const response = await fetch(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/pulls/227`, {
+            headers: {
+              Accept: 'application/vnd.github+json',
+              Authorization: `Bearer ${process.env.GH_TOKEN}`,
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+          });
+          if (!response.ok) throw new Error(`${response.status} ${await response.text()}`);
+          const pullRequest = await response.json();
+          fs.writeFileSync('pr-event.json', JSON.stringify({ pull_request: pullRequest }));
+          NODE
+
+      - name: Capture full trusted verifier output
+        env:
+          GITHUB_EVENT_PATH: ${{ github.workspace }}/pr-event.json
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p diagnostics
+          set +e
+          node tooling/verify-root-cause-governance.mjs > diagnostics/pr227-root-cause.txt 2>&1
+          status=$?
+          set -e
+          printf '\nEXIT_STATUS=%s\n' "$status" >> diagnostics/pr227-root-cause.txt
+          cat diagnostics/pr227-root-cause.txt
+
+      - name: Commit diagnostic and remove helper
+        run: |
+          rm .github/workflows/pr227-root-cause-diagnostic-node.yml
+          git config user.name 'NEWAX Engineering Automation'
+          git config user.email 'engineering@newax.co'
+          git add diagnostics/pr227-root-cause.txt .github/workflows/pr227-root-cause-diagnostic-node.yml
+          git commit -m 'Validate PR 227 root-cause provenance'
+          git push origin HEAD:${GITHUB_REF_NAME}
