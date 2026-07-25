@@ -240,6 +240,24 @@
       "unsuccessfulMethod": "Allow the pull-request author to choose new, existing, or none from a free-text field.",
       "successfulMethod": "Calculate required or not-required from rule, checklist, process, template, automation, and failure evidence, then infer ledger classification.",
       "preventionControl": "The manual learning-outcome field is prohibited and trusted reconciliation enforces the rule-engine decision."
+    },
+    {
+      "id": "ROOT-PLANNING-EVIDENCE-NOT-CORRELATED",
+      "ledgerEntry": "EL-0024",
+      "category": "planning-decision-quality",
+      "confidence": "high",
+      "deterministic": false,
+      "signatures": [
+        "manual retrospective",
+        "planning evidence",
+        "commit history",
+        "issue history",
+        "task sequencing"
+      ],
+      "rootCause": "Planning evidence existed in separate repository and issue records but no trusted engine correlated those records into enforceable findings.",
+      "unsuccessfulMethod": "Rely on manual retrospective reporting without reconstructing commit history, issue history, and declared task sequencing.",
+      "successfulMethod": "Build a trusted detector and adapter that evaluate planning evidence from repository and issue records rather than trusting retrospective prose.",
+      "preventionControl": "Planning governance must include an automated detector that correlates commit history, issue history, and task sequencing into enforceable findings."
     }
   ]
 }
