@@ -1,7 +1,7 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.8",
+  "registry_version": "0.1.9",
   "registry_status": "draft",
   "last_updated": "2026-07-12",
   "owner": "NEWAX Engineering",
@@ -336,9 +336,9 @@
       "module_key": "contacts",
       "module_layer": "foundation",
       "module_version": "0.1.0",
-      "module_status": "planned",
+      "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Maintains reusable contact channels for people and organizations without duplicating identity records.",
+      "description": "Maintains reusable contact channels, beginning with permission-controlled organization email and phone methods while person-contact visibility remains deferred.",
       "dependencies": [
         {
           "module_key": "people",
@@ -355,14 +355,22 @@
         "contacts.update",
         "contacts.remove"
       ],
-      "exposed_events": ["contact.created", "contact.updated", "contact.removed"],
-      "consumed_events": ["person.archived", "organization.archived"],
-      "configuration_options": ["contact_type_values", "verification_policy"],
-      "database_ownership": ["core_contacts"],
-      "tenant_scope": "mixed_global_and_organization_scoped",
+      "exposed_events": ["contact.created"],
+      "consumed_events": [],
+      "configuration_options": [
+        "contact_type_values",
+        "person_contact_visibility_policy",
+        "verification_policy"
+      ],
+      "database_ownership": [
+        "core_contact_methods",
+        "core_person_contact_methods",
+        "core_organization_contact_methods"
+      ],
+      "tenant_scope": "organization_scoped_with_deferred_person_visibility",
       "documentation_path": "packages/contacts/README.md",
       "changelog_path": "packages/contacts/CHANGELOG.md",
-      "compatibility_notes": "Sensitive contact information must be permission-controlled and auditable where required."
+      "compatibility_notes": "The current implementation creates and reads organization contacts only. Person-contact visibility, update, removal, and verification require separate approved policies."
     },
     {
       "module_name": "Audit",

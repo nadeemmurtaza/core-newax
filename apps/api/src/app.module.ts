@@ -6,6 +6,7 @@ import { AccountAccessModule } from './account-access/account-access.module';
 import { AuthenticationHttpController } from './authentication-http/authentication-http.controller';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { validateEnvironment } from './config/environment';
+import { ContactsModule } from './contacts/contacts.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { HttpSecurityModule } from './http-security/http-security.module';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     OrganizationsModule,
     PeopleModule,
+    ContactsModule,
     MembershipsModule,
     AccessControlModule,
     UsersModule,

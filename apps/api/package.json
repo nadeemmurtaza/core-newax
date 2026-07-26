@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "nest build",
-    "build:foundation": "pnpm --filter @newax/organizations build && pnpm --filter @newax/people build && pnpm --filter @newax/memberships build && pnpm --filter @newax/access-control build && pnpm --filter @newax/users build && pnpm --filter @newax/auth build && pnpm --filter @newax/request-context build && pnpm --filter @newax/http-security build",
+    "build:foundation": "pnpm --filter @newax/organizations build && pnpm --filter @newax/people build && pnpm --filter @newax/contacts build && pnpm --filter @newax/memberships build && pnpm --filter @newax/access-control build && pnpm --filter @newax/users build && pnpm --filter @newax/auth build && pnpm --filter @newax/request-context build && pnpm --filter @newax/http-security build",
     "db:format": "prisma format",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -40,6 +40,7 @@
     "@nestjs/platform-express": "11.1.28",
     "@newax/access-control": "workspace:*",
     "@newax/auth": "workspace:*",
+    "@newax/contacts": "workspace:*",
     "@newax/http-security": "workspace:*",
     "@newax/memberships": "workspace:*",
     "@newax/organizations": "workspace:*",

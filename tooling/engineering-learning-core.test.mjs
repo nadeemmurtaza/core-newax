@@ -149,15 +149,11 @@ test('governed command wrapper queues a non-zero local command', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'newax-learning-'));
   const wrapper = resolve('tooling/run-engineering-command.mjs');
   try {
-    const result = spawnSync(
-      process.execPath,
-      [wrapper, process.execPath, '-e', 'process.exit(7)'],
-      {
-        cwd: directory,
-        env: { ...process.env, CI: 'false' },
-        encoding: 'utf8',
-      },
-    );
+    const result = spawnSync(process.execPath, [wrapper, 'node', '-e', 'process.exit(7)'], {
+      cwd: directory,
+      env: { ...process.env, CI: 'false' },
+      encoding: 'utf8',
+    });
 
     assert.equal(result.status, 7);
     const queued = readFileSync(join(directory, '.newax/engineering-events.ndjson'), 'utf8')
@@ -193,7 +189,7 @@ test('governed command wrapper queues a command launch failure', async () => {
       .map((line) => JSON.parse(line));
     assert.equal(queued.length, 1);
     assert.equal(queued[0].sourceType, 'local-command');
-    assert.match(queued[0].symptom, /ENOENT|not found/i);
+    assert.match(queued[0].symptom, /ENOENT|not found|not recognized/i);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

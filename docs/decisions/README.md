@@ -22,36 +22,37 @@ ADRs are used for decisions with long-term impact on:
 
 ## Accepted Decision Index
 
-| ADR                                                                       | Status   | Decision                                                                                                                                        |
-| ------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| [ADR 0001](0001-use-modular-monolith-first.md)                            | Accepted | Begin with a modular monolith and extract services only when evidence justifies the additional operational complexity.                          |
-| [ADR 0002](0002-use-permission-based-access-control.md)                   | Accepted | Authorize business actions through explicit permissions rather than hardcoded role names.                                                       |
-| [ADR 0003](0003-design-for-multi-tenancy.md)                              | Accepted | Design NEWAX Core for organization-scoped multi-tenancy and strict tenant isolation.                                                            |
-| [ADR 0004](0004-separate-client-customizations-from-core.md)              | Accepted | Keep client-specific configuration and extensions separate from reusable core modules.                                                          |
-| [ADR 0005](0005-use-event-driven-module-communication.md)                 | Accepted | Use documented events for suitable cross-module communication while retaining direct service calls when clearer.                                |
-| [ADR 0006](0006-use-controlled-updates-and-versioning.md)                 | Accepted | Use semantic versioning, changelogs, compatibility review, and controlled client updates.                                                       |
-| [ADR 0007](0007-define-lms-centralized-database-and-data-ownership.md)    | Accepted | Use a centralized LMS operational database with explicit module ownership and organization isolation.                                           |
-| [ADR 0008](0008-use-central-identity-and-organization-registry.md)        | Accepted | Use one Central Identity and Organization Registry across LMS and future NEWAX domains.                                                         |
-| [ADR 0009](0009-define-module-registry-and-dependency-rules.md)           | Accepted | Maintain a Module Registry and enforce architecture-layer dependency rules.                                                                     |
-| [ADR 0010](0010-define-authentication-and-user-identity-strategy.md)      | Accepted | Separate people, users, authentication, memberships, roles, permissions, and organization context.                                              |
-| [ADR 0011](0011-define-technology-stack-and-implementation-baseline.md)   | Accepted | Use the TypeScript, Node.js, pnpm, NestJS, Next.js, PostgreSQL, Prisma, Vitest, Playwright, Docker, and GitHub Actions implementation baseline. |
-| [ADR 0012](0012-implement-central-registry-data-foundation.md)            | Accepted | Implement the first Prisma Central Registry foundation while keeping domain transactions outside the registry.                                  |
-| [ADR 0013](0013-build-people-registry-service-foundation.md)              | Accepted | Build the reusable People Registry service foundation with permission-controlled identity and identifier operations.                            |
-| [ADR 0014](0014-build-memberships-registry-service-foundation.md)         | Accepted | Build the organization-scoped Memberships Registry service foundation connecting people to organizations.                                       |
-| [ADR 0015](0015-consolidate-roles-and-permissions-into-access-control.md) | Accepted | Consolidate roles, permissions, membership-role assignments, templates, and evaluation into one Access Control bounded context.                 |
-| [ADR 0016](0016-build-users-registry-service-foundation.md)               | Accepted | Build the global Users Registry service foundation while preserving organization-scoped access through memberships and permissions.             |
-| [ADR 0017](0017-build-authentication-service-foundation.md)               | Accepted | Build credential verification, failed-attempt protection, and revocable sessions without merging Authentication into Users.                     |
-| [ADR 0018](0018-build-trusted-request-context-foundation.md)              | Accepted | Resolve tenant-safe execution context from authenticated sessions, active memberships, organizations, and effective permissions.                |
-| [ADR 0019](0019-build-http-security-boundary.md)                          | Accepted | Establish secure HTTPS entry, browser protections, distributed throttling, trusted context enforcement, response controls, and HTTP auditing.   |
-| [ADR 0020](0020-build-authentication-http-endpoints.md)                   | Accepted | Expose bounded login, session, CSRF bootstrap, and logout endpoints without weakening authentication or tenant boundaries.                      |
-| [ADR 0021](0021-build-account-membership-discovery.md)                    | Accepted | Let authenticated accounts discover only their active organization memberships before trusted organization-context selection.                   |
-| [ADR 0022](0022-build-organization-context-confirmation.md)               | Accepted | Confirm selected organization context with minimal identity data and fixed capability summaries without exposing raw authority.                 |
-| [ADR 0023](0023-build-current-organization-read-api.md)                   | Accepted | Expose a bounded current-organization profile derived only from trusted context and protected by `organizations.view`.                          |
-| [ADR 0024](0024-build-current-person-read-api.md)                         | Accepted | Expose a bounded authenticated self-profile derived only from trusted account context without granting organization-wide `people.view`.         |
+| ADR                                                                       | Status   | Decision                                                                                                                                         |
+| ------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [ADR 0001](0001-use-modular-monolith-first.md)                            | Accepted | Begin with a modular monolith and extract services only when evidence justifies the additional operational complexity.                           |
+| [ADR 0002](0002-use-permission-based-access-control.md)                   | Accepted | Authorize business actions through explicit permissions rather than hardcoded role names.                                                        |
+| [ADR 0003](0003-design-for-multi-tenancy.md)                              | Accepted | Design NEWAX Core for organization-scoped multi-tenancy and strict tenant isolation.                                                             |
+| [ADR 0004](0004-separate-client-customizations-from-core.md)              | Accepted | Keep client-specific configuration and extensions separate from reusable core modules.                                                           |
+| [ADR 0005](0005-use-event-driven-module-communication.md)                 | Accepted | Use documented events for suitable cross-module communication while retaining direct service calls when clearer.                                 |
+| [ADR 0006](0006-use-controlled-updates-and-versioning.md)                 | Accepted | Use semantic versioning, changelogs, compatibility review, and controlled client updates.                                                        |
+| [ADR 0007](0007-define-lms-centralized-database-and-data-ownership.md)    | Accepted | Use a centralized LMS operational database with explicit module ownership and organization isolation.                                            |
+| [ADR 0008](0008-use-central-identity-and-organization-registry.md)        | Accepted | Use one Central Identity and Organization Registry across LMS and future NEWAX domains.                                                          |
+| [ADR 0009](0009-define-module-registry-and-dependency-rules.md)           | Accepted | Maintain a Module Registry and enforce architecture-layer dependency rules.                                                                      |
+| [ADR 0010](0010-define-authentication-and-user-identity-strategy.md)      | Accepted | Separate people, users, authentication, memberships, roles, permissions, and organization context.                                               |
+| [ADR 0011](0011-define-technology-stack-and-implementation-baseline.md)   | Accepted | Use the TypeScript, Node.js, pnpm, NestJS, Next.js, PostgreSQL, Prisma, Vitest, Playwright, Docker, and GitHub Actions implementation baseline.  |
+| [ADR 0012](0012-implement-central-registry-data-foundation.md)            | Accepted | Implement the first Prisma Central Registry foundation while keeping domain transactions outside the registry.                                   |
+| [ADR 0013](0013-build-people-registry-service-foundation.md)              | Accepted | Build the reusable People Registry service foundation with permission-controlled identity and identifier operations.                             |
+| [ADR 0014](0014-build-memberships-registry-service-foundation.md)         | Accepted | Build the organization-scoped Memberships Registry service foundation connecting people to organizations.                                        |
+| [ADR 0015](0015-consolidate-roles-and-permissions-into-access-control.md) | Accepted | Consolidate roles, permissions, membership-role assignments, templates, and evaluation into one Access Control bounded context.                  |
+| [ADR 0016](0016-build-users-registry-service-foundation.md)               | Accepted | Build the global Users Registry service foundation while preserving organization-scoped access through memberships and permissions.              |
+| [ADR 0017](0017-build-authentication-service-foundation.md)               | Accepted | Build credential verification, failed-attempt protection, and revocable sessions without merging Authentication into Users.                      |
+| [ADR 0018](0018-build-trusted-request-context-foundation.md)              | Accepted | Resolve tenant-safe execution context from authenticated sessions, active memberships, organizations, and effective permissions.                 |
+| [ADR 0019](0019-build-http-security-boundary.md)                          | Accepted | Establish secure HTTPS entry, browser protections, distributed throttling, trusted context enforcement, response controls, and HTTP auditing.    |
+| [ADR 0020](0020-build-authentication-http-endpoints.md)                   | Accepted | Expose bounded login, session, CSRF bootstrap, and logout endpoints without weakening authentication or tenant boundaries.                       |
+| [ADR 0021](0021-build-account-membership-discovery.md)                    | Accepted | Let authenticated accounts discover only their active organization memberships before trusted organization-context selection.                    |
+| [ADR 0022](0022-build-organization-context-confirmation.md)               | Accepted | Confirm selected organization context with minimal identity data and fixed capability summaries without exposing raw authority.                  |
+| [ADR 0023](0023-build-current-organization-read-api.md)                   | Accepted | Expose a bounded current-organization profile derived only from trusted context and protected by `organizations.view`.                           |
+| [ADR 0024](0024-build-current-person-read-api.md)                         | Accepted | Expose a bounded authenticated self-profile derived only from trusted account context without granting organization-wide `people.view`.          |
+| [ADR 0025](0025-build-organization-contacts-registry-foundation.md)       | Accepted | Establish permission-controlled organization email and phone contacts while deferring person-contact visibility until an explicit policy exists. |
 
 ## Decision Sequence
 
-The ADRs form a deliberate sequence rather than twenty-four independent opinions wandering around the repository unsupervised.
+The ADRs form a deliberate sequence rather than twenty-five independent opinions wandering around the repository unsupervised.
 
 ### Architecture Foundation
 
@@ -84,6 +85,7 @@ The ADRs form a deliberate sequence rather than twenty-four independent opinions
 - ADR 0022 confirms selected organization context while keeping raw permissions, role names, and browser-side authorization outside the response contract.
 - ADR 0023 exposes the first organization profile through trusted context without accepting client-supplied tenant authority or unrelated registry data.
 - ADR 0024 exposes the authenticated account's bounded person profile without client person selection or organization-wide People Registry authority.
+- ADR 0025 establishes organization-scoped contact creation and reads while deferring person-contact visibility, lifecycle, and verification policy.
 
 ### Implementation Baseline
 
@@ -204,7 +206,7 @@ An ADR does not replace a module README, API documentation, testing evidence, se
 Filename example:
 
 ```text
-0025-define-repository-bootstrap-and-boundary-enforcement.md
+0026-define-repository-bootstrap-and-boundary-enforcement.md
 ```
 
 ## Review Triggers

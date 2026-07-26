@@ -1,0 +1,30 @@
+{
+  "name": "@newax/contacts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reusable NEWAX Contacts Registry foundation module.",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "VERSION"
+  ],
+  "engines": {
+    "node": "24.18.0",
+    "pnpm": "11.11.0"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "test": "vitest run",
+    "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.spec.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}
