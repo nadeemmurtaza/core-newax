@@ -50,7 +50,7 @@ The architecture remains a **modular monolith first**. Microservices, Kubernetes
 
 Read:
 
-- [ADR 0011: Technology Stack and Repository Baseline](docs/decisions/0011-define-technology-stack-and-repository-baseline.md)
+- [ADR 0011: Define Technology Stack and Implementation Baseline](docs/decisions/0011-define-technology-stack-and-implementation-baseline.md)
 - [Architecture Decision Records](docs/decisions/README.md)
 
 ## Repository Applications
