@@ -11,6 +11,7 @@ pmOnFail: error
 savePrefix: ''
 verifyStoreIntegrity: true
 updateNotifier: false
+minimumReleaseAgeStrict: true
 
 allowBuilds:
   '@prisma/engines': true
