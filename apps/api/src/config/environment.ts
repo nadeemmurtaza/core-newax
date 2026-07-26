@@ -14,6 +14,9 @@ const DEFAULT_AUTH_FAILED_ATTEMPT_WINDOW_MINUTES = 15;
 const DEFAULT_AUTH_MAXIMUM_FAILED_ATTEMPTS = 5;
 const DEFAULT_AUTH_ACCOUNT_LOCK_MINUTES = 15;
 const DEFAULT_AUTH_SESSION_TOUCH_INTERVAL_MINUTES = 5;
+const DEFAULT_OAUTH_GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
+const DEFAULT_OAUTH_GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
+const DEFAULT_OAUTH_GITHUB_USERINFO_URL = 'https://api.github.com/user';
 const NODE_ENVIRONMENTS = ['development', 'test', 'production'] as const;
 
 type NodeEnvironment = (typeof NODE_ENVIRONMENTS)[number];
@@ -31,6 +34,12 @@ export interface ApplicationEnvironment extends HttpSecurityEnvironment {
   readonly AUTH_MAXIMUM_FAILED_ATTEMPTS: number;
   readonly AUTH_ACCOUNT_LOCK_MINUTES: number;
   readonly AUTH_SESSION_TOUCH_INTERVAL_MINUTES: number;
+  readonly OAUTH_GITHUB_CLIENT_ID?: string;
+  readonly OAUTH_GITHUB_CLIENT_SECRET?: string;
+  readonly OAUTH_GITHUB_REDIRECT_URI?: string;
+  readonly OAUTH_GITHUB_AUTHORIZE_URL: string;
+  readonly OAUTH_GITHUB_TOKEN_URL: string;
+  readonly OAUTH_GITHUB_USERINFO_URL: string;
 }
 
 function parseNodeEnvironment(value: unknown): NodeEnvironment {
@@ -157,6 +166,53 @@ function parsePositiveInteger(
   return parsed;
 }
 
+function parseOptionalOAuthSecret(
+  value: unknown,
+  name: string,
+  nodeEnvironment: NodeEnvironment,
+): string | undefined {
+  if (value === undefined) {
+    if (nodeEnvironment === 'production') {
+      throw new Error(`${name} is required in production.`);
+    }
+    return undefined;
+  }
+
+  if (typeof value !== 'string') {
+    throw new Error(`${name} must be a string.`);
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    throw new Error(`${name} must not be empty.`);
+  }
+
+  return trimmed;
+}
+
+function parseOptionalUrl(value: unknown, name: string, defaultValue: string): string {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  if (typeof value !== 'string') {
+    throw new Error(`${name} must be a string.`);
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    throw new Error(`${name} must not be empty.`);
+  }
+
+  try {
+    new URL(trimmed);
+  } catch {
+    throw new Error(`${name} must be a valid URL.`);
+  }
+
+  return trimmed;
+}
+
 export function validateEnvironment(
   configuration: Record<string, unknown>,
 ): Record<string, unknown> & ApplicationEnvironment {
@@ -218,6 +274,36 @@ export function validateEnvironment(
       'AUTH_SESSION_TOUCH_INTERVAL_MINUTES',
       DEFAULT_AUTH_SESSION_TOUCH_INTERVAL_MINUTES,
       1_440,
+    ),
+    OAUTH_GITHUB_CLIENT_ID: parseOptionalOAuthSecret(
+      configuration.OAUTH_GITHUB_CLIENT_ID,
+      'OAUTH_GITHUB_CLIENT_ID',
+      nodeEnvironment,
+    ),
+    OAUTH_GITHUB_CLIENT_SECRET: parseOptionalOAuthSecret(
+      configuration.OAUTH_GITHUB_CLIENT_SECRET,
+      'OAUTH_GITHUB_CLIENT_SECRET',
+      nodeEnvironment,
+    ),
+    OAUTH_GITHUB_REDIRECT_URI: parseOptionalOAuthSecret(
+      configuration.OAUTH_GITHUB_REDIRECT_URI,
+      'OAUTH_GITHUB_REDIRECT_URI',
+      nodeEnvironment,
+    ),
+    OAUTH_GITHUB_AUTHORIZE_URL: parseOptionalUrl(
+      configuration.OAUTH_GITHUB_AUTHORIZE_URL,
+      'OAUTH_GITHUB_AUTHORIZE_URL',
+      DEFAULT_OAUTH_GITHUB_AUTHORIZE_URL,
+    ),
+    OAUTH_GITHUB_TOKEN_URL: parseOptionalUrl(
+      configuration.OAUTH_GITHUB_TOKEN_URL,
+      'OAUTH_GITHUB_TOKEN_URL',
+      DEFAULT_OAUTH_GITHUB_TOKEN_URL,
+    ),
+    OAUTH_GITHUB_USERINFO_URL: parseOptionalUrl(
+      configuration.OAUTH_GITHUB_USERINFO_URL,
+      'OAUTH_GITHUB_USERINFO_URL',
+      DEFAULT_OAUTH_GITHUB_USERINFO_URL,
     ),
     ...validateHttpSecurityEnvironment(configuration, nodeEnvironment),
   };

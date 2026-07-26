@@ -121,6 +121,7 @@ model CoreUser {
   credentials              CoreUserCredential[]
   sessions                 CoreUserSession[]
   authenticationAttempts   CoreAuthenticationAttempt[]
+  externalIdentities       CoreUserExternalIdentity[]
   rolePermissionsCreated   CoreRolePermission[]        @relation("RolePermissionCreatedBy")
   membershipRolesAssigned  CoreMembershipRole[]        @relation("MembershipRoleAssignedBy")
   membershipRolesRevoked   CoreMembershipRole[]        @relation("MembershipRoleRevokedBy")
@@ -202,6 +203,22 @@ model CoreAuthenticationAttempt {
   @@index([identityFingerprint, occurredAt])
   @@index([outcome, occurredAt])
   @@map("core_authentication_attempts")
+}
+
+model CoreUserExternalIdentity {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  provider        String   @db.VarChar(64)
+  providerSubject String   @map("provider_subject") @db.VarChar(256)
+  providerUsername String? @map("provider_username") @db.VarChar(256)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user CoreUser @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@index([userId, provider])
+  @@map("core_user_external_identities")
 }
 
 model CoreMembership {

@@ -2,6 +2,28 @@
 
 All notable changes to the NEWAX Authentication module are documented here.
 
+## Unreleased
+
+### Added
+
+- `OAuthProvider` interface and `ExternalIdentityProfile` type for provider-agnostic OAuth 2.0 integration.
+- `GitHubOAuthProvider` implementing the GitHub OAuth 2.0 Authorization Code Flow (`read:user user:email` scope).
+- `OAuthRepository` port for external identity persistence (`findExternalIdentity`, `createExternalIdentity`).
+- `OAuthAuthenticationService` orchestrating code exchange, profile normalisation, identity lookup, session issuance, and event publishing.
+- `generateState()` and `buildAuthorizationUrl()` helpers on `OAuthAuthenticationService` for use in HTTP controllers.
+- `OAuthProviderError` for provider-level failures (network, unexpected response).
+- All new types exported from the package index.
+
+### Security
+
+- OAuth sessions reuse the existing opaque session-token model and `SecureCookieTransport`, providing identical security properties to password sessions.
+- Access tokens from providers are not persisted.
+- OAuth login only succeeds for users who have a pre-linked external identity — no automatic provisioning.
+
+### Database
+
+- Adds `core_user_external_identities` with a unique constraint on `(provider, provider_subject)`.
+
 ## 0.1.0 - 2026-07-11
 
 ### Added

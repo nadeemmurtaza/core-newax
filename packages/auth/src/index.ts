@@ -1,5 +1,10 @@
 export type { AuthenticationRepository } from './database/authentication-repository';
 export type {
+  CreateExternalIdentityInput,
+  ExternalIdentityRecord,
+  OAuthRepository,
+} from './database/oauth-repository';
+export type {
   AuthenticationEvent,
   AuthenticationEventPublisher,
 } from './events/authentication-event';
@@ -21,7 +26,22 @@ export type {
 export type { PasswordBlocklist } from './security/password-blocklist';
 export type { AuthenticationUserDirectory } from './services/authentication-user-directory';
 export { AuthenticationService } from './services/authentication.service';
+export {
+  OAuthAuthenticationService,
+  type OAuthLoginInput,
+  type OAuthLoginResult,
+} from './services/oauth-authentication.service';
 export { PasswordPolicyValidator } from './services/password-policy-validator';
+export {
+  GitHubOAuthProvider,
+  type GitHubOAuthConfig,
+} from './oauth/github-oauth-provider';
+export {
+  OAuthProviderError,
+  type ExternalIdentityProfile,
+  type OAuthProvider,
+  type OAuthTokenResponse,
+} from './oauth/oauth-provider';
 export type {
   AuthenticationAccountRecord,
   AuthenticationAccountStatus,

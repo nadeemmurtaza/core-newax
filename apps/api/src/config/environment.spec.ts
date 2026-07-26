@@ -34,6 +34,9 @@ describe('validateEnvironment', () => {
         HTTP_ALLOWED_ORIGINS: ' https://app.newax.test ',
         HTTP_CSRF_SECRET: productionCsrfSecret,
         HTTP_TRUSTED_PROXY_CIDRS: ' 10.0.0.0/8 ',
+        OAUTH_GITHUB_CLIENT_ID: 'gh-prod-client-id',
+        OAUTH_GITHUB_CLIENT_SECRET: 'gh-prod-client-secret',
+        OAUTH_GITHUB_REDIRECT_URI: 'https://api.newax.test/api/auth/oauth/github/callback',
       }),
     ).toMatchObject({
       NODE_ENV: 'production',
@@ -44,7 +47,52 @@ describe('validateEnvironment', () => {
       HTTP_CSRF_SECRET: productionCsrfSecret,
       HTTP_REQUIRE_HTTPS: true,
       HTTP_TRUSTED_PROXY_CIDRS: ['10.0.0.0/8'],
+      OAUTH_GITHUB_CLIENT_ID: 'gh-prod-client-id',
+      OAUTH_GITHUB_CLIENT_SECRET: 'gh-prod-client-secret',
+      OAUTH_GITHUB_REDIRECT_URI: 'https://api.newax.test/api/auth/oauth/github/callback',
+      OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.com/login/oauth/authorize',
+      OAUTH_GITHUB_TOKEN_URL: 'https://github.com/login/oauth/access_token',
+      OAUTH_GITHUB_USERINFO_URL: 'https://api.github.com/user',
     });
+  });
+
+  it('requires OAuth GitHub secrets in production', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        AUTH_TOKEN_PEPPER: productionPepper,
+        HTTP_ALLOWED_ORIGINS: 'https://app.newax.test',
+        HTTP_CSRF_SECRET: productionCsrfSecret,
+      }),
+    ).toThrow('OAUTH_GITHUB_CLIENT_ID is required in production.');
+  });
+
+  it('applies safe URL defaults for OAuth in development', () => {
+    expect(validateEnvironment({})).toMatchObject({
+      OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.com/login/oauth/authorize',
+      OAUTH_GITHUB_TOKEN_URL: 'https://github.com/login/oauth/access_token',
+      OAUTH_GITHUB_USERINFO_URL: 'https://api.github.com/user',
+    });
+  });
+
+  it('accepts custom OAuth URL overrides', () => {
+    expect(
+      validateEnvironment({
+        OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.example.test/login/oauth/authorize',
+        OAUTH_GITHUB_TOKEN_URL: 'https://github.example.test/login/oauth/access_token',
+        OAUTH_GITHUB_USERINFO_URL: 'https://api.github.example.test/user',
+      }),
+    ).toMatchObject({
+      OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.example.test/login/oauth/authorize',
+      OAUTH_GITHUB_TOKEN_URL: 'https://github.example.test/login/oauth/access_token',
+      OAUTH_GITHUB_USERINFO_URL: 'https://api.github.example.test/user',
+    });
+  });
+
+  it('rejects an invalid OAuth URL', () => {
+    expect(() => validateEnvironment({ OAUTH_GITHUB_AUTHORIZE_URL: 'not-a-url' })).toThrow(
+      'OAUTH_GITHUB_AUTHORIZE_URL must be a valid URL.',
+    );
   });
 
   it('requires an explicit authentication token pepper in production', () => {
