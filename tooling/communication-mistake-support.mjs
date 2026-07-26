@@ -34,8 +34,12 @@ export function normalizeString(value) {
 }
 
 export function normalizeArray(value) {
-  if (Array.isArray(value)) return value;
-  if (value === null || value === undefined || value === '') return [];
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value === null || value === undefined || value === '') {
+    return [];
+  }
   return String(value)
     .split(',')
     .map((item) => item.trim())
@@ -43,15 +47,23 @@ export function normalizeArray(value) {
 }
 
 export function normalizeBoolean(value) {
-  if (typeof value === 'boolean') return value;
+  if (typeof value === 'boolean') {
+    return value;
+  }
   const normalized = normalizeString(value).toLowerCase();
-  if (['yes', 'true', 'required'].includes(normalized)) return true;
-  if (['no', 'false', 'not-required', 'none'].includes(normalized)) return false;
+  if (['yes', 'true', 'required'].includes(normalized)) {
+    return true;
+  }
+  if (['no', 'false', 'not-required', 'none'].includes(normalized)) {
+    return false;
+  }
   return null;
 }
 
 export function normalizeDate(value) {
-  if (value === null || value === undefined || value === '') return null;
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
@@ -61,7 +73,9 @@ function normalizeFile(file, index) {
     throw new TypeError(`files[${index}] must be an object.`);
   }
   const filename = normalizeString(file.filename ?? file.path);
-  if (filename.length === 0) throw new TypeError(`files[${index}] requires filename.`);
+  if (filename.length === 0) {
+    throw new TypeError(`files[${index}] requires filename.`);
+  }
   return { filename, status: normalizeString(file.status).toLowerCase() || 'modified' };
 }
 
@@ -86,8 +100,12 @@ export function normalizeEvent(event, index) {
   }
   const id = normalizeString(event.id ?? event.communicationId ?? event['communication-id']);
   const type = normalizeString(event.type ?? event.event).toLowerCase();
-  if (id.length === 0) throw new TypeError(`events[${index}] requires communication-id.`);
-  if (type.length === 0) throw new TypeError(`events[${index}] requires event type.`);
+  if (id.length === 0) {
+    throw new TypeError(`events[${index}] requires communication-id.`);
+  }
+  if (type.length === 0) {
+    throw new TypeError(`events[${index}] requires event type.`);
+  }
   return {
     id,
     type,
@@ -131,18 +149,28 @@ export function pathMatchesCommunicationScope(filename, patterns = []) {
 export function compareEvents(left, right) {
   if (left.at !== null && right.at !== null) {
     const difference = Date.parse(left.at) - Date.parse(right.at);
-    if (difference !== 0) return difference;
-  } else if (left.at !== null) return -1;
-  else if (right.at !== null) return 1;
+    if (difference !== 0) {
+      return difference;
+    }
+  } else if (left.at !== null) {
+    return -1;
+  } else if (right.at !== null) {
+    return 1;
+  }
   return left.id.localeCompare(right.id);
 }
 
 export function compareCommits(left, right) {
   if (left.timestamp !== null && right.timestamp !== null) {
     const difference = Date.parse(left.timestamp) - Date.parse(right.timestamp);
-    if (difference !== 0) return difference;
-  } else if (left.timestamp !== null) return -1;
-  else if (right.timestamp !== null) return 1;
+    if (difference !== 0) {
+      return difference;
+    }
+  } else if (left.timestamp !== null) {
+    return -1;
+  } else if (right.timestamp !== null) {
+    return 1;
+  }
   return left.sequence - right.sequence;
 }
 

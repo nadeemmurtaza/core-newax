@@ -36,11 +36,17 @@ function extractHeadingValue(body, heading) {
     const match = line.match(/^#{2,4}\s+(.+)$/);
     return match !== null && match[1].trim().toLowerCase() === target;
   });
-  if (start === -1) return '';
+  if (start === -1) {
+    return '';
+  }
   const values = [];
   for (let index = start + 1; index < lines.length; index += 1) {
-    if (/^#{2,4}\s+/.test(lines[index])) break;
-    if (lines[index].trim().length > 0) values.push(lines[index].trim());
+    if (/^#{2,4}\s+/.test(lines[index])) {
+      break;
+    }
+    if (lines[index].trim().length > 0) {
+      values.push(lines[index].trim());
+    }
   }
   return values
     .join('\n')
@@ -77,7 +83,9 @@ function eventFromIssueForm(body, source, createdAt) {
   const id = extractHeadingValue(body, 'Communication ID');
   const type = extractHeadingValue(body, 'Event type');
   const topic = extractHeadingValue(body, 'Topic');
-  if (id.length === 0 || type.length === 0 || topic.length === 0) return null;
+  if (id.length === 0 || type.length === 0 || topic.length === 0) {
+    return null;
+  }
   return {
     id,
     type,
@@ -109,13 +117,17 @@ export function parseCommunicationEvents(body, context = {}) {
     eventFromMetadata(metadata, source, createdAt),
   );
   const form = eventFromIssueForm(body, source, createdAt);
-  if (form !== null && !events.some((event) => event.id === form.id)) events.push(form);
+  if (form !== null && !events.some((event) => event.id === form.id)) {
+    events.push(form);
+  }
   return events;
 }
 
 export function parseCommunicationIssueNumbers(pullRequestBody) {
   const field = parsePullRequestField(pullRequestBody, '- Communication issues:');
-  if (field !== null) return parseIssueNumbers(field);
+  if (field !== null) {
+    return parseIssueNumbers(field);
+  }
   return [
     ...new Set(
       [...String(pullRequestBody ?? '').matchAll(/communication issue(?:s)?\s*[:#]?\s*#(\d+)/gi)]

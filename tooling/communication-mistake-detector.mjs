@@ -1,5 +1,4 @@
 import {
-  APPROVED_STATUSES,
   CLOSED_STATUSES,
   authorityRank,
   compareCommits,
@@ -37,7 +36,9 @@ export function detectCommunicationMistakes(input = {}) {
 
   const eventIds = new Set();
   for (const event of events) {
-    if (eventIds.has(event.id)) throw new TypeError(`Duplicate communication-id: ${event.id}.`);
+    if (eventIds.has(event.id)) {
+      throw new TypeError(`Duplicate communication-id: ${event.id}.`);
+    }
     eventIds.add(event.id);
     if (event.topic.length === 0 && event.type !== 'waiver') {
       notices.push({
@@ -78,7 +79,9 @@ export function detectCommunicationMistakes(input = {}) {
     const authoritative = active.filter(isAuthoritative);
 
     for (const interpretation of interpretations) {
-      if (interpretation.value.length === 0) continue;
+      if (interpretation.value.length === 0) {
+        continue;
+      }
       const contradictions = authoritative.filter(
         (event) =>
           event.value.length > 0 &&
@@ -135,7 +138,9 @@ export function detectCommunicationMistakes(input = {}) {
       const interpretation = topicEvents.find(
         (event) => event.type === 'interpretation' && correction.references.includes(event.id),
       );
-      if (interpretation === undefined || work === null) continue;
+      if (interpretation === undefined || work === null) {
+        continue;
+      }
       if (workAt === null || correction.at === null) {
         notices.push({
           type: 'insufficient-evidence',
@@ -286,7 +291,9 @@ export function detectCommunicationMistakes(input = {}) {
         left.value !== right.value ||
         left.conflictsWith.includes(right.id) ||
         right.conflictsWith.includes(left.id);
-      if (!explicitConflict) continue;
+      if (!explicitConflict) {
+        continue;
+      }
       const canProve = left.at !== null && right.at !== null && (work === null || workAt !== null);
       findings.push(
         createFinding({

@@ -47,7 +47,9 @@ async function main() {
   );
   if (errors.length > 0) {
     console.error('Communication mistake governance failed:');
-    for (const error of errors) console.error(`- ${error}`);
+    for (const error of errors) {
+      console.error(`- ${error}`);
+    }
     process.exitCode = 1;
   }
 }

@@ -5,11 +5,17 @@ import {
 } from './communication-history-parser.mjs';
 
 async function requestAll(path, request) {
-  if (request === githubRequest) return listAll(path);
+  if (request === githubRequest) {
+    return listAll(path);
+  }
   const response = await request(path);
-  if (Array.isArray(response)) return response;
+  if (Array.isArray(response)) {
+    return response;
+  }
   for (const key of ['items', 'commits', 'comments', 'reviews']) {
-    if (Array.isArray(response?.[key])) return response[key];
+    if (Array.isArray(response?.[key])) {
+      return response[key];
+    }
   }
   return [];
 }

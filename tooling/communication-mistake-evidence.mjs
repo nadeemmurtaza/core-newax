@@ -7,8 +7,12 @@ import {
 
 export function activeAt(events, time) {
   const eligible = events.filter((event) => {
-    if (CLOSED_STATUSES.has(event.status)) return false;
-    if (time === null || event.at === null) return true;
+    if (CLOSED_STATUSES.has(event.status)) {
+      return false;
+    }
+    if (time === null || event.at === null) {
+      return true;
+    }
     return Date.parse(event.at) <= Date.parse(time);
   });
   const superseded = new Set(
@@ -58,16 +62,24 @@ export function firstWorkForTopic(topicEvents, commits, allEvents) {
   ].filter(Boolean);
   return (
     options.sort((left, right) => {
-      if (left.at === null && right.at === null) return 0;
-      if (left.at === null) return 1;
-      if (right.at === null) return -1;
+      if (left.at === null && right.at === null) {
+        return 0;
+      }
+      if (left.at === null) {
+        return 1;
+      }
+      if (right.at === null) {
+        return -1;
+      }
       return Date.parse(left.at) - Date.parse(right.at);
     })[0] ?? null
   );
 }
 
 function beforeWork(event, workAt) {
-  if (workAt === null || event.at === null) return true;
+  if (workAt === null || event.at === null) {
+    return true;
+  }
   return Date.parse(event.at) <= Date.parse(workAt);
 }
 

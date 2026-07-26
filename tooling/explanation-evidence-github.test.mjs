@@ -51,9 +51,13 @@ const jobs = new Map([
 
 async function githubRequest(path) {
   const run = path.match(/^\/actions\/runs\/(\d+)$/);
-  if (run) return runs.get(Number(run[1]));
+  if (run) {
+    return runs.get(Number(run[1]));
+  }
   const commit = path.match(/^\/commits\/([0-9a-f]{40})$/);
-  if (commit) return commits.get(commit[1]);
+  if (commit) {
+    return commits.get(commit[1]);
+  }
   throw new Error(`unexpected path ${path}`);
 }
 

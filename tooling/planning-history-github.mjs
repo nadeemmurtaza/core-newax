@@ -41,10 +41,14 @@ function extractSection(body, heading) {
     const match = line.match(/^#{2,3}\s+(.+)$/);
     return match !== null && match[1].trim().toLowerCase() === target;
   });
-  if (start === -1) return '';
+  if (start === -1) {
+    return '';
+  }
   const selected = [];
   for (let index = start + 1; index < lines.length; index += 1) {
-    if (/^#{2,3}\s+/.test(lines[index])) break;
+    if (/^#{2,3}\s+/.test(lines[index])) {
+      break;
+    }
     selected.push(lines[index]);
   }
   return selected.join('\n').trim();
@@ -52,14 +56,20 @@ function extractSection(body, heading) {
 
 function parseBoolean(value) {
   const normalized = normalizeString(value).toLowerCase();
-  if (['yes', 'true', 'required'].includes(normalized)) return true;
-  if (['no', 'false', 'not-required', 'none'].includes(normalized)) return false;
+  if (['yes', 'true', 'required'].includes(normalized)) {
+    return true;
+  }
+  if (['no', 'false', 'not-required', 'none'].includes(normalized)) {
+    return false;
+  }
   return null;
 }
 
 function parseTaskLine(line, issueNumber) {
   const normalized = line.replace(/^\s*[-*]\s+/, '').trim();
-  if (!/^TASK-[A-Za-z0-9_-]+\b/i.test(normalized)) return null;
+  if (!/^TASK-[A-Za-z0-9_-]+\b/i.test(normalized)) {
+    return null;
+  }
   const [idPart, ...parts] = normalized.split('|').map((part) => part.trim());
   const fields = Object.fromEntries(
     parts.map((part) => {
@@ -91,7 +101,9 @@ function parseRequirements(body, issueNumber) {
     .split('\n')
     .map((line) => {
       const match = line.match(/^\s*[-*]\s+\[([ xX])\]\s+(REQ-[A-Za-z0-9_-]+)\s*(.*)$/);
-      if (match === null) return null;
+      if (match === null) {
+        return null;
+      }
       const pathMatch = match[3].match(/\bpaths?=([^;]+)$/i);
       return {
         id: match[2].toUpperCase(),
@@ -180,7 +192,9 @@ export function parsePlanningIssue(issue, comments = []) {
 
 export function parsePlanningIssueNumbers(pullRequestBody) {
   const value = parsePullRequestField(pullRequestBody, '- Planning issues:');
-  if (value !== null) return parseIssueNumbers(value);
+  if (value !== null) {
+    return parseIssueNumbers(value);
+  }
   const matches = String(pullRequestBody ?? '').matchAll(/planning issue(?:s)?\s*[:#]?\s*#(\d+)/gi);
   return [...new Set([...matches].map((match) => Number(match[1])).filter(Number.isSafeInteger))];
 }
@@ -196,11 +210,17 @@ function combinePlans(plans) {
 }
 
 async function requestAll(path, request) {
-  if (request === githubRequest) return listAll(path);
+  if (request === githubRequest) {
+    return listAll(path);
+  }
   const response = await request(path);
-  if (Array.isArray(response)) return response;
+  if (Array.isArray(response)) {
+    return response;
+  }
   for (const key of ['items', 'commits', 'files', 'comments']) {
-    if (Array.isArray(response?.[key])) return response[key];
+    if (Array.isArray(response?.[key])) {
+      return response[key];
+    }
   }
   return [];
 }
