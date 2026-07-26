@@ -10,11 +10,12 @@
     "pnpm": "11.11.0"
   },
   "scripts": {
-    "build": "pnpm -r --if-present run build",
+    "build": "turbo run build",
     "clean": "pnpm -r --if-present run clean",
     "dev": "pnpm -r --parallel --if-present run dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "knip": "knip",
     "learning:analyze": "node tooling/analyze-root-cause.mjs",
     "learning:flush": "node tooling/flush-engineering-events.mjs",
     "learning:graph": "node tooling/analyze-error-graph.mjs",
@@ -27,9 +28,9 @@
     "lint:fix": "eslint . --fix",
     "operation:validate": "node tooling/validate-operation-intent.mjs",
     "prepare": "husky",
-    "test": "pnpm test:learning && pnpm -r --if-present run test",
+    "test": "pnpm test:learning && turbo run test",
     "test:learning": "node --test tooling/engineering-event-upgrade.test.mjs tooling/engineering-explanation-integration.test.mjs tooling/engineering-issue-error-graph.test.mjs tooling/engineering-learning-core.test.mjs tooling/error-relationship-graph.test.mjs tooling/explanation-evidence-github.test.mjs tooling/explanation-verification.test.mjs tooling/external-failure-intake.test.mjs tooling/root-cause-engine.test.mjs tooling/workflow-failure-intake-controls.test.mjs",
-    "typecheck": "pnpm -r --if-present run typecheck",
+    "typecheck": "turbo run typecheck",
     "verify": "node tooling/run-engineering-command.mjs -- pnpm verify:raw",
     "verify:raw": "pnpm format:check && pnpm verify:workflow-intake && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "verify:workflow-intake": "node tooling/workflow-failure-intake-controls.mjs"
@@ -40,8 +41,10 @@
     "eslint-config-next": "16.2.10",
     "globals": "17.7.0",
     "husky": "9.1.7",
+    "knip": "6.29.0",
     "lint-staged": "17.2.0",
     "prettier": "3.9.0",
+    "turbo": "2.10.7",
     "typescript": "6.0.3",
     "typescript-eslint": "8.63.0"
   },

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "tooling/verify-pr-governance.mjs",
+    "tooling/run-pr-learning-reconciliation.mjs",
+    "tooling/verify-root-cause-governance.mjs"
+  ]
+}
