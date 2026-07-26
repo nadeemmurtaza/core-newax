@@ -1,5 +1,6 @@
 import type {
   AuthenticationIdentityType,
+  ExternalIdentityProfile,
   IssuedSessionToken,
   PasswordVerificationResult,
 } from '../types/authentication';
@@ -20,4 +21,11 @@ export interface LoginFingerprintService {
 
 export interface AuthenticationClock {
   now(): Date;
+}
+
+export interface OAuthProvider {
+  readonly name: string;
+  buildAuthorizationUrl(state: string): string;
+  exchangeCode(code: string): Promise<string>;
+  fetchProfile(accessToken: string): Promise<ExternalIdentityProfile>;
 }

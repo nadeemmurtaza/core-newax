@@ -5,8 +5,10 @@ import type {
   AuthenticationSessionPage,
   AuthenticationSessionRecord,
   CreateAuthenticationSessionInput,
+  CreateExternalIdentityInput,
   CreatePasswordCredentialInput,
   CredentialStatus,
+  ExternalIdentityRecord,
   PasswordCredentialRecord,
   RecordAuthenticationAttemptInput,
   SessionStatus,
@@ -38,6 +40,16 @@ interface SessionDatabaseRecord {
   readonly lastSeenAt: Date | null;
   readonly revokedAt: Date | null;
   readonly createdAt: Date;
+}
+
+interface ExternalIdentityDatabaseRecord {
+  readonly id: string;
+  readonly userId: string;
+  readonly provider: string;
+  readonly providerSubject: string;
+  readonly providerUsername: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 }
 
 @Injectable()
@@ -309,6 +321,40 @@ export class PrismaAuthenticationRepository implements AuthenticationRepository 
     return this.mapSession(updated);
   }
 
+  async findExternalIdentity(
+    provider: string,
+    providerSubject: string,
+  ): Promise<ExternalIdentityRecord | null> {
+    const record = await this.prisma.coreUserExternalIdentity.findUnique({
+      where: { provider_providerSubject: { provider, providerSubject } },
+    });
+    return record === null ? null : this.mapExternalIdentity(record);
+  }
+
+  async upsertExternalIdentity(input: CreateExternalIdentityInput): Promise<ExternalIdentityRecord> {
+    const record = await this.prisma.coreUserExternalIdentity.upsert({
+      where: {
+        provider_providerSubject: {
+          provider: input.provider,
+          providerSubject: input.providerSubject,
+        },
+      },
+      create: {
+        userId: input.userId,
+        provider: input.provider,
+        providerSubject: input.providerSubject,
+        providerUsername: input.providerUsername,
+        createdAt: input.occurredAt,
+        updatedAt: input.occurredAt,
+      },
+      update: {
+        providerUsername: input.providerUsername,
+        updatedAt: input.occurredAt,
+      },
+    });
+    return this.mapExternalIdentity(record);
+  }
+
   private async acquireLock(transaction: Prisma.TransactionClient, lockKey: string): Promise<void> {
     await transaction.$queryRaw`
       SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
@@ -339,6 +385,18 @@ export class PrismaAuthenticationRepository implements AuthenticationRepository 
       lastSeenAt: record.lastSeenAt,
       revokedAt: record.revokedAt,
       createdAt: record.createdAt,
+    };
+  }
+
+  private mapExternalIdentity(record: ExternalIdentityDatabaseRecord): ExternalIdentityRecord {
+    return {
+      id: record.id,
+      userId: record.userId,
+      provider: record.provider,
+      providerSubject: record.providerSubject,
+      providerUsername: record.providerUsername,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     };
   }
 

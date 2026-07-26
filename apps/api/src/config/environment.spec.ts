@@ -4,6 +4,9 @@ import { validateEnvironment } from './environment';
 
 const productionPepper = 'production-authentication-pepper-with-more-than-thirty-two-characters';
 const productionCsrfSecret = 'production-http-csrf-secret-with-more-than-thirty-two-characters';
+const productionOauthClientId = 'github-client-id';
+const productionOauthClientSecret = 'github-client-secret';
+const productionOauthRedirectUri = 'https://api.example.test/api/auth/oauth/github/callback';
 
 describe('validateEnvironment', () => {
   it('applies safe defaults and preserves unrelated values', () => {
@@ -21,6 +24,9 @@ describe('validateEnvironment', () => {
       AUTH_SESSION_TOUCH_INTERVAL_MINUTES: 5,
       HTTP_REQUIRE_HTTPS: false,
       HTTP_TRUSTED_PROXY_CIDRS: [],
+      OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.com/login/oauth/authorize',
+      OAUTH_GITHUB_TOKEN_URL: 'https://github.com/login/oauth/access_token',
+      OAUTH_GITHUB_USERINFO_URL: 'https://api.github.com/user',
     });
   });
 
@@ -34,6 +40,9 @@ describe('validateEnvironment', () => {
         HTTP_ALLOWED_ORIGINS: ' https://app.newax.test ',
         HTTP_CSRF_SECRET: productionCsrfSecret,
         HTTP_TRUSTED_PROXY_CIDRS: ' 10.0.0.0/8 ',
+        OAUTH_GITHUB_CLIENT_ID: ` ${productionOauthClientId} `,
+        OAUTH_GITHUB_CLIENT_SECRET: ` ${productionOauthClientSecret} `,
+        OAUTH_GITHUB_REDIRECT_URI: ` ${productionOauthRedirectUri} `,
       }),
     ).toMatchObject({
       NODE_ENV: 'production',
@@ -44,13 +53,74 @@ describe('validateEnvironment', () => {
       HTTP_CSRF_SECRET: productionCsrfSecret,
       HTTP_REQUIRE_HTTPS: true,
       HTTP_TRUSTED_PROXY_CIDRS: ['10.0.0.0/8'],
+      OAUTH_GITHUB_CLIENT_ID: productionOauthClientId,
+      OAUTH_GITHUB_CLIENT_SECRET: productionOauthClientSecret,
+      OAUTH_GITHUB_REDIRECT_URI: productionOauthRedirectUri,
     });
   });
 
   it('requires an explicit authentication token pepper in production', () => {
-    expect(() => validateEnvironment({ NODE_ENV: 'production' })).toThrow(
-      'AUTH_TOKEN_PEPPER is required in production.',
-    );
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        OAUTH_GITHUB_CLIENT_ID: productionOauthClientId,
+        OAUTH_GITHUB_CLIENT_SECRET: productionOauthClientSecret,
+        OAUTH_GITHUB_REDIRECT_URI: productionOauthRedirectUri,
+      }),
+    ).toThrow('AUTH_TOKEN_PEPPER is required in production.');
+  });
+
+  it('requires OAuth GitHub client ID in production', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        AUTH_TOKEN_PEPPER: productionPepper,
+        OAUTH_GITHUB_CLIENT_SECRET: productionOauthClientSecret,
+        OAUTH_GITHUB_REDIRECT_URI: productionOauthRedirectUri,
+      }),
+    ).toThrow('OAUTH_GITHUB_CLIENT_ID is required in production.');
+  });
+
+  it('requires OAuth GitHub client secret in production', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        AUTH_TOKEN_PEPPER: productionPepper,
+        OAUTH_GITHUB_CLIENT_ID: productionOauthClientId,
+        OAUTH_GITHUB_REDIRECT_URI: productionOauthRedirectUri,
+      }),
+    ).toThrow('OAUTH_GITHUB_CLIENT_SECRET is required in production.');
+  });
+
+  it('requires OAuth GitHub redirect URI in production', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        AUTH_TOKEN_PEPPER: productionPepper,
+        OAUTH_GITHUB_CLIENT_ID: productionOauthClientId,
+        OAUTH_GITHUB_CLIENT_SECRET: productionOauthClientSecret,
+      }),
+    ).toThrow('OAUTH_GITHUB_REDIRECT_URI is required in production.');
+  });
+
+  it('accepts OAuth GitHub URL overrides in development', () => {
+    expect(
+      validateEnvironment({
+        OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.example.test/login/oauth/authorize',
+        OAUTH_GITHUB_TOKEN_URL: 'https://github.example.test/login/oauth/access_token',
+        OAUTH_GITHUB_USERINFO_URL: 'https://api.github.example.test/user',
+      }),
+    ).toMatchObject({
+      OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.example.test/login/oauth/authorize',
+      OAUTH_GITHUB_TOKEN_URL: 'https://github.example.test/login/oauth/access_token',
+      OAUTH_GITHUB_USERINFO_URL: 'https://api.github.example.test/user',
+    });
+  });
+
+  it('rejects an invalid OAUTH_GITHUB_AUTHORIZE_URL', () => {
+    expect(() =>
+      validateEnvironment({ OAUTH_GITHUB_AUTHORIZE_URL: 'not-a-url' }),
+    ).toThrow('OAUTH_GITHUB_AUTHORIZE_URL must be a valid URL.');
   });
 
   it('rejects a short authentication token pepper', () => {
@@ -99,12 +169,12 @@ describe('validateEnvironment', () => {
 
   it.each([
     [
-      ' postgresql://newax:secret@localhost:5432/newax ',
-      'postgresql://newax:secret@localhost:5432/newax',
+      ' postgresql://localhost:5432/newax ',
+      'postgresql://localhost:5432/newax',
     ],
     [
-      ' postgres://newax:secret@localhost:5432/newax ',
-      'postgres://newax:secret@localhost:5432/newax',
+      ' postgres://localhost:5432/newax ',
+      'postgres://localhost:5432/newax',
     ],
   ])('normalizes a valid PostgreSQL database URL', (DATABASE_URL, expectedDatabaseUrl) => {
     expect(validateEnvironment({ DATABASE_URL })).toMatchObject({

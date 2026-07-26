@@ -20,6 +20,7 @@ import type {
   AuthenticationSessionListQuery,
   AuthenticationSessionPage,
   AuthenticationSessionRecord,
+  OAuthLoginInput,
   PasswordChangeInput,
   PasswordCredentialRecord,
   PasswordEnrollmentInput,
@@ -230,6 +231,83 @@ export class AuthenticationService {
       userAgent: metadata.userAgent,
       occurredAt,
     });
+    await this.eventPublisher.publish({
+      name: 'authentication.session_created',
+      occurredAt,
+      session,
+    });
+    await this.eventPublisher.publish({
+      name: 'authentication.login_succeeded',
+      occurredAt,
+      userId: account.userId,
+      sessionId: session.id,
+      ipAddress: metadata.ipAddress,
+    });
+
+    return {
+      userId: updatedAccount.userId,
+      personId: updatedAccount.personId,
+      sessionToken: issuedToken.token,
+      session,
+    };
+  }
+
+  async loginWithExternalIdentity(input: OAuthLoginInput): Promise<PasswordLoginResult> {
+    const provider = this.requireText(input.provider, 'provider', 64);
+    const subject = this.requireText(input.profile.subject, 'profile.subject', 256);
+    const metadata = this.normalizeMetadata(input);
+    const occurredAt = this.clock.now();
+
+    let userId: string | null = null;
+
+    const existingIdentity = await this.repository.findExternalIdentity(provider, subject);
+    if (existingIdentity !== null) {
+      userId = existingIdentity.userId;
+    } else if (input.profile.email !== null && input.profile.email.trim().length > 0) {
+      const emailIdentity = await this.userDirectory.resolveIdentity(
+        'email',
+        input.profile.email.trim().toLowerCase(),
+      );
+      if (emailIdentity !== null && emailIdentity.isVerified) {
+        userId = emailIdentity.account.userId;
+        await this.repository.upsertExternalIdentity({
+          userId,
+          provider,
+          providerSubject: subject,
+          providerUsername:
+            input.profile.username !== null && input.profile.username.trim().length > 0
+              ? input.profile.username.trim().slice(0, 256)
+              : null,
+          occurredAt,
+        });
+      }
+    }
+
+    if (userId === null) {
+      throw this.authenticationFailed();
+    }
+
+    const account = await this.userDirectory.findAccountById(userId);
+    if (account === null || account.status !== 'active') {
+      throw this.authenticationFailed();
+    }
+    if (account.lockedUntil !== null && account.lockedUntil > occurredAt) {
+      throw this.authenticationFailed();
+    }
+
+    const issuedToken = this.sessionTokenService.issue();
+    const expiresAt = this.addMinutes(occurredAt, this.policy.sessionTtlMinutes);
+    const session = await this.repository.createSession({
+      userId: account.userId,
+      sessionTokenHash: issuedToken.tokenHash,
+      ipAddress: metadata.ipAddress,
+      userAgent: metadata.userAgent,
+      expiresAt,
+      occurredAt,
+    });
+
+    const updatedAccount = await this.userDirectory.recordSuccessfulLogin(account.userId, occurredAt);
+
     await this.eventPublisher.publish({
       name: 'authentication.session_created',
       occurredAt,

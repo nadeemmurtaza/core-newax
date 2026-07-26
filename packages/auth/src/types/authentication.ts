@@ -146,3 +146,33 @@ export interface IssuedSessionToken {
   readonly token: string;
   readonly tokenHash: string;
 }
+
+export interface ExternalIdentityProfile {
+  readonly subject: string;
+  readonly email: string | null;
+  readonly name: string | null;
+  readonly username: string | null;
+}
+
+export interface ExternalIdentityRecord {
+  readonly id: string;
+  readonly userId: string;
+  readonly provider: string;
+  readonly providerSubject: string;
+  readonly providerUsername: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface CreateExternalIdentityInput {
+  readonly userId: string;
+  readonly provider: string;
+  readonly providerSubject: string;
+  readonly providerUsername: string | null;
+  readonly occurredAt: Date;
+}
+
+export interface OAuthLoginInput extends AuthenticationRequestMetadata {
+  readonly provider: string;
+  readonly profile: ExternalIdentityProfile;
+}

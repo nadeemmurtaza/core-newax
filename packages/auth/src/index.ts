@@ -15,6 +15,7 @@ export {
 export type {
   AuthenticationClock,
   LoginFingerprintService,
+  OAuthProvider,
   PasswordHasher,
   SessionTokenService,
 } from './security/authentication-security';
@@ -35,9 +36,13 @@ export type {
   AuthenticationSessionPage,
   AuthenticationSessionRecord,
   CreateAuthenticationSessionInput,
+  CreateExternalIdentityInput,
   CreatePasswordCredentialInput,
   CredentialStatus,
+  ExternalIdentityProfile,
+  ExternalIdentityRecord,
   IssuedSessionToken,
+  OAuthLoginInput,
   PasswordChangeInput,
   PasswordCredentialRecord,
   PasswordEnrollmentInput,
