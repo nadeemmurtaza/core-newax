@@ -29,6 +29,7 @@
     "operation:validate": "node tooling/validate-operation-intent.mjs",
     "prepare": "husky",
     "test": "pnpm test:learning && turbo run test",
+    "test:coverage": "turbo run test:coverage",
     "test:learning": "node --test tooling/engineering-event-upgrade.test.mjs tooling/engineering-explanation-integration.test.mjs tooling/engineering-issue-error-graph.test.mjs tooling/engineering-learning-core.test.mjs tooling/error-relationship-graph.test.mjs tooling/explanation-evidence-github.test.mjs tooling/explanation-verification.test.mjs tooling/external-failure-intake.test.mjs tooling/root-cause-engine.test.mjs tooling/workflow-failure-intake-controls.test.mjs",
     "typecheck": "turbo run typecheck",
     "verify": "node tooling/run-engineering-command.mjs -- pnpm verify:raw",
@@ -36,6 +37,8 @@
     "verify:workflow-intake": "node tooling/workflow-failure-intake-controls.mjs"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.1",
+    "@commitlint/config-conventional": "21.2.0",
     "@eslint/js": "9.39.4",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.10",
