@@ -23,7 +23,10 @@ import {
   scopesForTopic,
 } from './communication-mistake-evidence.mjs';
 
-export { COMMUNICATION_MISTAKE_TYPES, pathMatchesCommunicationScope } from './communication-mistake-support.mjs';
+export {
+  COMMUNICATION_MISTAKE_TYPES,
+  pathMatchesCommunicationScope,
+} from './communication-mistake-support.mjs';
 
 export function detectCommunicationMistakes(input = {}) {
   const phase = normalizeString(input.phase).toLowerCase() || 'draft';
@@ -83,7 +86,8 @@ export function detectCommunicationMistakes(input = {}) {
           !event.supersedes.includes(interpretation.id),
       );
       for (const source of contradictions) {
-        const type = source.type === 'requirement' ? 'requirement-misunderstood' : 'wrong-interpretation';
+        const type =
+          source.type === 'requirement' ? 'requirement-misunderstood' : 'wrong-interpretation';
         const canProveOrder = work !== null && workAt !== null && source.at !== null;
         const noWork = work === null;
         findings.push(
@@ -115,7 +119,8 @@ export function detectCommunicationMistakes(input = {}) {
               : work === null
                 ? ['dependent-work']
                 : ['comparable-authoritative-and-work-timestamps'],
-            recommendation: 'Confirm the interpretation against the authoritative requirement before implementation.',
+            recommendation:
+              'Confirm the interpretation against the authoritative requirement before implementation.',
           }),
         );
       }
@@ -155,7 +160,8 @@ export function detectCommunicationMistakes(input = {}) {
               { kind: 'confirmed-correction', eventId: correction.id, at: correction.at },
               { kind: 'dependent-work', ...work },
             ],
-            recommendation: 'Capture and confirm the requirement interpretation before dependent work starts.',
+            recommendation:
+              'Capture and confirm the requirement interpretation before dependent work starts.',
           }),
         );
       }
@@ -194,8 +200,11 @@ export function detectCommunicationMistakes(input = {}) {
               { kind: 'assumption', eventId: assumption.id, at: assumption.at },
               { kind: 'dependent-work', ...work },
             ],
-            missingEvidence: canProveOrder ? ['confirmation'] : ['confirmation', 'comparable-timestamps'],
-            recommendation: 'Record confirmation from an authorized person before dependent work starts.',
+            missingEvidence: canProveOrder
+              ? ['confirmation']
+              : ['confirmation', 'comparable-timestamps'],
+            recommendation:
+              'Record confirmation from an authorized person before dependent work starts.',
           }),
         );
       }
@@ -204,7 +213,9 @@ export function detectCommunicationMistakes(input = {}) {
     const openQuestions = active.filter(
       (event) => event.type === 'question' && !CLOSED_STATUSES.has(event.status),
     );
-    const distinctInterpretations = [...new Set(interpretations.map((event) => event.value).filter(Boolean))];
+    const distinctInterpretations = [
+      ...new Set(interpretations.map((event) => event.value).filter(Boolean)),
+    ];
     if (openQuestions.length > 0 || distinctInterpretations.length > 1) {
       findings.push(
         createFinding({
@@ -214,7 +225,10 @@ export function detectCommunicationMistakes(input = {}) {
           confidence: work !== null && workAt !== null ? 'high' : 'medium',
           severity: 'high',
           title: `${topic} remained ambiguous when dependent work ${work === null ? 'had not yet started' : 'began'}.`,
-          eventIds: [...openQuestions.map((event) => event.id), ...interpretations.map((event) => event.id)],
+          eventIds: [
+            ...openQuestions.map((event) => event.id),
+            ...interpretations.map((event) => event.id),
+          ],
           evidence: [
             ...openQuestions.map((event) => ({ kind: 'open-question', eventId: event.id })),
             ...interpretations.map((event) => ({
@@ -224,8 +238,10 @@ export function detectCommunicationMistakes(input = {}) {
             })),
             ...(work === null ? [] : [{ kind: 'dependent-work', ...work }]),
           ],
-          missingEvidence: work === null ? ['dependent-work-or-resolution'] : ['specification-resolution'],
-          recommendation: 'Resolve the open question or select one documented interpretation before implementation.',
+          missingEvidence:
+            work === null ? ['dependent-work-or-resolution'] : ['specification-resolution'],
+          recommendation:
+            'Resolve the open question or select one documented interpretation before implementation.',
         }),
       );
     }
@@ -249,8 +265,11 @@ export function detectCommunicationMistakes(input = {}) {
               { kind: 'decision-required', eventId: trigger.id, at: trigger.at },
               { kind: 'dependent-work', ...work },
             ],
-            missingEvidence: canProveOrder ? ['decision-record'] : ['decision-record', 'comparable-timestamps'],
-            recommendation: 'Record the decision, owner, selected value, and effective time before implementation.',
+            missingEvidence: canProveOrder
+              ? ['decision-record']
+              : ['decision-record', 'comparable-timestamps'],
+            recommendation:
+              'Record the decision, owner, selected value, and effective time before implementation.',
           }),
         );
       }
@@ -280,11 +299,22 @@ export function detectCommunicationMistakes(input = {}) {
           eventIds: [left.id, right.id],
           evidence: [
             { kind: 'directive', eventId: left.id, value: left.value, authority: left.authority },
-            { kind: 'directive', eventId: right.id, value: right.value, authority: right.authority },
+            {
+              kind: 'directive',
+              eventId: right.id,
+              value: right.value,
+              authority: right.authority,
+            },
             ...(work === null ? [] : [{ kind: 'dependent-work', ...work }]),
           ],
-          missingEvidence: work === null ? ['dependent-work-or-resolution'] : canProve ? ['conflict-resolution'] : ['comparable-timestamps'],
-          recommendation: 'Obtain one authoritative resolution that supersedes the conflicting instructions.',
+          missingEvidence:
+            work === null
+              ? ['dependent-work-or-resolution']
+              : canProve
+                ? ['conflict-resolution']
+                : ['comparable-timestamps'],
+          recommendation:
+            'Obtain one authoritative resolution that supersedes the conflicting instructions.',
         }),
       );
     }
@@ -309,7 +339,8 @@ export function detectCommunicationMistakes(input = {}) {
               { kind: 'dependent-work', ...work },
             ],
             missingEvidence: canProveOrder ? ['approval'] : ['approval', 'comparable-timestamps'],
-            recommendation: 'Record explicit approval from the required authority before dependent work begins.',
+            recommendation:
+              'Record explicit approval from the required authority before dependent work begins.',
           }),
         );
       }
@@ -320,12 +351,9 @@ export function detectCommunicationMistakes(input = {}) {
   applyWaivers(findings, events);
 
   const blockers = findings.filter(
-    (finding) =>
-      finding.state === 'detected' && finding.confidence === 'high' && !finding.waived,
+    (finding) => finding.state === 'detected' && finding.confidence === 'high' && !finding.waived,
   );
-  const suspected = findings.filter(
-    (finding) => finding.state === 'suspected' && !finding.waived,
-  );
+  const suspected = findings.filter((finding) => finding.state === 'suspected' && !finding.waived);
   const unresolvedDetected = findings.filter(
     (finding) => finding.state === 'detected' && !finding.waived,
   );

@@ -1,7 +1,4 @@
-import {
-  parseIssueNumbers,
-  parsePullRequestField,
-} from './engineering-learning-core.mjs';
+import { parseIssueNumbers, parsePullRequestField } from './engineering-learning-core.mjs';
 
 function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -45,7 +42,10 @@ function extractHeadingValue(body, heading) {
     if (/^#{2,4}\s+/.test(lines[index])) break;
     if (lines[index].trim().length > 0) values.push(lines[index].trim());
   }
-  return values.join('\n').replace(/^```[^\n]*\n?|```$/g, '').trim();
+  return values
+    .join('\n')
+    .replace(/^```[^\n]*\n?|```$/g, '')
+    .trim();
 }
 
 function eventFromMetadata(metadata, source, createdAt) {

@@ -69,11 +69,9 @@ test('communication CLI exits non-zero for a blocker and zero in report-only mod
   );
   const script = fileURLToPath(new URL('./analyze-communication.mjs', import.meta.url));
   const blocked = spawnSync(process.execPath, [script, '--file', path], { encoding: 'utf8' });
-  const reportOnly = spawnSync(
-    process.execPath,
-    [script, '--file', path, '--report-only'],
-    { encoding: 'utf8' },
-  );
+  const reportOnly = spawnSync(process.execPath, [script, '--file', path, '--report-only'], {
+    encoding: 'utf8',
+  });
   assert.equal(blocked.status, 1, blocked.stderr);
   assert.equal(reportOnly.status, 0, reportOnly.stderr);
   assert.match(reportOnly.stdout, /missing-approval/);

@@ -11,16 +11,19 @@ function marker(lines) {
 }
 
 test('parses structured communication marker fields', () => {
-  const events = parseCommunicationEvents(marker([
-    'communication-id: COM-1',
-    'event: assumption',
-    'topic: retention',
-    'authority: implementer',
-    'status: active',
-    'value: 30-days',
-    'requires-confirmation: yes',
-    'applies-to: src,docs',
-  ]), { source: 'issue:1', createdAt: '2026-01-01T09:00:00Z' });
+  const events = parseCommunicationEvents(
+    marker([
+      'communication-id: COM-1',
+      'event: assumption',
+      'topic: retention',
+      'authority: implementer',
+      'status: active',
+      'value: 30-days',
+      'requires-confirmation: yes',
+      'applies-to: src,docs',
+    ]),
+    { source: 'issue:1', createdAt: '2026-01-01T09:00:00Z' },
+  );
   assert.equal(events.length, 1);
   assert.equal(events[0].id, 'COM-1');
   assert.deepEqual(events[0].appliesTo, ['src', 'docs']);
@@ -28,7 +31,8 @@ test('parses structured communication marker fields', () => {
 });
 
 test('parses issue-form heading output', () => {
-  const events = parseCommunicationEvents(`### Communication ID
+  const events = parseCommunicationEvents(
+    `### Communication ID
 COM-2
 
 ### Event type
@@ -47,16 +51,15 @@ Confirmed
 postgres
 
 ### Applies to
-src/storage`, { source: 'issue:2' });
+src/storage`,
+    { source: 'issue:2' },
+  );
   assert.equal(events[0].id, 'COM-2');
   assert.equal(events[0].value, 'postgres');
 });
 
 test('parses communication issue references from pull request metadata', () => {
-  assert.deepEqual(
-    parseCommunicationIssueNumbers('- Communication issues: `#12, #14`'),
-    [12, 14],
-  );
+  assert.deepEqual(parseCommunicationIssueNumbers('- Communication issues: `#12, #14`'), [12, 14]);
 });
 
 test('ignores unstructured prose', () => {

@@ -27,20 +27,26 @@ export function firstWorkForTopic(topicEvents, commits, allEvents) {
     .filter((event) => event.type === 'implementation' && event.topic === topic)
     .sort(compareEvents)[0];
   const commit = commits.find((candidate) =>
-    topicEvents.some((event) =>
-      event.appliesTo.length > 0 &&
-      candidate.files.some((file) =>
-        pathMatchesCommunicationScope(file.filename, event.appliesTo),
-      ) &&
-      (event.at === null ||
-        candidate.timestamp === null ||
-        Date.parse(candidate.timestamp) >= Date.parse(event.at)),
+    topicEvents.some(
+      (event) =>
+        event.appliesTo.length > 0 &&
+        candidate.files.some((file) =>
+          pathMatchesCommunicationScope(file.filename, event.appliesTo),
+        ) &&
+        (event.at === null ||
+          candidate.timestamp === null ||
+          Date.parse(candidate.timestamp) >= Date.parse(event.at)),
     ),
   );
   const options = [
     explicit === undefined
       ? null
-      : { kind: 'implementation-event', id: explicit.id, at: explicit.at, files: explicit.appliesTo },
+      : {
+          kind: 'implementation-event',
+          id: explicit.id,
+          at: explicit.at,
+          files: explicit.appliesTo,
+        },
     commit === undefined
       ? null
       : {
@@ -50,12 +56,14 @@ export function firstWorkForTopic(topicEvents, commits, allEvents) {
           files: commit.files.map((file) => file.filename),
         },
   ].filter(Boolean);
-  return options.sort((left, right) => {
-    if (left.at === null && right.at === null) return 0;
-    if (left.at === null) return 1;
-    if (right.at === null) return -1;
-    return Date.parse(left.at) - Date.parse(right.at);
-  })[0] ?? null;
+  return (
+    options.sort((left, right) => {
+      if (left.at === null && right.at === null) return 0;
+      if (left.at === null) return 1;
+      if (right.at === null) return -1;
+      return Date.parse(left.at) - Date.parse(right.at);
+    })[0] ?? null
+  );
 }
 
 function beforeWork(event, workAt) {
@@ -64,42 +72,48 @@ function beforeWork(event, workAt) {
 }
 
 export function findConfirmation(assumption, topicEvents, workAt) {
-  return topicEvents
-    .filter(
-      (event) =>
-        ['confirmation', 'clarification', 'approval'].includes(event.type) &&
-        APPROVED_STATUSES.has(event.status) &&
-        (event.references.includes(assumption.id) || event.topic === assumption.topic),
-    )
-    .filter((event) => beforeWork(event, workAt))
-    .sort(compareEvents)
-    .at(-1) ?? null;
+  return (
+    topicEvents
+      .filter(
+        (event) =>
+          ['confirmation', 'clarification', 'approval'].includes(event.type) &&
+          APPROVED_STATUSES.has(event.status) &&
+          (event.references.includes(assumption.id) || event.topic === assumption.topic),
+      )
+      .filter((event) => beforeWork(event, workAt))
+      .sort(compareEvents)
+      .at(-1) ?? null
+  );
 }
 
 export function findApproval(trigger, topicEvents, workAt) {
-  return topicEvents
-    .filter(
-      (event) =>
-        event.type === 'approval' &&
-        APPROVED_STATUSES.has(event.status) &&
-        (event.references.includes(trigger.id) || event.topic === trigger.topic),
-    )
-    .filter((event) => beforeWork(event, workAt))
-    .sort(compareEvents)
-    .at(-1) ?? null;
+  return (
+    topicEvents
+      .filter(
+        (event) =>
+          event.type === 'approval' &&
+          APPROVED_STATUSES.has(event.status) &&
+          (event.references.includes(trigger.id) || event.topic === trigger.topic),
+      )
+      .filter((event) => beforeWork(event, workAt))
+      .sort(compareEvents)
+      .at(-1) ?? null
+  );
 }
 
 export function findDecision(trigger, topicEvents, workAt) {
-  return topicEvents
-    .filter(
-      (event) =>
-        event.type === 'decision' &&
-        APPROVED_STATUSES.has(event.status) &&
-        (event.references.includes(trigger.id) || event.topic === trigger.topic),
-    )
-    .filter((event) => beforeWork(event, workAt))
-    .sort(compareEvents)
-    .at(-1) ?? null;
+  return (
+    topicEvents
+      .filter(
+        (event) =>
+          event.type === 'decision' &&
+          APPROVED_STATUSES.has(event.status) &&
+          (event.references.includes(trigger.id) || event.topic === trigger.topic),
+      )
+      .filter((event) => beforeWork(event, workAt))
+      .sort(compareEvents)
+      .at(-1) ?? null
+  );
 }
 
 export function markResolutions(findings, events) {

@@ -1,7 +1,4 @@
-import {
-  detectPlanningMistakes,
-  pathMatchesScope,
-} from './planning-mistake-detector.mjs';
+import { detectPlanningMistakes, pathMatchesScope } from './planning-mistake-detector.mjs';
 
 const ARCHITECTURE_PATH_PATTERN =
   /(?:^|\/)(?:adr|adrs|architecture|decisions?)(?:\/|$)|(?:^|\/)ADR[-_ ]?\d+/i;
@@ -16,7 +13,9 @@ function validTimestamp(value) {
 }
 
 function eventType(event) {
-  return String(event?.type ?? event?.event ?? '').trim().toLowerCase();
+  return String(event?.type ?? event?.event ?? '')
+    .trim()
+    .toLowerCase();
 }
 
 function eventTaskId(event) {
@@ -32,7 +31,9 @@ function eventTimestamp(event) {
 }
 
 function eventStatus(event) {
-  return String(event?.status ?? '').trim().toLowerCase();
+  return String(event?.status ?? '')
+    .trim()
+    .toLowerCase();
 }
 
 function commitTimestamp(commit) {
@@ -41,7 +42,7 @@ function commitTimestamp(commit) {
 
 function commitFiles(commit) {
   return asArray(commit?.files)
-    .map((file) => (typeof file === 'string' ? file : file?.filename ?? file?.path))
+    .map((file) => (typeof file === 'string' ? file : (file?.filename ?? file?.path)))
     .filter((filename) => typeof filename === 'string' && filename.length > 0);
 }
 
@@ -61,9 +62,7 @@ function addNotice(notices, notice) {
 function recompute(result) {
   const blockers = result.findings.filter(
     (finding) =>
-      finding.state === 'detected' &&
-      finding.confidence === 'high' &&
-      finding.waived !== true,
+      finding.state === 'detected' && finding.confidence === 'high' && finding.waived !== true,
   );
   const suspected = result.findings.filter(
     (finding) => finding.state === 'suspected' && finding.waived !== true,
@@ -103,9 +102,7 @@ export function analyzePlanningMistakes(input = {}) {
   for (const finding of result.findings) {
     if (finding.type === 'wrong-implementation-order') {
       const dependent = finding.evidence.find((item) => item.kind === 'dependent-start');
-      const prerequisite = finding.evidence.find(
-        (item) => item.kind === 'prerequisite-completion',
-      );
+      const prerequisite = finding.evidence.find((item) => item.kind === 'prerequisite-completion');
       if (!validTimestamp(dependent?.at) || !validTimestamp(prerequisite?.at)) {
         removedFindingIds.add(finding.id);
         addNotice(result.notices, {
@@ -161,8 +158,7 @@ export function analyzePlanningMistakes(input = {}) {
       );
       if (
         approval !== undefined &&
-        (!validTimestamp(eventTimestamp(approval)) ||
-          !validTimestamp(commitTimestamp(firstCommit)))
+        (!validTimestamp(eventTimestamp(approval)) || !validTimestamp(commitTimestamp(firstCommit)))
       ) {
         for (const finding of result.findings) {
           if (
@@ -184,8 +180,6 @@ export function analyzePlanningMistakes(input = {}) {
     }
   }
 
-  result.findings = result.findings.filter(
-    (finding) => !removedFindingIds.has(finding.id),
-  );
+  result.findings = result.findings.filter((finding) => !removedFindingIds.has(finding.id));
   return recompute(result);
 }

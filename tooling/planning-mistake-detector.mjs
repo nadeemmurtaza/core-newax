@@ -10,14 +10,21 @@ export const PLANNING_MISTAKE_TYPES = Object.freeze([
   'scope-creep',
 ]);
 
-const MIGRATION_PATH_PATTERN = /(?:^|\/)(?:migrations?|database\/migrations?)(?:\/|$)|migration\.sql$/i;
-const SCHEMA_PATH_PATTERN = /(?:^|\/)(?:schema\.prisma|schema\.(?:sql|ts|json)|models?\.(?:ts|js))$/i;
-const MANIFEST_PATH_PATTERN = /(?:^|\/)(?:package\.json|pyproject\.toml|requirements(?:-[^/]*)?\.txt|go\.mod|Cargo\.toml|Gemfile|composer\.json)$/i;
-const LOCKFILE_PATH_PATTERN = /(?:^|\/)(?:pnpm-lock\.yaml|package-lock\.json|yarn\.lock|uv\.lock|poetry\.lock|go\.sum|Cargo\.lock|Gemfile\.lock|composer\.lock)$/i;
-const ARCHITECTURE_PATH_PATTERN = /(?:^|\/)(?:adr|adrs|architecture|decisions?)(?:\/|$)|(?:^|\/)ADR[-_ ]?\d+/i;
+const MIGRATION_PATH_PATTERN =
+  /(?:^|\/)(?:migrations?|database\/migrations?)(?:\/|$)|migration\.sql$/i;
+const SCHEMA_PATH_PATTERN =
+  /(?:^|\/)(?:schema\.prisma|schema\.(?:sql|ts|json)|models?\.(?:ts|js))$/i;
+const MANIFEST_PATH_PATTERN =
+  /(?:^|\/)(?:package\.json|pyproject\.toml|requirements(?:-[^/]*)?\.txt|go\.mod|Cargo\.toml|Gemfile|composer\.json)$/i;
+const LOCKFILE_PATH_PATTERN =
+  /(?:^|\/)(?:pnpm-lock\.yaml|package-lock\.json|yarn\.lock|uv\.lock|poetry\.lock|go\.sum|Cargo\.lock|Gemfile\.lock|composer\.lock)$/i;
+const ARCHITECTURE_PATH_PATTERN =
+  /(?:^|\/)(?:adr|adrs|architecture|decisions?)(?:\/|$)|(?:^|\/)ADR[-_ ]?\d+/i;
 const SOURCE_PATH_PATTERN = /\.(?:[cm]?[jt]sx?|py|go|rs|java|kt|cs|php|rb|sql|prisma)$/i;
-const CORRECTIVE_MIGRATION_MESSAGE = /\b(?:forgot|missing|omitted|add(?:ed)?|fix(?:ed)?)\b.{0,40}\bmigration\b|\bmigration\b.{0,40}\b(?:forgot|missing|omitted|fix(?:ed)?)\b/i;
-const CORRECTIVE_DEPENDENCY_MESSAGE = /\b(?:forgot|missing|omitted|add(?:ed)?|fix(?:ed)?)\b.{0,40}\b(?:dependency|dependencies|lockfile|manifest)\b|\b(?:dependency|dependencies|lockfile|manifest)\b.{0,40}\b(?:forgot|missing|omitted|fix(?:ed)?)\b/i;
+const CORRECTIVE_MIGRATION_MESSAGE =
+  /\b(?:forgot|missing|omitted|add(?:ed)?|fix(?:ed)?)\b.{0,40}\bmigration\b|\bmigration\b.{0,40}\b(?:forgot|missing|omitted|fix(?:ed)?)\b/i;
+const CORRECTIVE_DEPENDENCY_MESSAGE =
+  /\b(?:forgot|missing|omitted|add(?:ed)?|fix(?:ed)?)\b.{0,40}\b(?:dependency|dependencies|lockfile|manifest)\b|\b(?:dependency|dependencies|lockfile|manifest)\b.{0,40}\b(?:forgot|missing|omitted|fix(?:ed)?)\b/i;
 
 function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -181,7 +188,8 @@ function latestEvent(events, predicate, before = null) {
     events
       .filter(predicate)
       .filter(
-        (event) => before === null || event.at === null || Date.parse(event.at) <= Date.parse(before),
+        (event) =>
+          before === null || event.at === null || Date.parse(event.at) <= Date.parse(before),
       )
       .sort((left, right) => Date.parse(left.at ?? 0) - Date.parse(right.at ?? 0))
       .at(-1) ?? null
@@ -211,7 +219,11 @@ function taskTiming(task, events, taskCommits) {
   return {
     firstCommitAt,
     lastCommitAt,
-    startedAt: earliestDate([task.startedAt, ...startedEvents.map((event) => event.at), firstCommitAt]),
+    startedAt: earliestDate([
+      task.startedAt,
+      ...startedEvents.map((event) => event.at),
+      firstCommitAt,
+    ]),
     completedAt: latestDate([task.completedAt, ...completedEvents.map((event) => event.at)]),
   };
 }
@@ -350,8 +362,7 @@ export function detectPlanningMistakes(input = {}) {
           createFinding({
             type: 'forgot-migration',
             state: timing.completedAt !== null || phase === 'review' ? 'detected' : 'suspected',
-            confidence:
-              timing.completedAt !== null || phase === 'review' ? 'high' : 'medium',
+            confidence: timing.completedAt !== null || phase === 'review' ? 'high' : 'medium',
             severity: 'high',
             title: `${task.id} required a migration but no migration file exists in the change history.`,
             taskIds: [task.id],
@@ -360,7 +371,8 @@ export function detectPlanningMistakes(input = {}) {
               { kind: 'implementation-commit', sha: implementation?.sha ?? null },
             ],
             missingEvidence: ['migration-file'],
-            recommendation: 'Add and verify the required migration before the task is considered complete.',
+            recommendation:
+              'Add and verify the required migration before the task is considered complete.',
           }),
         );
       } else if (
@@ -378,7 +390,8 @@ export function detectPlanningMistakes(input = {}) {
               { kind: 'task-completed', at: timing.completedAt },
               { kind: 'migration-commit', sha: migration.sha, at: migration.timestamp },
             ],
-            recommendation: 'Treat schema and migration work as one atomic task and complete them together.',
+            recommendation:
+              'Treat schema and migration work as one atomic task and complete them together.',
           }),
         );
       } else if (corrective !== undefined) {
@@ -388,7 +401,9 @@ export function detectPlanningMistakes(input = {}) {
             severity: 'high',
             title: `${task.id} contains an explicit corrective commit for a missing migration.`,
             taskIds: [task.id],
-            evidence: [{ kind: 'corrective-commit', sha: corrective.sha, message: corrective.message }],
+            evidence: [
+              { kind: 'corrective-commit', sha: corrective.sha, message: corrective.message },
+            ],
             recommendation: 'Require migration planning before schema implementation starts.',
           }),
         );
@@ -420,8 +435,7 @@ export function detectPlanningMistakes(input = {}) {
           createFinding({
             type: 'forgot-dependency',
             state: timing.completedAt !== null || phase === 'review' ? 'detected' : 'suspected',
-            confidence:
-              timing.completedAt !== null || phase === 'review' ? 'high' : 'medium',
+            confidence: timing.completedAt !== null || phase === 'review' ? 'high' : 'medium',
             severity: 'high',
             title: `${task.id} required a dependency change but its manifest and lockfile evidence are incomplete.`,
             taskIds: [task.id],
@@ -430,7 +444,8 @@ export function detectPlanningMistakes(input = {}) {
               { kind: 'implementation-commit', sha: implementation?.sha ?? null },
             ],
             missingEvidence: missing,
-            recommendation: 'Update the dependency manifest and generated lockfile in the same planned change.',
+            recommendation:
+              'Update the dependency manifest and generated lockfile in the same planned change.',
           }),
         );
       } else if (
@@ -452,7 +467,8 @@ export function detectPlanningMistakes(input = {}) {
               { kind: 'manifest-commit', sha: manifest.sha, at: manifest.timestamp },
               { kind: 'lockfile-commit', sha: lockfile.sha, at: lockfile.timestamp },
             ],
-            recommendation: 'Make dependency declaration and lockfile generation part of the implementation task.',
+            recommendation:
+              'Make dependency declaration and lockfile generation part of the implementation task.',
           }),
         );
       } else if (corrective !== undefined) {
@@ -462,8 +478,11 @@ export function detectPlanningMistakes(input = {}) {
             severity: 'high',
             title: `${task.id} contains an explicit corrective commit for missing dependency metadata.`,
             taskIds: [task.id],
-            evidence: [{ kind: 'corrective-commit', sha: corrective.sha, message: corrective.message }],
-            recommendation: 'Inspect dependencies and lockfile effects before implementation is marked complete.',
+            evidence: [
+              { kind: 'corrective-commit', sha: corrective.sha, message: corrective.message },
+            ],
+            recommendation:
+              'Inspect dependencies and lockfile effects before implementation is marked complete.',
           }),
         );
       }
@@ -496,10 +515,15 @@ export function detectPlanningMistakes(input = {}) {
               taskIds: [task.id, dependencyId],
               evidence: [
                 { kind: 'dependent-start', sha: implementation.sha, at: implementation.timestamp },
-                { kind: 'prerequisite-completion', taskId: dependencyId, at: dependencyCompletedAt },
+                {
+                  kind: 'prerequisite-completion',
+                  taskId: dependencyId,
+                  at: dependencyCompletedAt,
+                },
               ],
               missingEvidence: dependencyCompletedAt === null ? ['prerequisite-completion'] : [],
-              recommendation: 'Complete and record prerequisite tasks before dependent implementation starts.',
+              recommendation:
+                'Complete and record prerequisite tasks before dependent implementation starts.',
             }),
           );
         }
@@ -515,7 +539,13 @@ export function detectPlanningMistakes(input = {}) {
             severity: 'high',
             title: `${task.id} required architecture review but implementation began without approval evidence.`,
             taskIds: [task.id],
-            evidence: [{ kind: 'implementation-start', sha: implementation.sha, at: implementation.timestamp }],
+            evidence: [
+              {
+                kind: 'implementation-start',
+                sha: implementation.sha,
+                at: implementation.timestamp,
+              },
+            ],
             missingEvidence: ['approved-architecture-review'],
             recommendation: 'Record architecture approval before the first implementation commit.',
           }),
@@ -531,10 +561,15 @@ export function detectPlanningMistakes(input = {}) {
             title: `${task.id} architecture approval occurred after implementation had already begun.`,
             taskIds: [task.id],
             evidence: [
-              { kind: 'implementation-start', sha: implementation.sha, at: implementation.timestamp },
+              {
+                kind: 'implementation-start',
+                sha: implementation.sha,
+                at: implementation.timestamp,
+              },
               { kind: 'architecture-review', at: review.at },
             ],
-            recommendation: 'Move architecture review ahead of implementation and preserve the approval event.',
+            recommendation:
+              'Move architecture review ahead of implementation and preserve the approval event.',
           }),
         );
       }
@@ -584,7 +619,8 @@ export function detectPlanningMistakes(input = {}) {
                   ratio: Number(ratio.toFixed(2)),
                 },
               ],
-              recommendation: 'Review estimation assumptions and record a justified estimate revision earlier.',
+              recommendation:
+                'Review estimation assumptions and record a justified estimate revision earlier.',
             }),
           );
         }
@@ -619,7 +655,11 @@ export function detectPlanningMistakes(input = {}) {
           title: `${requirement.id} has no satisfaction evidence in the completed plan.`,
           requirementIds: [requirement.id],
           evidence: [
-            { kind: 'requirement', text: requirement.text, requiredPaths: requirement.requiredPaths },
+            {
+              kind: 'requirement',
+              text: requirement.text,
+              requiredPaths: requirement.requiredPaths,
+            },
             { kind: 'final-files', count: finalFiles.length },
           ],
           missingEvidence: ['requirement-satisfaction'],
@@ -680,7 +720,8 @@ export function detectPlanningMistakes(input = {}) {
             },
             { kind: 'scope-approval', at: approval?.at ?? null, path: approval?.path ?? null },
           ],
-          recommendation: 'Approve the scope expansion before the first out-of-scope change or remove the change.',
+          recommendation:
+            'Approve the scope expansion before the first out-of-scope change or remove the change.',
         }),
       );
     }
@@ -690,9 +731,7 @@ export function detectPlanningMistakes(input = {}) {
   const blockers = findings.filter(
     (finding) => finding.state === 'detected' && finding.confidence === 'high' && !finding.waived,
   );
-  const suspected = findings.filter(
-    (finding) => finding.state === 'suspected' && !finding.waived,
-  );
+  const suspected = findings.filter((finding) => finding.state === 'suspected' && !finding.waived);
   const status =
     blockers.length > 0
       ? 'detected'

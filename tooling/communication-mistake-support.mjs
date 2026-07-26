@@ -109,7 +109,8 @@ export function normalizeEvent(event, index) {
     requiresApproval: normalizeBoolean(event.requiresApproval ?? event['requires-approval']),
     requiresDecision: normalizeBoolean(event.requiresDecision ?? event['requires-decision']),
     confirmsMisunderstanding:
-      normalizeBoolean(event.confirmsMisunderstanding ?? event['confirms-misunderstanding']) === true,
+      normalizeBoolean(event.confirmsMisunderstanding ?? event['confirms-misunderstanding']) ===
+      true,
     reviewer: normalizeString(event.reviewer ?? event.approvedBy ?? event['approved-by']),
     reason: normalizeString(event.reason),
     source: normalizeString(event.source),

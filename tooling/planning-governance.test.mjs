@@ -21,9 +21,7 @@ test('governance blocks high-confidence findings and missing review evidence', (
   const result = analyzePlanningMistakes({
     phase: 'review',
     declaredScopePaths: ['src'],
-    commits: [
-      commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/out.md']),
-    ],
+    commits: [commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/out.md'])],
   });
   const errors = planningGovernanceErrors(
     { phase: 'review', planningIssues: [], tasks: [], declaredScopePaths: [] },
@@ -57,20 +55,16 @@ test('planning CLI exits non-zero for a detected mistake and zero in report-only
     JSON.stringify({
       phase: 'review',
       declaredScopePaths: ['src'],
-      commits: [
-        commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/out.md']),
-      ],
+      commits: [commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/out.md'])],
     }),
   );
   const script = fileURLToPath(new URL('./analyze-planning.mjs', import.meta.url));
   const blocked = spawnSync(process.execPath, [script, '--file', path], {
     encoding: 'utf8',
   });
-  const reportOnly = spawnSync(
-    process.execPath,
-    [script, '--file', path, '--report-only'],
-    { encoding: 'utf8' },
-  );
+  const reportOnly = spawnSync(process.execPath, [script, '--file', path, '--report-only'], {
+    encoding: 'utf8',
+  });
   assert.equal(blocked.status, 1);
   assert.equal(reportOnly.status, 0, reportOnly.stderr);
   assert.match(reportOnly.stdout, /scope-creep/);

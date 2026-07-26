@@ -53,10 +53,10 @@ test('preserves failure and learning-issue requirements independently of the dif
     linkedLearningIssues: [{ number: 2 }],
   });
   assert.equal(result.learningOutcome, 'required');
-  assert.deepEqual(
-    result.reasons.map((reason) => reason.code).sort(),
-    ['failed-workflow-run', 'linked-learning-issue'],
-  );
+  assert.deepEqual(result.reasons.map((reason) => reason.code).sort(), [
+    'failed-workflow-run',
+    'linked-learning-issue',
+  ]);
 });
 
 test('allows not-required only when no rule or evidence trigger exists', () => {

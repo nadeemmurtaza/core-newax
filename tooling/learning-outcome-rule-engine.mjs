@@ -1,10 +1,13 @@
 const RULES_VERSION = 1;
 
-const GOVERNANCE_DOCUMENT_PATTERN = /^(?:docs\/(?:standards|policies|rules|decisions)\/|\.github\/rulesets\/)/i;
+const GOVERNANCE_DOCUMENT_PATTERN =
+  /^(?:docs\/(?:standards|policies|rules|decisions)\/|\.github\/rulesets\/)/i;
 const TEMPLATE_PATH_PATTERN = /(?:^|\/)[^/]*template[^/]*(?:\/|$)/i;
 const CHECKLIST_PATH_PATTERN = /(?:^|\/)[^/]*checklist[^/]*(?:\/|\.|$)/i;
-const PROCESS_PATH_PATTERN = /^(?:\.github\/workflows\/|tooling\/(?:.*(?:governance|reconcil|workflow|learning|operation|audit|capture|normalize|submit|verify|validate|automation).*)|docs\/(?:standards|processes|operations)\/)/i;
-const AUTOMATION_FILE_PATTERN = /^(?:\.github\/workflows\/|tooling\/.*(?:audit|capture|engine|flush|ingest|normalize|receive|reconcile|record|run|submit|validate|verify|automat).*)/i;
+const PROCESS_PATH_PATTERN =
+  /^(?:\.github\/workflows\/|tooling\/(?:.*(?:governance|reconcil|workflow|learning|operation|audit|capture|normalize|submit|verify|validate|automation).*)|docs\/(?:standards|processes|operations)\/)/i;
+const AUTOMATION_FILE_PATTERN =
+  /^(?:\.github\/workflows\/|tooling\/.*(?:audit|capture|engine|flush|ingest|normalize|receive|reconcile|record|run|submit|validate|verify|automat).*)/i;
 const MARKUP_PATH_PATTERN = /\.(?:md|mdx|ya?ml)$/i;
 
 function normalizeString(value) {
@@ -184,11 +187,7 @@ export function evaluateLearningRequirement({
     addReason(reasons, 'local-event-intake', 'A local engineering event was captured.');
   }
   if (normalizeCollection(externalEvents).length > 0) {
-    addReason(
-      reasons,
-      'external-event-intake',
-      'An external-tool engineering event was captured.',
-    );
+    addReason(reasons, 'external-event-intake', 'An external-tool engineering event was captured.');
   }
 
   const required = reasons.length > 0;
@@ -252,7 +251,9 @@ export function validateLearningRecord({
     errors.push('A required learning outcome requires at least one ledger entry.');
   }
   if (learningIssueNumbers.length === 0) {
-    errors.push('A required learning outcome requires at least one linked engineering-learning issue.');
+    errors.push(
+      'A required learning outcome requires at least one linked engineering-learning issue.',
+    );
   }
   if (!['confirmed', 'machine-supported'].includes(rootCauseStatus ?? '')) {
     errors.push(

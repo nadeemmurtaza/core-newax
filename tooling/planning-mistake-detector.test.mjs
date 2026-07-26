@@ -45,9 +45,7 @@ test('detects a migration added after task completion', () => {
     declaredScopePaths: ['apps/api/prisma'],
     commits: [
       commit('schema', '2026-01-01T10:00:00Z', ['apps/api/prisma/schema.prisma']),
-      commit('migration', '2026-01-01T13:00:00Z', [
-        'apps/api/prisma/migrations/001/migration.sql',
-      ]),
+      commit('migration', '2026-01-01T13:00:00Z', ['apps/api/prisma/migrations/001/migration.sql']),
     ],
     tasks: [
       {
@@ -212,14 +210,11 @@ test('uses an approved estimate revision before completion', () => {
 test('detects scope creep without prior approval', () => {
   const result = detectPlanningMistakes({
     declaredScopePaths: ['src'],
-    commits: [
-      commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/unplanned.md']),
-    ],
+    commits: [commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/unplanned.md'])],
   });
   const finding = result.findings.find(
     (candidate) =>
-      candidate.type === 'scope-creep' &&
-      candidate.evidence[0].filename === 'docs/unplanned.md',
+      candidate.type === 'scope-creep' && candidate.evidence[0].filename === 'docs/unplanned.md',
   );
   assert.ok(finding);
 });
@@ -227,9 +222,7 @@ test('detects scope creep without prior approval', () => {
 test('accepts scope expansion approved before the first change', () => {
   const result = detectPlanningMistakes({
     declaredScopePaths: ['src'],
-    commits: [
-      commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/unplanned.md']),
-    ],
+    commits: [commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/unplanned.md'])],
     events: [
       {
         event: 'scope-approved',
@@ -253,9 +246,7 @@ test('reports insufficient evidence instead of inventing scope creep', () => {
 test('allows an explicit reviewer waiver while preserving the finding', () => {
   const result = detectPlanningMistakes({
     declaredScopePaths: ['src'],
-    commits: [
-      commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/unplanned.md']),
-    ],
+    commits: [commit('a', '2026-01-01T10:00:00Z', ['src/a.ts', 'docs/unplanned.md'])],
     events: [
       {
         event: 'finding-waived',

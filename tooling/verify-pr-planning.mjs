@@ -15,11 +15,7 @@ export function planningGovernanceErrors(history, result) {
     errors.push('A review-ready pull request requires declared scope paths.');
   }
   for (const finding of result.findings) {
-    if (
-      finding.state === 'detected' &&
-      finding.confidence === 'high' &&
-      finding.waived !== true
-    ) {
+    if (finding.state === 'detected' && finding.confidence === 'high' && finding.waived !== true) {
       errors.push(`${finding.type}: ${finding.title} (${finding.id})`);
     }
   }

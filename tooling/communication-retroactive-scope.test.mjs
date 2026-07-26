@@ -35,9 +35,7 @@ test('later scope records do not attach earlier commits retroactively', () => {
       },
     ],
   });
-  const finding = result.findings.find(
-    (candidate) => candidate.type === 'wrong-interpretation',
-  );
+  const finding = result.findings.find((candidate) => candidate.type === 'wrong-interpretation');
   assert.equal(finding.state, 'suspected');
   assert.deepEqual(finding.missingEvidence, ['dependent-work']);
   assert.equal(result.blockers.length, 0);

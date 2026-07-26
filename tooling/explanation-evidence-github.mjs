@@ -110,7 +110,10 @@ async function verifyTest(record, githubRequest, listAll) {
   });
   const job = jobs.find((candidate) => candidate.id === jobId);
   if (job === undefined || job.conclusion !== 'success') {
-    return failure(record, `Job ${jobId} is not a successful job in workflow run ${workflowRunId}.`);
+    return failure(
+      record,
+      `Job ${jobId} is not a successful job in workflow run ${workflowRunId}.`,
+    );
   }
   const stepResult = findStep(job, stepName, new Set(['success']));
   if (stepResult.error !== null) {
