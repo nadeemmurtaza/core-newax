@@ -20,10 +20,12 @@
     "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist coverage",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.spec.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "24.10.1",
+    "@vitest/coverage-v8": "4.1.10",
     "typescript": "6.0.3",
     "vitest": "4.1.10"
   }
