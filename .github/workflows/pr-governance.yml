@@ -66,3 +66,16 @@ jobs:
           else
             echo "Root-cause governance activates after its controls reach the protected base."
           fi
+
+      - name: Detect planning mistakes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-planning.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-planning.mjs"
+          elif test -f candidate/tooling/verify-pr-planning.mjs; then
+            echo "Bootstrap fallback: planning controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-planning.mjs
+          else
+            echo "Planning mistake detection activates after its controls reach the protected base."
+          fi
