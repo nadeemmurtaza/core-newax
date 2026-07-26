@@ -26,6 +26,7 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "operation:validate": "node tooling/validate-operation-intent.mjs",
+    "prepare": "husky",
     "test": "pnpm test:learning && pnpm -r --if-present run test",
     "test:learning": "node --test tooling/engineering-event-upgrade.test.mjs tooling/engineering-explanation-integration.test.mjs tooling/engineering-issue-error-graph.test.mjs tooling/engineering-learning-core.test.mjs tooling/error-relationship-graph.test.mjs tooling/explanation-evidence-github.test.mjs tooling/explanation-verification.test.mjs tooling/external-failure-intake.test.mjs tooling/root-cause-engine.test.mjs tooling/workflow-failure-intake-controls.test.mjs",
     "typecheck": "pnpm -r --if-present run typecheck",
@@ -38,8 +39,14 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.10",
     "globals": "17.7.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.2.0",
     "prettier": "3.9.0",
     "typescript": "6.0.3",
     "typescript-eslint": "8.63.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "eslint --fix",
+    "*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css,scss}": "prettier --write"
   }
 }
