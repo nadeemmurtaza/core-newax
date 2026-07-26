@@ -228,6 +228,22 @@
       "unsuccessfulMethod": "Use one expected ancestor value for nearest-common-ancestor and common-root-ancestor assertions.",
       "successfulMethod": "Build a multi-level causal chain and assert nearest and canonical-root ancestry independently.",
       "preventionControl": "Every multi-level relationship-graph test must verify nearest and canonical-root ancestor outputs separately."
+    },
+    {
+      "id": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
+      "ledgerEntry": "EL-0023",
+      "category": "github-tool-operation",
+      "confidence": "high",
+      "deterministic": false,
+      "signatures": [
+        "requires at least one ledger entry",
+        "requires at least one linked learning issue",
+        "requires at least one linked engineering-learning issue"
+      ],
+      "rootCause": "A pull-request record set Learning outcome to `existing` or `new` while leaving Ledger entries, Learning issues, and Root-cause status as `not-required`, which only a `none` outcome is allowed to use.",
+      "unsuccessfulMethod": "Copy the `not-required` placeholder values from the `none`-outcome template row while using a non-`none` Learning outcome.",
+      "successfulMethod": "Set Learning outcome to `none` with `not-required` ledger, issue, and root-cause fields whenever no ledger entry or tracked issue applies; otherwise supply a real ledger entry and a linked, fully-resolved learning issue.",
+      "preventionControl": "Before submitting a PR record, confirm the Learning-outcome value and its dependent Ledger entries, Learning issues, and Root-cause status fields follow the `none` vs `existing`/`new` rule enforced by tooling/verify-pr-governance.mjs and tooling/reconcile-pr-learning.mjs."
     }
   ]
 }
