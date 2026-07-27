@@ -213,7 +213,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)
+        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
   packages/audit:
     devDependencies:
@@ -225,7 +225,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)
+        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
   packages/auth:
     devDependencies:
@@ -267,7 +267,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)
+        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
   packages/files:
     devDependencies:
@@ -279,7 +279,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)
+        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
   packages/http-security:
     devDependencies:
@@ -321,7 +321,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)
+        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
   packages/organizations:
     devDependencies:
@@ -363,7 +363,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)
+        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
   packages/request-context:
     devDependencies:
@@ -390,7 +390,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)
+        version: 4.1.10(@types/node@24.10.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
   packages/users:
     devDependencies:
