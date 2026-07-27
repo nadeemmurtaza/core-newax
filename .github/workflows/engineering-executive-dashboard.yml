@@ -1,0 +1,54 @@
+name: Engineering Executive Dashboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * 1'
+
+permissions:
+  actions: read
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: engineering-executive-dashboard
+  cancel-in-progress: true
+
+jobs:
+  build-dashboard:
+    name: Build executive engineering dashboard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Generate dashboard snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          node tooling/analyze-executive-dashboard.mjs \
+            --github \
+            --window-days 90 \
+            --period week \
+            --output artifacts/engineering-executive-dashboard.html \
+            --json artifacts/engineering-executive-dashboard.json
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: engineering-executive-dashboard-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30

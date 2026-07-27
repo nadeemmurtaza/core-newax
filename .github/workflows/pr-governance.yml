@@ -157,3 +157,16 @@ jobs:
           else
             echo "Recurrence Detection activates after its controls reach the protected base."
           fi
+
+      - name: Verify executive dashboard records
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-executive-dashboard.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-executive-dashboard.mjs"
+          elif test -f candidate/tooling/verify-pr-executive-dashboard.mjs; then
+            echo "Bootstrap fallback: executive dashboard controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-executive-dashboard.mjs
+          else
+            echo "Executive Dashboard activates after its controls reach the protected base."
+          fi
