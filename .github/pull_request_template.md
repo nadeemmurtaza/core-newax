@@ -37,6 +37,17 @@ Review-ready pull requests require at least one planning issue, a declared task 
 
 Review-ready pull requests require at least one linked communication issue and structured communication evidence. Pull-request prose does not override the issue, comment, review, and commit history evaluated by communication governance.
 
+## AI and tool quality evidence
+
+- AI or engineering-tool assistance used: `yes` or `no`
+- AI quality issues: `#123`, comma-separated issues, or `not-required` when no structured AI or tool output record exists
+- Attributed output records: Identify output IDs, model or tool metadata, hashes, occurrence times, and artifact references, or write `none`.
+- Validation evidence: Identify version, compiler, runtime, review, package, documentation, copy-provenance, or static-analysis records, or write `none`.
+- Corrections and regressions: Identify correction commits and exact regression evidence, or write `none`.
+- Dataset privacy review: Confirm the record contains bounded metadata, hashes, and durable references only.
+
+Assistance alone is not a mistake. Review-ready pull requests with structured output evidence require a linked AI quality issue. Trusted governance blocks only attributable, unresolved, unwaived, high-confidence findings supported by verified evidence.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.

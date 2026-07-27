@@ -92,3 +92,16 @@ jobs:
           else
             echo "Communication mistake detection activates after its controls reach the protected base."
           fi
+
+      - name: Detect tool and AI mistakes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-ai-quality.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-ai-quality.mjs"
+          elif test -f candidate/tooling/verify-pr-ai-quality.mjs; then
+            echo "Bootstrap fallback: AI quality controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-ai-quality.mjs
+          else
+            echo "Tool and AI mistake detection activates after its controls reach the protected base."
+          fi
