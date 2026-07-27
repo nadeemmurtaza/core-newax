@@ -19,6 +19,7 @@
     "planning-decision-quality",
     "ai-tool-quality",
     "prevention-control-quality",
+    "confidence-evidence-quality",
     "external-tool-operation",
     "unknown"
   ],
@@ -329,6 +330,26 @@
       "unsuccessfulMethod": "Close a learning issue, document a prevention sentence, and rely on people to remember it.",
       "successfulMethod": "Generate or update one versioned seven-control pack per root cause and compare every expected artifact with the exact pull-request head.",
       "preventionControl": "Trusted governance rejects resolved learning evidence unless its complete current prevention control pack exists at the exact head."
+    },
+    {
+      "id": "ROOT-FINDING-CONFIDENCE-NOT-CALCULATED",
+      "ledgerEntry": "EL-0029",
+      "category": "confidence-evidence-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "root cause confidence",
+        "duplicate confidence",
+        "evidence quality",
+        "explanation confidence",
+        "automation confidence",
+        "manual score",
+        "confidence policy"
+      ],
+      "rootCause": "Engineering findings exposed categorical or subsystem-specific confidence without one versioned recalculable envelope, allowing scores to be missing, incomparable, stale, or manually asserted.",
+      "unsuccessfulMethod": "Display a confidence label or percentage without its policy version, normalized inputs, evidence references, missing evidence, caps, and deterministic input digest.",
+      "successfulMethod": "Calculate five independent evidence-support metrics from existing subsystem decisions, preserve insufficient evidence, version the policy, and validate every stored score by recalculation.",
+      "preventionControl": "Trusted governance rejects manual, missing, stale, uncovered, policy-mismatched, or altered confidence records and requires canonical confidence envelopes for linked findings."
     }
   ]
 }
