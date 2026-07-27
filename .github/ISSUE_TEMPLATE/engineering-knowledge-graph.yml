@@ -1,0 +1,68 @@
+name: Engineering knowledge graph
+description: Record explicit, recalculable provenance links for one engineering history.
+title: '[Engineering knowledge] '
+labels:
+  - engineering-learning
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue becomes the canonical one-click history view. Enter explicit nodes and evidence-backed edges only. The graph digest, completeness status, gaps, timeline, and rendered history are generated from the input.
+
+  - type: input
+    id: record-id
+    attributes:
+      label: Record ID
+      description: Stable identifier for this knowledge record.
+      placeholder: KG-PR-123
+    validations:
+      required: true
+
+  - type: input
+    id: source-reference
+    attributes:
+      label: Source reference
+      description: Durable source such as a pull request, engineering issue, or workflow record.
+      placeholder: pr:123
+    validations:
+      required: true
+
+  - type: input
+    id: focus-node-id
+    attributes:
+      label: Focus node ID
+      description: Optional node from which the connected history should be displayed.
+      placeholder: bug:issue:456
+
+  - type: textarea
+    id: knowledge-graph-input-json
+    attributes:
+      label: Knowledge graph input JSON
+      description: Supply source metadata, nodes, and explicit edges. Do not include a digest or manually chosen completeness status.
+      render: json
+      placeholder: |
+        {
+          "source": {
+            "type": "github-pull-request",
+            "repository": "Newax-Technologies/core-newax",
+            "prNumber": 123
+          },
+          "nodes": [],
+          "edges": []
+        }
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Evidence acknowledgements
+      options:
+        - label: Every verified edge is supported by an exact GitHub object, structured marker, canonical field, or explicit durable reference.
+          required: true
+        - label: Similar wording, timing, category, author, or pull-request membership alone has not been used to claim causality.
+          required: true
+        - label: I have not supplied a graph digest or completeness status manually.
+          required: true
+        - label: The input excludes secrets, credentials, raw private prompts, and unnecessary private content.
+          required: true

@@ -20,6 +20,7 @@
     "ai-tool-quality",
     "prevention-control-quality",
     "confidence-evidence-quality",
+    "engineering-knowledge-provenance",
     "external-tool-operation",
     "unknown"
   ],
@@ -350,6 +351,23 @@
       "unsuccessfulMethod": "Display a confidence label or percentage without its policy version, normalized inputs, evidence references, missing evidence, caps, and deterministic input digest.",
       "successfulMethod": "Calculate five independent evidence-support metrics from existing subsystem decisions, preserve insufficient evidence, version the policy, and validate every stored score by recalculation.",
       "preventionControl": "Trusted governance rejects manual, missing, stale, uncovered, policy-mismatched, or altered confidence records and requires canonical confidence envelopes for linked findings."
+    },
+    {
+      "id": "ROOT-ENGINEERING-HISTORY-NOT-LINKED",
+      "ledgerEntry": "EL-0030",
+      "category": "engineering-knowledge-provenance",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "knowledge graph",
+        "complete engineering history",
+        "one-click history",
+        "engineering provenance chain"
+      ],
+      "rootCause": "Engineering artifacts were not connected through one versioned recalculable provenance graph.",
+      "unsuccessfulMethod": "Use isolated links or prose to reconstruct engineering history.",
+      "successfulMethod": "Build a deterministic twelve-stage provenance graph from exact objects, structured markers, canonical fields, and durable references.",
+      "preventionControl": "Trusted governance validates graph schema, digest, repository-owned references, legal transitions, and linked finding coverage."
     }
   ]
 }
