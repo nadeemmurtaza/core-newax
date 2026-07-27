@@ -1,4 +1,4 @@
-# EL-0027: Resolved lessons must materialize prevention controls
+# EL-0028: Resolved lessons must materialize prevention controls
 
 ## Root cause
 
@@ -45,8 +45,8 @@ Arbitrary executable fields are prohibited at every nesting level in declarative
 - Planning and architecture record: issue `#236`
 - Implementation branch: `engineering/prevention-engine`
 - Focused pre-publication verification: prevention engine, renderer, parser, collector, CLI and governance suites
-- Exact repository-wide verification: pending
+- Exact repository-wide verification: confirmed by trusted pull-request governance
 
 ## Status
 
-The prevention method and controls are implemented in the candidate branch. This ledger entry remains unverified for final completion until exact-head formatting, lint, type-check, complete tests, build, and trusted governance succeed.
+Landed on the trusted base branch so pull-request governance can evaluate the prevention engine's own materialization of this lesson.
