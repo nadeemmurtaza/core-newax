@@ -244,6 +244,47 @@
       "unsuccessfulMethod": "Copy the `not-required` placeholder values from the `none`-outcome template row while using a non-`none` Learning outcome.",
       "successfulMethod": "Set Learning outcome to `none` with `not-required` ledger, issue, and root-cause fields whenever no ledger entry or tracked issue applies; otherwise supply a real ledger entry and a linked, fully-resolved learning issue.",
       "preventionControl": "Before submitting a PR record, confirm the Learning-outcome value and its dependent Ledger entries, Learning issues, and Root-cause status fields follow the `none` vs `existing`/`new` rule enforced by tooling/verify-pr-governance.mjs and tooling/reconcile-pr-learning.mjs."
+    },
+    {
+      "id": "ROOT-GOVERNANCE-MANUAL-LEARNING-OUTCOME",
+      "ledgerEntry": "EL-0024",
+      "category": "documentation-evidence-management",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": ["Learning outcome: none", "manual learning outcome", "new prevention control"],
+      "rootCause": "Pull-request governance trusted an author-selected learning outcome instead of calculating the requirement from the diff and reconciled evidence.",
+      "unsuccessfulMethod": "Allow the pull-request author to choose new, existing, or none from a free-text field.",
+      "successfulMethod": "Calculate required or not-required from rule, checklist, process, template, automation, and failure evidence, then infer ledger classification.",
+      "preventionControl": "The manual learning-outcome field is prohibited and trusted reconciliation enforces the rule-engine decision."
+    },
+    {
+      "id": "ROOT-PLANNING-HISTORY-NOT-ANALYZED",
+      "ledgerEntry": "EL-0025",
+      "category": "planning-decision-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": ["planning mistake", "commit history", "task sequencing"],
+      "rootCause": "Engineering planning evidence was not normalized and correlated across commit history, issue history, and declared task sequencing.",
+      "unsuccessfulMethod": "Wait for planning failures, rely on memory or commit-message keywords, and document the mistake manually afterward.",
+      "successfulMethod": "Create a structured plan before implementation, record task and approval events, reconstruct repository history, and evaluate bounded evidence-backed rules.",
+      "preventionControl": "Pull-request governance blocks unwaived high-confidence planning findings and preserves suspected or insufficient-evidence states separately."
+    },
+    {
+      "id": "ROOT-COMMUNICATION-HISTORY-NOT-ANALYZED",
+      "ledgerEntry": "EL-0026",
+      "category": "process-communication-polling",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "communication mistake",
+        "assumption",
+        "conflicting instructions",
+        "missing approval"
+      ],
+      "rootCause": "Engineering communication evidence was not normalized and correlated across requirements, assumptions, decisions, approvals, GitHub history, and dependent work.",
+      "unsuccessfulMethod": "Rely on memory, free-text summaries, recency, or retrospective explanations to decide what was understood and approved.",
+      "successfulMethod": "Record structured communication events before work, preserve authority and supersession, reconstruct GitHub history, and evaluate evidence-bounded rules.",
+      "preventionControl": "Pull-request governance blocks unwaived high-confidence communication findings and preserves suspected, resolved, waived, clear, and insufficient-evidence states separately."
     }
   ]
 }
