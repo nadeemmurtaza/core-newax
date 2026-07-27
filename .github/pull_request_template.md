@@ -95,6 +95,17 @@ The canonical issue is the one-click history view. Verified links require exact 
 
 Recurrence requires exact verified root-cause identity. Pre-rule occurrences remain history and are not retroactively treated as control violations. Review-ready unresolved post-rule recurrence blocks according to the recalculated escalation.
 
+## Executive dashboard evidence
+
+- Executive dashboard records: `#123`, comma-separated dashboard-record issues, or `not-required` when this pull request does not change dashboard sources, formulas, rendering, workflow, or governance
+- Reporting window: Identify the explicit start and end timestamps.
+- Snapshot policy: `EXECUTIVE-DASHBOARD-1.0.0`
+- Snapshot digest: Generated from the recalculable record; do not type a replacement value.
+- Coverage gaps: Identify metrics with `insufficient-evidence`, or write `none` only when recalculation confirms complete coverage.
+- Manual KPI values supplied: `no`
+
+Executive metrics are generated from source-backed records. Missing evidence is not zero; verified and estimated values remain separate; currencies are not silently combined. Pull-request prose cannot override the recalculated snapshot.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.
