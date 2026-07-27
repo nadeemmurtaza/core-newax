@@ -285,6 +285,26 @@
       "unsuccessfulMethod": "Rely on memory, free-text summaries, recency, or retrospective explanations to decide what was understood and approved.",
       "successfulMethod": "Record structured communication events before work, preserve authority and supersession, reconstruct GitHub history, and evaluate evidence-bounded rules.",
       "preventionControl": "Pull-request governance blocks unwaived high-confidence communication findings and preserves suspected, resolved, waived, clear, and insufficient-evidence states separately."
+    },
+    {
+      "id": "ROOT-AI-TOOL-QUALITY-NOT-ANALYZED",
+      "ledgerEntry": "EL-0027",
+      "category": "ai-tool-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "AI hallucination",
+        "wrong framework API",
+        "wrong documentation version",
+        "deprecated package",
+        "unsafe suggestion",
+        "copy-paste bug",
+        "generated dead code"
+      ],
+      "rootCause": "AI and engineering-tool output provenance was not normalized and correlated with version-effective evidence, corrections, and regression outcomes.",
+      "unsuccessfulMethod": "Attribute every bug in AI-assisted work to AI, rely on keywords or current-version status, and copy raw output into informal datasets.",
+      "successfulMethod": "Record structured output provenance and hashes, evaluate verified evidence effective at generation time, preserve lifecycle state, and emit privacy-safe versioned records.",
+      "preventionControl": "Pull-request governance blocks only attributable unwaived high-confidence findings and generates bounded AI quality dataset records."
     }
   ]
 }
