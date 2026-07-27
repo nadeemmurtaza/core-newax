@@ -22,6 +22,7 @@
     "confidence-evidence-quality",
     "engineering-knowledge-provenance",
     "engineering-recurrence-quality",
+    "engineering-executive-reporting-quality",
     "external-tool-operation",
     "unknown"
   ],
@@ -387,6 +388,23 @@
       "unsuccessfulMethod": "Record the latest occurrence without calculating prior history or rule applicability.",
       "successfulMethod": "Build a deterministic recurrence series from exact identity, effective rule evidence, reviewed explanations, and occurrence counts.",
       "preventionControl": "Trusted governance evaluates unresolved post-rule recurrence and preserves pre-rule history separately."
+    },
+    {
+      "id": "ROOT-ENGINEERING-QUALITY-REDUCED-TO-MISTAKE-COUNT",
+      "ledgerEntry": "EL-0032",
+      "category": "engineering-executive-reporting-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "executive dashboard",
+        "mistake count",
+        "aggregate mistake volume",
+        "engineering quality reporting"
+      ],
+      "rootCause": "Engineering reporting emphasized aggregate mistake volume without showing recurrence concentration, cost, lost time, prevention effectiveness, detection and resolution speed, AI accuracy, review effectiveness, or evidence coverage.",
+      "unsuccessfulMethod": "Display one total mistake count and ask leadership to infer operational risk, quality movement, and prevention performance from it.",
+      "successfulMethod": "Generate a versioned executive snapshot from normalized source evidence, showing distinct metric families with explicit formulas, denominators, coverage, freshness, verified and estimated shares, and missing-evidence states.",
+      "preventionControl": "Trusted governance recalculates linked dashboard snapshots and rejects manually supplied KPI values, altered digests, missing coverage, and unsupported records."
     }
   ]
 }
