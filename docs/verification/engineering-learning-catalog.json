@@ -24,6 +24,7 @@
     "engineering-recurrence-quality",
     "engineering-executive-reporting-quality",
     "external-tool-operation",
+    "engineering-failure-intake-quality",
     "unknown"
   ],
   "rootCauses": [
@@ -405,6 +406,22 @@
       "unsuccessfulMethod": "Display one total mistake count and ask leadership to infer operational risk, quality movement, and prevention performance from it.",
       "successfulMethod": "Generate a versioned executive snapshot from normalized source evidence, showing distinct metric families with explicit formulas, denominators, coverage, freshness, verified and estimated shares, and missing-evidence states.",
       "preventionControl": "Trusted governance recalculates linked dashboard snapshots and rejects manually supplied KPI values, altered digests, missing coverage, and unsupported records."
+    },
+    {
+      "id": "ROOT-GOVERNANCE-BOOKKEEPING-SELF-CAPTURED",
+      "ledgerEntry": "EL-0033",
+      "category": "engineering-failure-intake-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "Verify pull-request governance structure",
+        "Reconcile workflow failures and learning evidence",
+        "Detect planning mistakes"
+      ],
+      "rootCause": "The engineering failure-intake workflow captured every failed step of the pull-request governance job as a new engineering-learning issue, including steps that fail only because the pull request's own governance bookkeeping had not yet caught up with a previous capture from that same job, producing an unbounded capture loop instead of engineering signal.",
+      "unsuccessfulMethod": "Capture every failed step of the governance job identically, treating a bookkeeping-consistency failure caused by the capture mechanism itself the same as a real defect in the code under review.",
+      "successfulMethod": "Exclude the governance job's self-referential bookkeeping steps from automatic capture when they are the only failed steps in a run, while still capturing real CI failures and every governance check that evaluates evidence about the change itself.",
+      "preventionControl": "tooling/workflow-failure-capture.mjs classifies failed steps before capture and skips a job whose only failed steps are self-referential governance bookkeeping."
     }
   ]
 }
