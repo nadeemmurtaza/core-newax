@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 
-import { buildPreventionRegistry } from './prevention-engine.mjs';
+import { enrichPreventionRegistry } from './confidence-finding-adapters.mjs';
 import { writePreventionFiles } from './prevention-control-renderer.mjs';
+import { buildPreventionRegistry } from './prevention-engine.mjs';
 import {
   collectPreventionHistory,
   collectPreventionHistoryForPullRequest,
@@ -46,7 +47,11 @@ if (outputRoot !== null) {
     generatedPaths.push(...writePreventionFiles(pack, outputRoot));
   }
 }
-const failures = registry.results.filter((result) => result.status !== 'ready');
+const enrichedRegistry = enrichPreventionRegistry(registry, {
+  exactFilesCurrent: outputRoot !== null,
+  governancePassed: false,
+});
+const failures = enrichedRegistry.results.filter((result) => result.status !== 'ready');
 console.log(
   JSON.stringify(
     {
@@ -54,8 +59,8 @@ console.log(
         preventionIssues: history.preventionIssues ?? [],
         mistakeCount: history.mistakes?.length ?? 0,
       },
-      results: registry.results,
-      packs: registry.packs,
+      results: enrichedRegistry.results,
+      packs: enrichedRegistry.packs,
       generatedPaths,
     },
     null,

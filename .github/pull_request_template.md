@@ -59,6 +59,17 @@ Assistance alone is not a mistake. Review-ready pull requests with structured ou
 
 Resolved mistakes require a complete current seven-control pack. Closed but unverified issues do not qualify. Prevention governance compares generated expected content with the exact pull-request head; pull-request prose does not override the evidence.
 
+## Confidence evidence
+
+- Confidence records: `#123`, comma-separated structured confidence issues, or `not-required` only when no finding issue is linked
+- Scoring policy: `CONFIDENCE-1.0.0`
+- Finding coverage: Identify which linked finding issue each confidence input record represents.
+- Recalculation evidence: Identify the generated score records or analysis output.
+- Missing subsystem evidence: Identify metrics that remain `insufficient-evidence`, or write `none`.
+- Manual final scores supplied: `no`
+
+Confidence percentages and evidence-quality labels are generated from recalculable inputs. They measure evidence support under the named policy and are not statistical probabilities. Authors must not type final scores into this pull request. A high metric cannot substitute for missing evidence in another metric.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.
