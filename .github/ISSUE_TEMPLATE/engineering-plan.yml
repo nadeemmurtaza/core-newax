@@ -1,0 +1,83 @@
+name: Engineering implementation plan
+description: Record requirements, declared scope, task order, estimates, and approval evidence before implementation.
+title: '[Engineering plan] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Create this issue before the first implementation commit. Use stable requirement and task IDs. Link the issue from the pull request with `- Planning issues: #123`.
+  - type: textarea
+    id: intended_outcome
+    attributes:
+      label: Intended outcome
+      description: State the business or engineering result, who uses it, and what must not happen.
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements
+      description: Use one checkbox per requirement. Optional path evidence may be appended as `paths=apps/api/src/**`.
+      placeholder: |
+        - [ ] REQ-1 Authorized users can perform the operation paths=apps/api/src/**
+        - [ ] REQ-2 Unauthorized users are rejected paths=apps/api/src/**
+    validations:
+      required: true
+  - type: textarea
+    id: declared_scope_paths
+    attributes:
+      label: Declared scope paths
+      description: Enter one repository path prefix or wildcard pattern per line. Include tests, documentation, migrations, generated artifacts, and governance files that are part of the planned change.
+      placeholder: |
+        apps/api/src/example/**
+        apps/api/test/example/**
+        docs/standards/example.md
+    validations:
+      required: true
+  - type: textarea
+    id: task_sequence
+    attributes:
+      label: Task sequence
+      description: Use the exact structured syntax. Every task must declare dependencies, estimate, scope, architecture review, migration, dependency, and delivered requirements.
+      placeholder: |
+        - TASK-1 | order=1 | depends=none | estimate=60 | scope=docs/decisions/ADR-0001.md | architecture-review=yes | migration=no | dependency=no | requirements=REQ-1
+        - TASK-2 | order=2 | depends=TASK-1 | estimate=120 | scope=apps/api/src/example,apps/api/test/example | architecture-review=no | migration=no | dependency=no | requirements=REQ-2
+    validations:
+      required: true
+  - type: dropdown
+    id: architecture_review_required
+    attributes:
+      label: Architecture review required
+      description: Task-level `architecture-review` values remain authoritative for automated detection.
+      options:
+        - 'Yes'
+        - 'No'
+    validations:
+      required: true
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Estimate and sequencing assumptions
+      description: Record material assumptions, external dependencies, expected blockers, and why the estimates are reasonable.
+    validations:
+      required: true
+  - type: textarea
+    id: risk_boundaries
+    attributes:
+      label: Risk and unchanged boundaries
+      description: Identify security, tenancy, permissions, data, migration, compatibility, and adjacent scope that must remain unchanged.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Planning confirmation
+      options:
+        - label: The issue was created before implementation began.
+          required: true
+        - label: Requirements are testable and use stable IDs.
+          required: true
+        - label: Task dependencies and estimates are explicit.
+          required: true
+        - label: Declared scope includes expected tests, documentation, migrations, dependencies, and generated artifacts.
+          required: true

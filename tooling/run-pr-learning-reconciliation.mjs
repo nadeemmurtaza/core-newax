@@ -3,11 +3,16 @@ import { readFileSync } from 'node:fs';
 import {
   githubRequest,
   listAll,
+  loadCatalog,
   parseIssueNumbers,
   parseLedgerEntries,
   parseMetadata,
   parsePullRequestField,
 } from './engineering-learning-core.mjs';
+import {
+  evaluateLearningRequirement,
+  validateLearningRecord,
+} from './learning-outcome-rule-engine.mjs';
 
 const INTAKE_PATH = '.github/workflows/engineering-failure-intake.yml';
 
@@ -57,12 +62,13 @@ async function runBootstrapReconciliation(event) {
 
   const body = pullRequest.body ?? '';
   const errors = [];
-  const learningOutcome = parsePullRequestField(body, '- Learning outcome:');
-  const ledgerEntries = parseLedgerEntries(parsePullRequestField(body, '- Ledger entries:'));
-  const listedIssueNumbers = new Set(
-    parseIssueNumbers(parsePullRequestField(body, '- Learning issues:')),
-  );
+  const ledgerEntriesValue = parsePullRequestField(body, '- Ledger entries:');
+  const ledgerEntries = parseLedgerEntries(ledgerEntriesValue);
+  const learningIssuesValue = parsePullRequestField(body, '- Learning issues:');
+  const listedIssueNumbers = new Set(parseIssueNumbers(learningIssuesValue));
   const rootCauseStatus = parsePullRequestField(body, '- Root-cause status:');
+  const rootCauseEvidence = parsePullRequestField(body, '- Root-cause evidence:');
+  const resolutionEvidence = parsePullRequestField(body, '- Resolution evidence:');
   const [issues, changedFiles] = await Promise.all([
     listAll('/issues?state=all'),
     listAll(`/pulls/${pullRequest.number}/files`),
@@ -74,17 +80,28 @@ async function runBootstrapReconciliation(event) {
     return Number(parseMetadata(issue.body)['pr-number']) === pullRequest.number;
   });
   const linkedIssueNumbers = new Set(linkedIssues.map((issue) => issue.number));
+  const learningRequirement = evaluateLearningRequirement({
+    changedFiles,
+    linkedLearningIssues: linkedIssues,
+  });
+  const learningRecord = validateLearningRecord({
+    requirement: learningRequirement,
+    ledgerEntries,
+    ledgerEntriesValue,
+    learningIssueNumbers: [...listedIssueNumbers],
+    learningIssuesValue,
+    rootCauseStatus,
+    rootCauseEvidence,
+    resolutionEvidence,
+    changedFiles,
+    catalog: loadCatalog(),
+  });
+  errors.push(...learningRecord.errors);
 
-  if (learningOutcome === 'none' && linkedIssues.length > 0) {
+  if (parsePullRequestField(body, '- Learning outcome:') !== null) {
     errors.push(
-      `Learning outcome cannot be none: found ${linkedIssues.length} linked learning issue(s).`,
+      'Remove the manual `Learning outcome` field. The trusted rule engine calculates the outcome.',
     );
-  }
-  if (
-    (learningOutcome === 'new' || learningOutcome === 'existing') &&
-    !['confirmed', 'machine-supported'].includes(rootCauseStatus ?? '')
-  ) {
-    errors.push('Root-cause status must be confirmed or machine-supported.');
   }
 
   for (const issueNumber of linkedIssueNumbers) {
@@ -95,20 +112,6 @@ async function runBootstrapReconciliation(event) {
   for (const issueNumber of listedIssueNumbers) {
     if (!linkedIssueNumbers.has(issueNumber)) {
       errors.push(`PR record issue #${issueNumber} is not linked to this pull request.`);
-    }
-  }
-
-  if (learningOutcome === 'new') {
-    for (const ledgerEntry of ledgerEntries) {
-      const ledgerChanged = changedFiles.some((file) => {
-        return (
-          file.filename === 'docs/verification/engineering-learning-ledger.md' ||
-          file.filename.includes(`docs/verification/engineering-learning-ledger/${ledgerEntry}`)
-        );
-      });
-      if (!ledgerChanged) {
-        errors.push(`New learning ${ledgerEntry} is absent from the pull-request diff.`);
-      }
     }
   }
 
@@ -147,6 +150,10 @@ async function runBootstrapReconciliation(event) {
     JSON.stringify({
       pullRequest: pullRequest.number,
       intakeActiveOnDefaultBranch: false,
+      learningOutcome: learningRequirement.learningOutcome,
+      learningOutcomeRulesVersion: learningRequirement.rulesVersion,
+      learningOutcomeReasons: learningRequirement.reasons,
+      ledgerClassifications: learningRecord.classifications,
       linkedLearningIssues: [...linkedIssueNumbers],
       status: 'bootstrap-reconciled',
     }),

@@ -15,6 +15,28 @@ State the business or engineering outcome this change must produce.
 - Applicable standards:
 - Applicable learning-ledger entries:
 
+## Planning evidence
+
+- Planning issues: `#123`, comma-separated issues, or `not-required` only for an explicitly exempt maintenance change
+- Declared scope source: Identify the planning issue containing the repository path boundaries.
+- Task sequence source: Identify the planning issue containing ordered tasks and dependencies.
+- Architecture review evidence: Identify the approval event or write `not-required` when every task explicitly says review is not required.
+- Estimate source: Identify the task estimates and any approved revisions.
+- Scope-change approvals: Identify approval events or write `none`.
+
+Review-ready pull requests require at least one planning issue, a declared task sequence, and declared scope paths. Planning mistake governance evaluates the issue history and commit sequence; these fields do not override that evidence.
+
+## Communication evidence
+
+- Communication issues: `#123`, comma-separated issues, or `not-required` only for an explicitly exempt maintenance change
+- Requirement confirmations: Identify the structured requirement and interpretation records.
+- Assumptions awaiting confirmation: Identify open assumptions or write `none`.
+- Decision records: Identify canonical decisions required by this change.
+- Approval evidence: Identify approval records or write `not-required`.
+- Conflicts and resolutions: Identify supersession or resolution records or write `none`.
+
+Review-ready pull requests require at least one linked communication issue and structured communication evidence. Pull-request prose does not override the issue, comment, review, and commit history evaluated by communication governance.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.
@@ -60,27 +82,44 @@ Record the latest source state only. Replace `pending` after the final source ch
 
 ## Engineering learning record
 
-Complete this section for every pull request. `none` is allowed only when the automated reconciliation check finds no failed workflow, linked learning issue, local-event intake, or external-tool event for this pull request.
+Complete this section for every pull request.
 
-- Learning outcome: `new`, `existing`, or `none`
+Do not add a `Learning outcome` field. Trusted governance computes the outcome from the pull-request diff and reconciled evidence. The outcome is automatically `required` when any of these conditions is true:
+
+- A new rule, policy, or engineering standard is created.
+- A checklist is created or updated.
+- An engineering process or governance control changes.
+- A pull-request, issue, or operational template changes.
+- Engineering automation is added.
+- A failed workflow, linked learning issue, local event, or external-tool event exists.
+
+The author cannot choose `none`.
+
 - Ledger entries: `EL-XXXX`, comma-separated entries, or `not-required`
 - Learning issues: `#123`, comma-separated issues, or `not-required`
 - Root-cause status: `confirmed`, `machine-supported`, or `not-required`
-- Root-cause evidence: Identify the failed run, issue, log, reproduction, or reviewer confirmation.
+- Root-cause evidence: Identify the failed run, issue, log, reproduction, reviewer confirmation, or rule-engine trigger.
 - Resolution evidence: Identify the fix commit and successful focused and complete verification.
 - Successful method used: Describe the evidence-backed method used.
 - Unsuccessful method avoided: Name the known failed method that was not repeated.
-- New prevention control: Describe the new control or write `not-required`.
+- New prevention control: Describe the new control or write `not-required` only when the rule engine returns `not-required`.
 - Ledger consulted before implementation: `yes`
 - Failure history reconciled: `yes`
 - External and tool events reconciled: `yes`
 
-When `Learning outcome` is `new`, update either:
+When learning is required, governance determines whether each ledger entry is:
+
+- `new` because the entry is introduced in this pull request; or
+- `existing` because it is already present in the trusted learning catalog.
+
+A required outcome must include at least one ledger entry and one occurrence-specific learning issue. A not-required outcome must use `not-required` for ledger entries, learning issues, and root-cause status.
+
+New learning must update either:
 
 - `docs/verification/engineering-learning-ledger.md`
 - `docs/verification/engineering-learning-ledger/EL-XXXX-description.md`
 
-When the same root cause already exists, use `existing`, link the existing ledger entry, and still link the occurrence-specific engineering-learning issue.
+When the same root cause already exists, link the existing ledger entry and still link the occurrence-specific engineering-learning issue.
 
 ## Code necessity and simplicity audit
 
