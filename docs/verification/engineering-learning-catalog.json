@@ -21,6 +21,7 @@
     "prevention-control-quality",
     "confidence-evidence-quality",
     "engineering-knowledge-provenance",
+    "engineering-recurrence-quality",
     "external-tool-operation",
     "unknown"
   ],
@@ -368,6 +369,24 @@
       "unsuccessfulMethod": "Use isolated links or prose to reconstruct engineering history.",
       "successfulMethod": "Build a deterministic twelve-stage provenance graph from exact objects, structured markers, canonical fields, and durable references.",
       "preventionControl": "Trusted governance validates graph schema, digest, repository-owned references, legal transitions, and linked finding coverage."
+    },
+    {
+      "id": "ROOT-RECURRING-MISTAKE-NOT-ESCALATED",
+      "ledgerEntry": "EL-0031",
+      "category": "engineering-recurrence-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "recurrence series",
+        "repeated root cause",
+        "prior occurrence",
+        "existing prevention rule",
+        "post-rule escalation"
+      ],
+      "rootCause": "Confirmed root-cause occurrences were not correlated with effective prevention controls and escalation.",
+      "unsuccessfulMethod": "Record the latest occurrence without calculating prior history or rule applicability.",
+      "successfulMethod": "Build a deterministic recurrence series from exact identity, effective rule evidence, reviewed explanations, and occurrence counts.",
+      "preventionControl": "Trusted governance evaluates unresolved post-rule recurrence and preserves pre-rule history separately."
     }
   ]
 }
