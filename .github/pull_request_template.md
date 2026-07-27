@@ -48,6 +48,17 @@ Review-ready pull requests require at least one linked communication issue and s
 
 Assistance alone is not a mistake. Review-ready pull requests with structured output evidence require a linked AI quality issue. Trusted governance blocks only attributable, unresolved, unwaived, high-confidence findings supported by verified evidence.
 
+## Prevention evidence
+
+- Prevention records: `#123`, comma-separated resolved learning issues, or `not-required` when no resolved learning occurrence is linked
+- Resolved root causes: Identify the root-cause IDs or write `none`.
+- Generated control packs: Identify pack IDs and revisions or write `none`.
+- Control paths: Identify the seven deterministic paths per root cause or write `none`.
+- Candidate executable controls: Identify CI or static-analysis controls awaiting ownership, implementation, review, or verification, or write `none`.
+- Supersession approvals: Identify structured approvals or write `none`.
+
+Resolved mistakes require a complete current seven-control pack. Closed but unverified issues do not qualify. Prevention governance compares generated expected content with the exact pull-request head; pull-request prose does not override the evidence.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.

@@ -17,10 +17,10 @@
     "documentation-evidence-management",
     "process-communication-polling",
     "planning-decision-quality",
-    "external-tool-operation",
-    "unknown",
     "ai-tool-quality",
-    "prevention-control-quality"
+    "prevention-control-quality",
+    "external-tool-operation",
+    "unknown"
   ],
   "rootCauses": [
     {
