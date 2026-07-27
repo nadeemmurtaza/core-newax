@@ -4,7 +4,7 @@
 
 Draft reusable foundation module.
 
-Version: `0.2.0`
+Version: `0.3.0`
 
 ## Purpose
 
@@ -231,3 +231,32 @@ Client fields must not be added directly to `core_people` unless they are univer
 - ADR 0018: Build the Trusted Request Context Foundation.
 - ADR 0019: Build the HTTP Security Boundary.
 - ADR 0024: Build the Current Person Read API.
+
+## Governed family relationship API
+
+Version 0.3.0 adds a current-Organization service and HTTP boundary for canonical person relationships.
+
+Permissions:
+
+- `people.relationships.view` reads bounded family relationships and redacted family graphs.
+- `people.relationships.manage` creates, corrects, and ends relationships.
+- `people.relationships.verify` verifies relationships or records a verification revocation.
+- `people.family_sensitive.view` allows full dates of birth, gender, official identifier values, issuing authorities, and evidence references in family views.
+
+Organization scope begins from an active person membership in the current Organization. The graph may include connected relatives who are not themselves Organization members, but an unrelated Tenant-owned graph cannot be selected directly. Relationship mutations require at least one endpoint to be reachable from the current Organization.
+
+Corrections use an optimistic `version`. Source person, target person, and relationship type are immutable; a materially different fact must end the old relationship and create a new one. Ending a relationship preserves history. Verification revocation records who revoked it, when, and why.
+
+Current endpoints:
+
+```text
+GET  /api/core/organizations/current/family-tree/:personId
+GET  /api/core/organizations/current/person-relationships/:relationshipId
+POST /api/core/organizations/current/person-relationships
+PUT  /api/core/organizations/current/person-relationships/:relationshipId
+POST /api/core/organizations/current/person-relationships/:relationshipId/end
+POST /api/core/organizations/current/person-relationships/:relationshipId/verify
+POST /api/core/organizations/current/person-relationships/:relationshipId/verification/revoke
+```
+
+Every response is `no-store`. Full sensitive values are excluded unless explicitly requested and separately authorized.

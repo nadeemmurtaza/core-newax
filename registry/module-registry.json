@@ -1,7 +1,7 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.17",
+  "registry_version": "0.1.18",
   "registry_status": "draft",
   "last_updated": "2026-07-16",
   "owner": "NEWAX Engineering",
@@ -38,10 +38,10 @@
       "module_name": "People",
       "module_key": "people",
       "module_layer": "foundation",
-      "module_version": "0.2.0",
+      "module_version": "0.3.0",
       "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Maintains central person identity and tenant-scoped, verified relationships between people across NEWAX project domains.",
+      "description": "Maintains central person identity, official identifiers, and governed tenant-scoped family relationships with current-Organization access boundaries.",
       "dependencies": [],
       "required_permissions": [
         "people.view",
@@ -49,22 +49,36 @@
         "people.update",
         "people.archive",
         "people.identifiers.view",
-        "people.identifiers.manage"
+        "people.identifiers.manage",
+        "people.relationships.view",
+        "people.relationships.manage",
+        "people.relationships.verify",
+        "people.family_sensitive.view"
       ],
       "exposed_events": [
         "person.created",
         "person.updated",
         "person.archived",
         "person.identifier_added",
-        "person.identifier_verified"
+        "person.identifier_verified",
+        "person.relationship.created",
+        "person.relationship.updated",
+        "person.relationship.ended",
+        "person.relationship.verified",
+        "person.relationship.verification_revoked"
       ],
       "consumed_events": [],
-      "configuration_options": ["person_status_values", "identity_deduplication_policy"],
+      "configuration_options": [
+        "person_status_values",
+        "identity_deduplication_policy",
+        "family_graph_max_depth",
+        "family_sensitive_disclosure_policy"
+      ],
       "database_ownership": ["core_people", "core_person_identifiers", "core_person_relationships"],
       "tenant_scope": "mixed_global_and_organization_context",
       "documentation_path": "packages/people/README.md",
       "changelog_path": "packages/people/CHANGELOG.md",
-      "compatibility_notes": "Shared identity and relationship foundation. Domain modules must reference people through person_id, keep CNIC and CRC values in person identifiers, and use governed relationship records instead of duplicating parent, guardian, spouse, sibling, or dependent names."
+      "compatibility_notes": "Shared identity and relationship foundation. Domain modules reference person_id; official identifiers remain separate. Current-Organization family access starts from an active membership, sensitive disclosure requires a dedicated permission, and relationship history is changed through optimistic versioned operations rather than deletion."
     },
     {
       "module_name": "People Intake",

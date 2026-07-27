@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - 2026-07-16
+
+### Added
+
+- Governed family relationship creation, correction, ending, verification, and verification-revocation services.
+- Bounded current-Organization family-tree reads with separate sensitive-field permission.
+- Optimistic relationship versions and durable verification-revocation metadata.
+- Current-Organization HTTP endpoints, PostgreSQL integrity tests, and relationship events.
+
 All notable changes to the NEWAX People module are documented here.
 
 ## Unreleased

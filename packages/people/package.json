@@ -1,8 +1,8 @@
 {
   "name": "@newax/people",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Reusable NEWAX People and Person Relationships Registry foundation module.",
+  "description": "Reusable NEWAX People, identifiers, and governed family relationship module.",
   "license": "UNLICENSED",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

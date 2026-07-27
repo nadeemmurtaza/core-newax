@@ -44,7 +44,7 @@
     ],
     CorePersonRelationship: [
       'Person relationship',
-      'A governed connection between two real people, stored once without copying either person or their official identifiers.',
+      'A governed, versioned connection between two real people, stored once without copying either person or their official identifiers.',
       'A parent linked to a child, or a legal guardian linked to a dependent.',
       'people',
     ],
