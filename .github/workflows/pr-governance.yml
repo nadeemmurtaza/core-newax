@@ -131,3 +131,16 @@ jobs:
           else
             echo "Confidence Scoring activates after its controls reach the protected base."
           fi
+
+      - name: Verify engineering knowledge graph
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-knowledge-graph.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-knowledge-graph.mjs"
+          elif test -f candidate/tooling/verify-pr-knowledge-graph.mjs; then
+            echo "Bootstrap fallback: knowledge graph controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-knowledge-graph.mjs
+          else
+            echo "Engineering Knowledge Graph activates after its controls reach the protected base."
+          fi

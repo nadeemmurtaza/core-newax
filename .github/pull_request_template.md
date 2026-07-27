@@ -70,6 +70,18 @@ Resolved mistakes require a complete current seven-control pack. Closed but unve
 
 Confidence percentages and evidence-quality labels are generated from recalculable inputs. They measure evidence support under the named policy and are not statistical probabilities. Authors must not type final scores into this pull request. A high metric cannot substitute for missing evidence in another metric.
 
+## Knowledge graph evidence
+
+- Knowledge graph records: `#123`, comma-separated canonical history issues, or `not-required` only when no finding issue is linked
+- Complete engineering history: Link the one canonical knowledge-record issue.
+- Focus node: Identify the bug, root-cause, or other node used as the primary view, or write `none`.
+- Graph schema: `1`
+- Missing stages: Identify exact gaps or write `none` only when the recalculated graph is complete.
+- Candidate links: Identify links that do not satisfy completeness, or write `none`.
+- Manual completeness claim supplied: `no`
+
+The canonical issue is the one-click history view. Verified links require exact GitHub objects, structured markers, canonical fields, or explicit durable references. Similar wording, chronology, category, author, or shared pull-request context cannot establish causality. The Error Relationship Graph remains authoritative for causal failure relationships.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.
