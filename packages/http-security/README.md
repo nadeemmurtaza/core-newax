@@ -238,7 +238,7 @@ Recorded examples include:
 - Failed request.
 - Completed authenticated state-changing request.
 
-Audit metadata excludes raw cookies, session tokens, CSRF tokens, credentials, request bodies, and complete query strings.
+Audit metadata excludes raw cookies, session identifiers, session tokens, CSRF tokens, credentials, request bodies, and complete query strings.
 
 Audit persistence is best-effort for early denials and completed requests so an audit outage does not automatically turn into a platform-wide availability outage. Audit-write failures are logged as structured event types without copying secrets or exception messages.
 

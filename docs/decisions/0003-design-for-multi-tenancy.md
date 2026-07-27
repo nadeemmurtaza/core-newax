@@ -12,7 +12,7 @@ ADR 0003: Design for Multi-Tenancy
 
 ## 2. Status
 
-Accepted
+Accepted, with the Tenant identity definition superseded by ADR 0027.
 
 ## 3. Date
 
@@ -46,7 +46,7 @@ NEWAX Core needs a practical tenant-ready direction that supports future growth 
 
 NEWAX Core will be designed to support multi-tenancy.
 
-A tenant represents a client organization or business unit using a NEWAX-powered system.
+A Tenant represents the customer ownership and data-isolation boundary. Organizations represent legal and operating entities inside that Tenant. ADR 0027 defines the executable separation.
 
 Examples:
 
@@ -109,19 +109,9 @@ Multi-tenancy is an architectural direction, not a requirement that every first 
 
 ## 10. Tenant Definition
 
-Use `Organization` as the primary business-facing tenant concept.
+Use `Tenant` as the customer ownership and data-isolation identity. Every Tenant has its own UUID. Organizations are legal and operating entities inside one Tenant. Licensing, deployment, support entitlement, data-region, retention, and customer-level configuration reference Tenant identity through their owning modules.
 
-A tenant is a client organization or business unit that owns users, records, permissions, configuration, and operational context within a NEWAX-powered system.
-
-Conceptual organization attributes may include:
-
-- `id`.
-- `name`.
-- `status`.
-- `configuration`.
-- `created_at`.
-
-This ADR does not create the organizations module or database schema. It only defines the architecture direction.
+ADR 0027 defines and implements this separation.
 
 ## 11. Tenant Data Ownership
 

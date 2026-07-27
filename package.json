@@ -12,6 +12,8 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "pnpm -r --if-present run clean",
+    "database-registry:generate": "node tooling/database-registry/generate.mjs --mode snapshot --output docs/generated/database-registry --write",
+    "database-registry:test": "node --test tooling/database-registry/generate.test.mjs",
     "dev": "pnpm -r --parallel --if-present run dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

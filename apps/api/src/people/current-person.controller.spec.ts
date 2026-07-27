@@ -23,6 +23,7 @@ const PERSON_ID = '00000000-0000-4000-8000-000000000002';
 const SESSION_ID = '00000000-0000-4000-8000-000000000003';
 const MEMBERSHIP_ID = '00000000-0000-4000-8000-000000000004';
 const ORGANIZATION_ID = '00000000-0000-4000-8000-000000000005';
+const TENANT_ID = '00000000-0000-4000-8000-000000000008';
 
 const ACCOUNT_CONTEXT: TrustedAccountRequestContext = {
   scope: 'account',
@@ -41,6 +42,7 @@ const ORGANIZATION_CONTEXT: TrustedOrganizationRequestContext = {
   sessionId: SESSION_ID,
   sessionExpiresAt: new Date('2026-07-12T12:00:00.000Z'),
   membershipId: MEMBERSHIP_ID,
+  tenantId: TENANT_ID,
   organizationId: ORGANIZATION_ID,
   permissionCodes: new Set(['people.view']),
   evaluatedAt: new Date('2026-07-12T10:00:00.000Z'),

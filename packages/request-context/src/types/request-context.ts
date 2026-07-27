@@ -1,6 +1,7 @@
 export type TrustedContextScope = 'account' | 'organization';
 export type TrustedMembershipStatus = 'active' | 'suspended' | 'ended';
 export type TrustedOrganizationStatus = 'active' | 'suspended' | 'archived';
+export type TrustedTenantStatus = 'active' | 'suspended' | 'archived';
 
 export interface TrustedSessionRecord {
   readonly userId: string;
@@ -12,6 +13,8 @@ export interface TrustedSessionRecord {
 export interface TrustedMembershipRecord {
   readonly id: string;
   readonly personId: string;
+  readonly tenantId: string;
+  readonly tenantStatus: TrustedTenantStatus;
   readonly organizationId: string;
   readonly membershipStatus: TrustedMembershipStatus;
   readonly organizationStatus: TrustedOrganizationStatus;
@@ -50,6 +53,7 @@ export interface TrustedOrganizationRequestContext {
   readonly sessionId: string;
   readonly sessionExpiresAt: Date;
   readonly membershipId: string;
+  readonly tenantId: string;
   readonly organizationId: string;
   readonly permissionCodes: ReadonlySet<string>;
   readonly evaluatedAt: Date;
@@ -60,6 +64,7 @@ export type TrustedRequestContext =
 
 export interface ModuleRequestContext {
   readonly actorUserId: string;
+  readonly tenantId: string;
   readonly organizationId: string;
   readonly permissionCodes: ReadonlySet<string>;
 }
@@ -107,6 +112,8 @@ export interface AccountMembershipDiscoveryPage {
 export interface OrganizationContextConfirmationRecord {
   readonly membershipId: string;
   readonly personId: string;
+  readonly tenantId: string;
+  readonly tenantStatus: TrustedTenantStatus;
   readonly organizationId: string;
   readonly organizationDisplayName: string;
   readonly organizationType: string;
@@ -131,6 +138,7 @@ export interface OrganizationContextCapabilitySummary {
 
 export interface OrganizationContextConfirmation {
   readonly membershipId: string;
+  readonly tenantId: string;
   readonly organizationId: string;
   readonly organizationDisplayName: string;
   readonly organizationType: string;

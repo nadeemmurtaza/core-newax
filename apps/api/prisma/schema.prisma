@@ -10,8 +10,31 @@ datasource db {
   provider = "postgresql"
 }
 
+model CoreTenant {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(255)
+  status    String    @default("active") @db.VarChar(32)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  organizations             CoreOrganization[]
+  organizationRelationships CoreOrganizationRelationship[]
+  personRelationships       CorePersonRelationship[]
+  peopleIntakes             CorePeopleIntake[]
+  objects                   CoreObject[]
+  files                     CoreFile[]
+  auditLogs                 CoreAuditLog[]
+  externalReferences        CoreExternalReference[]
+
+  @@index([status])
+  @@index([name])
+  @@map("core_tenants")
+}
+
 model CoreOrganization {
   id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
   parentOrganizationId String?   @map("parent_organization_id") @db.Uuid
   legalName            String    @map("legal_name") @db.VarChar(255)
   displayName          String    @map("display_name") @db.VarChar(255)
@@ -23,7 +46,8 @@ model CoreOrganization {
   updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  parentOrganization    CoreOrganization?               @relation("OrganizationHierarchy", fields: [parentOrganizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  tenant                CoreTenant                      @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  parentOrganization    CoreOrganization?               @relation("OrganizationHierarchy", fields: [tenantId, parentOrganizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
   childOrganizations    CoreOrganization[]              @relation("OrganizationHierarchy")
   sourceRelationships   CoreOrganizationRelationship[]  @relation("OrganizationRelationshipSource")
   targetRelationships   CoreOrganizationRelationship[]  @relation("OrganizationRelationshipTarget")
@@ -35,15 +59,18 @@ model CoreOrganization {
   files                 CoreFile[]
   auditLogs             CoreAuditLog[]
   externalReferences    CoreExternalReference[]
+  peopleIntakes         CorePeopleIntake[]
 
-  @@index([parentOrganizationId])
-  @@index([organizationType, status])
-  @@index([displayName])
+  @@unique([tenantId, id])
+  @@index([tenantId, parentOrganizationId])
+  @@index([tenantId, organizationType, status])
+  @@index([tenantId, displayName])
   @@map("core_organizations")
 }
 
 model CoreOrganizationRelationship {
   id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
   sourceOrganizationId String    @map("source_organization_id") @db.Uuid
   targetOrganizationId String    @map("target_organization_id") @db.Uuid
   relationshipType     String    @map("relationship_type") @db.VarChar(64)
@@ -53,11 +80,12 @@ model CoreOrganizationRelationship {
   createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  sourceOrganization CoreOrganization @relation("OrganizationRelationshipSource", fields: [sourceOrganizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  targetOrganization CoreOrganization @relation("OrganizationRelationshipTarget", fields: [targetOrganizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  tenant             CoreTenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sourceOrganization CoreOrganization @relation("OrganizationRelationshipSource", fields: [tenantId, sourceOrganizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
+  targetOrganization CoreOrganization @relation("OrganizationRelationshipTarget", fields: [tenantId, targetOrganizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@index([sourceOrganizationId, relationshipType, status])
-  @@index([targetOrganizationId, relationshipType, status])
+  @@index([tenantId, sourceOrganizationId, relationshipType, status])
+  @@index([tenantId, targetOrganizationId, relationshipType, status])
   @@map("core_organization_relationships")
 }
 
@@ -74,11 +102,13 @@ model CorePerson {
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  identifiers     CorePersonIdentifier[]
-  user            CoreUser?
-  memberships     CoreMembership[]
-  personContacts  CorePersonContactMethod[]
-  personAddresses CorePersonAddress[]
+  identifiers         CorePersonIdentifier[]
+  user                CoreUser?
+  memberships         CoreMembership[]
+  personContacts      CorePersonContactMethod[]
+  personAddresses     CorePersonAddress[]
+  sourceRelationships CorePersonRelationship[]  @relation("PersonRelationshipSource")
+  targetRelationships CorePersonRelationship[]  @relation("PersonRelationshipTarget")
 
   @@index([lastName, firstName])
   @@index([status])
@@ -106,6 +136,72 @@ model CorePersonIdentifier {
   @@map("core_person_identifiers")
 }
 
+model CorePersonRelationship {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @map("tenant_id") @db.Uuid
+  sourcePersonId     String    @map("source_person_id") @db.Uuid
+  targetPersonId     String    @map("target_person_id") @db.Uuid
+  relationshipType   String    @map("relationship_type") @db.VarChar(64)
+  relationshipRole   String    @default("unspecified") @map("relationship_role") @db.VarChar(64)
+  relationshipBasis  String    @default("unspecified") @map("relationship_basis") @db.VarChar(64)
+  status             String    @default("active") @db.VarChar(32)
+  validFrom          DateTime? @map("valid_from") @db.Date
+  validUntil         DateTime? @map("valid_until") @db.Date
+  isVerified         Boolean   @default(false) @map("is_verified")
+  verifiedAt         DateTime? @map("verified_at") @db.Timestamptz(6)
+  verifiedByUserId   String?   @map("verified_by_user_id") @db.Uuid
+  verificationSource String?   @map("verification_source") @db.VarChar(128)
+  sourceReference    String?   @map("source_reference") @db.VarChar(255)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant         CoreTenant @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sourcePerson   CorePerson @relation("PersonRelationshipSource", fields: [sourcePersonId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  targetPerson   CorePerson @relation("PersonRelationshipTarget", fields: [targetPersonId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  verifiedByUser CoreUser?  @relation("PersonRelationshipVerifiedBy", fields: [verifiedByUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  // Self-links, validity, verification consistency, active-link uniqueness, and
+  // active parentage cycles are enforced by migration-owned PostgreSQL constraints.
+  @@index([tenantId, sourcePersonId, relationshipType, status])
+  @@index([tenantId, targetPersonId, relationshipType, status])
+  @@index([verifiedByUserId])
+  @@map("core_person_relationships")
+}
+
+model CorePeopleIntake {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  organizationId    String    @map("organization_id") @db.Uuid
+  title             String    @db.VarChar(128)
+  sourceType        String    @map("source_type") @db.VarChar(64)
+  sourceReference   String?   @map("source_reference") @db.VarChar(255)
+  status            String    @default("draft") @db.VarChar(32)
+  payload           Json      @db.JsonB
+  personCount       Int       @map("person_count")
+  relationshipCount Int       @map("relationship_count")
+  version           Int       @default(1)
+  createdByUserId   String    @map("created_by_user_id") @db.Uuid
+  submittedAt       DateTime? @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt        DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  reviewedByUserId  String?   @map("reviewed_by_user_id") @db.Uuid
+  reviewDecision    String?   @map("review_decision") @db.VarChar(16)
+  reviewNotes       String?   @map("review_notes") @db.VarChar(2000)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant         CoreTenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization   CoreOrganization @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
+  createdByUser  CoreUser         @relation("PeopleIntakeCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reviewedByUser CoreUser?        @relation("PeopleIntakeReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  // Workflow state, four-eye review, immutable submission, payload shape,
+  // and transition integrity are enforced by migration-owned PostgreSQL constraints.
+  @@index([tenantId, organizationId, status, submittedAt, id])
+  @@index([createdByUserId, status])
+  @@index([reviewedByUserId, reviewedAt])
+  @@map("core_people_intakes")
+}
+
 model CoreUser {
   id          String    @id @default(uuid()) @db.Uuid
   personId    String    @unique @map("person_id") @db.Uuid
@@ -116,17 +212,20 @@ model CoreUser {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  person                   CorePerson                  @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  identities               CoreUserIdentity[]
-  credentials              CoreUserCredential[]
-  sessions                 CoreUserSession[]
-  authenticationAttempts   CoreAuthenticationAttempt[]
-  rolePermissionsCreated   CoreRolePermission[]        @relation("RolePermissionCreatedBy")
-  membershipRolesAssigned  CoreMembershipRole[]        @relation("MembershipRoleAssignedBy")
-  membershipRolesRevoked   CoreMembershipRole[]        @relation("MembershipRoleRevokedBy")
-  objectAssignmentsCreated CoreObjectAssignment[]      @relation("ObjectAssignmentCreatedBy")
-  filesCreated             CoreFile[]                  @relation("FileCreatedBy")
-  auditLogs                CoreAuditLog[]              @relation("AuditActor")
+  person                      CorePerson                  @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  identities                  CoreUserIdentity[]
+  credentials                 CoreUserCredential[]
+  sessions                    CoreUserSession[]
+  authenticationAttempts      CoreAuthenticationAttempt[]
+  rolePermissionsCreated      CoreRolePermission[]        @relation("RolePermissionCreatedBy")
+  membershipRolesAssigned     CoreMembershipRole[]        @relation("MembershipRoleAssignedBy")
+  membershipRolesRevoked      CoreMembershipRole[]        @relation("MembershipRoleRevokedBy")
+  objectAssignmentsCreated    CoreObjectAssignment[]      @relation("ObjectAssignmentCreatedBy")
+  filesCreated                CoreFile[]                  @relation("FileCreatedBy")
+  auditLogs                   CoreAuditLog[]              @relation("AuditActor")
+  personRelationshipsVerified CorePersonRelationship[]    @relation("PersonRelationshipVerifiedBy")
+  peopleIntakesCreated        CorePeopleIntake[]          @relation("PeopleIntakeCreatedBy")
+  peopleIntakesReviewed       CorePeopleIntake[]          @relation("PeopleIntakeReviewedBy")
 
   @@index([status])
   @@map("core_users")
@@ -416,7 +515,8 @@ model CoreOrganizationAddress {
   organization CoreOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   address      CoreAddress      @relation(fields: [addressId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@unique([organizationId, addressId, addressType])
+  // Active-link uniqueness is enforced by a migration-owned partial index so
+  // removed links remain immutable history and do not block a later active link.
   @@index([organizationId, isPrimary, status])
   @@map("core_organization_addresses")
 }
@@ -439,6 +539,7 @@ model CoreObjectType {
 
 model CoreObject {
   id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
   objectTypeId         String    @map("object_type_id") @db.Uuid
   owningOrganizationId String    @map("owning_organization_id") @db.Uuid
   parentObjectId       String?   @map("parent_object_id") @db.Uuid
@@ -451,16 +552,18 @@ model CoreObject {
   updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
 
+  tenant             CoreTenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   objectType         CoreObjectType         @relation(fields: [objectTypeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  owningOrganization CoreOrganization       @relation("ObjectOwningOrganization", fields: [owningOrganizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  parentObject       CoreObject?            @relation("ObjectHierarchy", fields: [parentObjectId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  owningOrganization CoreOrganization       @relation("ObjectOwningOrganization", fields: [tenantId, owningOrganizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
+  parentObject       CoreObject?            @relation("ObjectHierarchy", fields: [tenantId, parentObjectId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
   childObjects       CoreObject[]           @relation("ObjectHierarchy")
   assignments        CoreObjectAssignment[]
   objectAddresses    CoreObjectAddress[]
 
+  @@unique([tenantId, id])
   @@unique([owningOrganizationId, referenceCode])
-  @@index([objectTypeId, status])
-  @@index([parentObjectId])
+  @@index([tenantId, owningOrganizationId, objectTypeId, status])
+  @@index([tenantId, parentObjectId])
   @@map("core_objects")
 }
 
@@ -505,6 +608,7 @@ model CoreObjectAddress {
 
 model CoreFile {
   id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
   organizationId  String   @map("organization_id") @db.Uuid
   storageProvider String   @map("storage_provider") @db.VarChar(64)
   storageKey      String   @map("storage_key") @db.Text
@@ -516,11 +620,13 @@ model CoreFile {
   createdByUserId String?  @map("created_by_user_id") @db.Uuid
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  organization  CoreOrganization @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  tenant        CoreTenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization  CoreOrganization @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
   createdByUser CoreUser?        @relation("FileCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
+  @@unique([tenantId, id])
   @@unique([storageProvider, storageKey])
-  @@index([organizationId, status, createdAt])
+  @@index([tenantId, organizationId, status, createdAt])
   @@map("core_files")
 }
 
@@ -537,6 +643,7 @@ model CoreHttpRateLimitBucket {
 
 model CoreAuditLog {
   id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String?  @map("tenant_id") @db.Uuid
   organizationId String?  @map("organization_id") @db.Uuid
   actorUserId    String?  @map("actor_user_id") @db.Uuid
   moduleCode     String   @map("module_code") @db.VarChar(64)
@@ -554,10 +661,12 @@ model CoreAuditLog {
   userAgent      String?  @map("user_agent") @db.Text
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  organization CoreOrganization? @relation(fields: [organizationId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  tenant       CoreTenant?       @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization CoreOrganization? @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
   actorUser    CoreUser?         @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  @@index([organizationId, createdAt])
+  @@index([tenantId, organizationId, createdAt, id])
+  @@index([tenantId, createdAt])
   @@index([actorUserId, createdAt])
   @@index([moduleCode, action, createdAt])
   @@index([entityType, entityId])
@@ -567,6 +676,7 @@ model CoreAuditLog {
 
 model CoreExternalReference {
   id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String?  @map("tenant_id") @db.Uuid
   organizationId String?  @map("organization_id") @db.Uuid
   domainCode     String   @map("domain_code") @db.VarChar(64)
   entityType     String   @map("entity_type") @db.VarChar(128)
@@ -577,9 +687,11 @@ model CoreExternalReference {
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  organization CoreOrganization? @relation(fields: [organizationId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  tenant       CoreTenant?       @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization CoreOrganization? @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
 
-  @@unique([organizationId, externalSystem, externalKey])
-  @@index([domainCode, entityType, entityId])
+  @@unique([tenantId, organizationId, externalSystem, externalKey], map: "core_external_refs_scope_system_key_key")
+  @@index([tenantId, organizationId, domainCode, entityType, entityId], map: "core_external_refs_scope_entity_idx")
+  @@index([tenantId, organizationId, id], map: "core_external_refs_scope_cursor_idx")
   @@map("core_external_references")
 }
