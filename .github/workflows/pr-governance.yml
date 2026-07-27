@@ -118,3 +118,16 @@ jobs:
           else
             echo "Prevention Engine activates after its controls reach the protected base."
           fi
+
+      - name: Verify confidence scores
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-confidence.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-confidence.mjs"
+          elif test -f candidate/tooling/verify-pr-confidence.mjs; then
+            echo "Bootstrap fallback: confidence controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-confidence.mjs
+          else
+            echo "Confidence Scoring activates after its controls reach the protected base."
+          fi
