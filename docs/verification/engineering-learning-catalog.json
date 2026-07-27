@@ -18,7 +18,9 @@
     "process-communication-polling",
     "planning-decision-quality",
     "external-tool-operation",
-    "unknown"
+    "unknown",
+    "ai-tool-quality",
+    "prevention-control-quality"
   ],
   "rootCauses": [
     {
@@ -305,6 +307,28 @@
       "unsuccessfulMethod": "Attribute every bug in AI-assisted work to AI, rely on keywords or current-version status, and copy raw output into informal datasets.",
       "successfulMethod": "Record structured output provenance and hashes, evaluate verified evidence effective at generation time, preserve lifecycle state, and emit privacy-safe versioned records.",
       "preventionControl": "Pull-request governance blocks only attributable unwaived high-confidence findings and generates bounded AI quality dataset records."
+    },
+    {
+      "id": "ROOT-RESOLVED-LESSON-NOT-MATERIALIZED",
+      "ledgerEntry": "EL-0028",
+      "category": "prevention-control-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "resolved mistake",
+        "prevention control pack",
+        "CI check",
+        "PR checklist",
+        "review checklist",
+        "coding standard",
+        "verification rule",
+        "static analysis rule",
+        "test template"
+      ],
+      "rootCause": "Resolved engineering lessons were recorded without deterministic current process controls, allowing the same failure mode to remain operationally possible.",
+      "unsuccessfulMethod": "Close a learning issue, document a prevention sentence, and rely on people to remember it.",
+      "successfulMethod": "Generate or update one versioned seven-control pack per root cause and compare every expected artifact with the exact pull-request head.",
+      "preventionControl": "Trusted governance rejects resolved learning evidence unless its complete current prevention control pack exists at the exact head."
     }
   ]
 }
