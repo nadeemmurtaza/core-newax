@@ -144,3 +144,16 @@ jobs:
           else
             echo "Engineering Knowledge Graph activates after its controls reach the protected base."
           fi
+
+      - name: Detect recurring engineering mistakes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-recurrence.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-recurrence.mjs"
+          elif test -f candidate/tooling/verify-pr-recurrence.mjs; then
+            echo "Bootstrap fallback: recurrence controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-recurrence.mjs
+          else
+            echo "Recurrence Detection activates after its controls reach the protected base."
+          fi
