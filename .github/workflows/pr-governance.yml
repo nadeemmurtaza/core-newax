@@ -105,3 +105,16 @@ jobs:
           else
             echo "Tool and AI mistake detection activates after its controls reach the protected base."
           fi
+
+      - name: Verify prevention controls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-prevention.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-prevention.mjs"
+          elif test -f candidate/tooling/verify-pr-prevention.mjs; then
+            echo "Bootstrap fallback: prevention controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-prevention.mjs
+          else
+            echo "Prevention Engine activates after its controls reach the protected base."
+          fi
