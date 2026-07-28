@@ -162,10 +162,10 @@ export class GitHubOAuthProvider implements OAuthProvider {
     }
 
     if (!response.ok) {
-      if (response.status >= 500) {
+      if (response.status >= 500 || response.status === 429) {
         throw new AuthenticationError(
           'AUTHENTICATION_PROVIDER_UNAVAILABLE',
-          `${description} failed: the provider returned a server error.`,
+          `${description} failed: the provider returned a server error or is rate-limiting requests.`,
         );
       }
       throw new AuthenticationError('AUTHENTICATION_FAILED', `${description} failed.`);

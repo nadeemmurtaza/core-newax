@@ -101,6 +101,18 @@ describe('GitHubOAuthProvider', () => {
       });
     });
 
+    it('throws AUTHENTICATION_PROVIDER_UNAVAILABLE when the provider rate-limits the request', async () => {
+      const provider = new GitHubOAuthProvider(config);
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response('Too Many Requests', { status: 429 }),
+      );
+
+      await expect(provider.exchangeCode('bad-code')).rejects.toMatchObject({
+        code: 'AUTHENTICATION_PROVIDER_UNAVAILABLE',
+      });
+    });
+
     it('throws AUTHENTICATION_PROVIDER_UNAVAILABLE when the request fails or times out', async () => {
       const provider = new GitHubOAuthProvider(config);
 

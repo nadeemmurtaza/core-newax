@@ -147,15 +147,19 @@ class FakeRepository implements AuthenticationRepository {
   ): Promise<ExternalIdentityRecord> {
     this.upsertedIdentity = input;
     this.upsertCount += 1;
+    const key = `${input.provider}:${input.providerSubject}`;
+    const existing = this.externalIdentities.get(key);
+    // Mirrors the real repository's upsert: a conflicting row keeps its original
+    // userId; only providerUsername/updatedAt are refreshed on conflict.
     const record = externalIdentity({
-      userId: input.userId,
+      userId: existing?.userId ?? input.userId,
       provider: input.provider,
       providerSubject: input.providerSubject,
       providerUsername: input.providerUsername,
-      createdAt: input.occurredAt,
+      createdAt: existing?.createdAt ?? input.occurredAt,
       updatedAt: input.occurredAt,
     });
-    this.externalIdentities.set(`${input.provider}:${input.providerSubject}`, record);
+    this.externalIdentities.set(key, record);
     return record;
   }
 
@@ -394,6 +398,35 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
       userId: activeAccount.userId,
     });
     expect(publisher.events.map((e) => e.name)).toContain('authentication.login_succeeded');
+  });
+
+  it('issues a session for the userId the upsert actually persisted, not the locally resolved one', async () => {
+    const { service, repository, directory } = createService();
+    const locallyResolvedAccount = account();
+    const racingLinkedAccount = account();
+    directory.accounts.set(locallyResolvedAccount.userId, locallyResolvedAccount);
+    directory.accounts.set(racingLinkedAccount.userId, racingLinkedAccount);
+    directory.resolvedIdentity = identity({ account: locallyResolvedAccount });
+    // Simulates a concurrent callback for the same provider subject whose upsert
+    // landed first: findExternalIdentity still sees no link, but the upsert call
+    // itself resolves to the identity a racing call already persisted.
+    repository.upsertExternalIdentity = async (input) => {
+      repository.upsertedIdentity = input;
+      repository.upsertCount += 1;
+      return externalIdentity({
+        userId: racingLinkedAccount.userId,
+        provider: input.provider,
+        providerSubject: input.providerSubject,
+        providerUsername: input.providerUsername,
+      });
+    };
+
+    const result = await service.loginWithExternalIdentity({
+      provider: 'github',
+      profile: { subject: '99999', email: 'octocat@github.com', username: 'octocat' },
+    });
+
+    expect(result.userId).toBe(racingLinkedAccount.userId);
   });
 
   it('fails when no external identity or matching email is found', async () => {

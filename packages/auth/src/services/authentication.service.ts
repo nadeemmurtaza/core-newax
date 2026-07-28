@@ -267,14 +267,14 @@ export class AuthenticationService {
 
     const existingIdentity = await this.repository.findExternalIdentity(provider, subject);
     if (existingIdentity !== null) {
-      userId = existingIdentity.userId;
-      await this.repository.upsertExternalIdentity({
+      const linkedIdentity = await this.repository.upsertExternalIdentity({
         userId: existingIdentity.userId,
         provider,
         providerSubject: subject,
         providerUsername,
         occurredAt,
       });
+      userId = linkedIdentity.userId;
     } else if (input.profile.email !== null && input.profile.email.trim().length > 0) {
       const emailIdentity = await this.userDirectory.resolveIdentity(
         'email',
@@ -285,14 +285,14 @@ export class AuthenticationService {
         emailIdentity.isVerified &&
         emailIdentity.account.status === 'active'
       ) {
-        userId = emailIdentity.account.userId;
-        await this.repository.upsertExternalIdentity({
-          userId,
+        const linkedIdentity = await this.repository.upsertExternalIdentity({
+          userId: emailIdentity.account.userId,
           provider,
           providerSubject: subject,
           providerUsername,
           occurredAt,
         });
+        userId = linkedIdentity.userId;
       }
     }
 
