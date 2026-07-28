@@ -6,6 +6,7 @@ export const HTTP_REQUIRED_PERMISSIONS_KEY = 'newax:http-security:required-permi
 export const HTTP_AUTHENTICATION_SENSITIVE_KEY = 'newax:http-security:authentication-sensitive';
 export const HTTP_PUBLIC_AUTHENTICATION_MUTATION_KEY =
   'newax:http-security:public-authentication-mutation';
+export const HTTP_PUBLIC_SIGNED_MUTATION_KEY = 'newax:http-security:public-signed-mutation';
 export const HTTP_AUDIT_AS_STATE_CHANGING_KEY = 'newax:http-security:audit-as-state-changing';
 
 const PERMISSION_CODE_PATTERN = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/u;
@@ -19,6 +20,18 @@ export function PublicAuthenticationEndpoint(): MethodDecorator & ClassDecorator
     SetMetadata(HTTP_CONTEXT_MODE_KEY, 'public' satisfies HttpSecurityContextMode),
     SetMetadata(HTTP_AUTHENTICATION_SENSITIVE_KEY, true),
     SetMetadata(HTTP_PUBLIC_AUTHENTICATION_MUTATION_KEY, true),
+  );
+}
+
+// For endpoints authenticated by a verified request signature (e.g. an inbound
+// integration webhook) rather than a session cookie. The route's own guard is
+// responsible for verifying the signature and rejecting unauthenticated calls —
+// this decorator only tells HttpSecurityGuard that session/CSRF enforcement does
+// not apply here, it does not grant any permission by itself.
+export function PublicSignedMutationEndpoint(): MethodDecorator & ClassDecorator {
+  return applyDecorators(
+    SetMetadata(HTTP_CONTEXT_MODE_KEY, 'public' satisfies HttpSecurityContextMode),
+    SetMetadata(HTTP_PUBLIC_SIGNED_MUTATION_KEY, true),
   );
 }
 

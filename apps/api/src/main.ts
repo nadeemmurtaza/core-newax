@@ -19,6 +19,7 @@ interface ExpressApplicationAdapter {
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
+    rawBody: true,
   });
   const configuration = app.get<ConfigService<ApplicationEnvironment, true>>(ConfigService);
   const host = configuration.get('HOST', { infer: true });

@@ -19,6 +19,8 @@ const DEFAULT_OAUTH_GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_to
 const DEFAULT_OAUTH_GITHUB_USERINFO_URL = 'https://api.github.com/user';
 const DEFAULT_OAUTH_GITHUB_EMAILS_URL = 'https://api.github.com/user/emails';
 const NODE_ENVIRONMENTS = ['development', 'test', 'production'] as const;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
+const MINIMUM_LEAD_HARVESTER_WEBHOOK_SECRET_LENGTH = 32;
 
 type NodeEnvironment = (typeof NODE_ENVIRONMENTS)[number];
 
@@ -42,6 +44,10 @@ export interface ApplicationEnvironment extends HttpSecurityEnvironment {
   readonly OAUTH_GITHUB_TOKEN_URL: string;
   readonly OAUTH_GITHUB_USERINFO_URL: string;
   readonly OAUTH_GITHUB_EMAILS_URL: string;
+  readonly LEAD_HARVESTER_TENANT_ID?: string;
+  readonly LEAD_HARVESTER_SERVICE_USER_ID?: string;
+  readonly LEAD_HARVESTER_SERVICE_MEMBERSHIP_ID?: string;
+  readonly LEAD_HARVESTER_WEBHOOK_SECRET?: string;
 }
 
 function parseNodeEnvironment(value: unknown): NodeEnvironment {
@@ -189,6 +195,36 @@ function parseOAuthClientId(
   return trimmed;
 }
 
+function parseOptionalUuid(value: unknown, name: string): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== 'string') {
+    throw new Error(`${name} must be a string.`);
+  }
+  const normalized = value.trim().toLowerCase();
+  if (!UUID_PATTERN.test(normalized)) {
+    throw new Error(`${name} must be a valid UUID.`);
+  }
+  return normalized;
+}
+
+function parseLeadHarvesterWebhookSecret(value: unknown): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== 'string') {
+    throw new Error('LEAD_HARVESTER_WEBHOOK_SECRET must be a string.');
+  }
+  const secret = value.trim();
+  if (secret.length < MINIMUM_LEAD_HARVESTER_WEBHOOK_SECRET_LENGTH) {
+    throw new Error(
+      `LEAD_HARVESTER_WEBHOOK_SECRET must contain at least ${String(MINIMUM_LEAD_HARVESTER_WEBHOOK_SECRET_LENGTH)} characters.`,
+    );
+  }
+  return secret;
+}
+
 function requireHttpsInProduction(url: URL, name: string, nodeEnvironment: NodeEnvironment): void {
   if (nodeEnvironment === 'production' && url.protocol !== 'https:') {
     throw new Error(`${name} must use https in production.`);
@@ -279,6 +315,21 @@ export function validateEnvironment(
     'OAUTH_GITHUB_REDIRECT_URI',
     nodeEnvironment,
   );
+  const leadHarvesterTenantId = parseOptionalUuid(
+    configuration.LEAD_HARVESTER_TENANT_ID,
+    'LEAD_HARVESTER_TENANT_ID',
+  );
+  const leadHarvesterServiceUserId = parseOptionalUuid(
+    configuration.LEAD_HARVESTER_SERVICE_USER_ID,
+    'LEAD_HARVESTER_SERVICE_USER_ID',
+  );
+  const leadHarvesterServiceMembershipId = parseOptionalUuid(
+    configuration.LEAD_HARVESTER_SERVICE_MEMBERSHIP_ID,
+    'LEAD_HARVESTER_SERVICE_MEMBERSHIP_ID',
+  );
+  const leadHarvesterWebhookSecret = parseLeadHarvesterWebhookSecret(
+    configuration.LEAD_HARVESTER_WEBHOOK_SECRET,
+  );
 
   return {
     ...configuration,
@@ -350,6 +401,18 @@ export function validateEnvironment(
       DEFAULT_OAUTH_GITHUB_EMAILS_URL,
       nodeEnvironment,
     ),
+    ...(leadHarvesterTenantId === undefined
+      ? {}
+      : { LEAD_HARVESTER_TENANT_ID: leadHarvesterTenantId }),
+    ...(leadHarvesterServiceUserId === undefined
+      ? {}
+      : { LEAD_HARVESTER_SERVICE_USER_ID: leadHarvesterServiceUserId }),
+    ...(leadHarvesterServiceMembershipId === undefined
+      ? {}
+      : { LEAD_HARVESTER_SERVICE_MEMBERSHIP_ID: leadHarvesterServiceMembershipId }),
+    ...(leadHarvesterWebhookSecret === undefined
+      ? {}
+      : { LEAD_HARVESTER_WEBHOOK_SECRET: leadHarvesterWebhookSecret }),
     ...validateHttpSecurityEnvironment(configuration, nodeEnvironment),
   };
 }

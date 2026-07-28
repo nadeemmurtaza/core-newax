@@ -28,6 +28,7 @@ model CoreTenant {
   files                     CoreFile[]
   auditLogs                 CoreAuditLog[]
   externalReferences        CoreExternalReference[]
+  serviceAccounts           CoreServiceAccount[]
 
   @@index([status])
   @@index([name])
@@ -276,17 +277,40 @@ model CoreCertificateImport {
   @@map("core_certificate_imports")
 }
 
-model CoreUser {
+model CoreServiceAccount {
   id          String    @id @default(uuid()) @db.Uuid
-  personId    String    @unique @map("person_id") @db.Uuid
-  status      String    @default("invited") @db.VarChar(32)
+  tenantId    String?   @map("tenant_id") @db.Uuid
+  name        String    @db.VarChar(128)
+  description String?   @db.Text
+  status      String    @default("active") @db.VarChar(32)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant      CoreTenant?      @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  user        CoreUser?
+  memberships CoreMembership[]
+
+  @@index([tenantId, status])
+  @@map("core_service_accounts")
+}
+
+// A CoreUser represents a human (via personId) OR a machine/integration identity
+// (via serviceAccountId) — never both, never neither. See ADR 0035: a service
+// account must not be disguised as a CorePerson.
+model CoreUser {
+  id               String    @id @default(uuid()) @db.Uuid
+  personId         String?   @unique @map("person_id") @db.Uuid
+  serviceAccountId String?   @unique @map("service_account_id") @db.Uuid
+  status           String    @default("invited") @db.VarChar(32)
   lastLoginAt DateTime? @map("last_login_at") @db.Timestamptz(6)
   lockedUntil DateTime? @map("locked_until") @db.Timestamptz(6)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  person                                 CorePerson                  @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  person                                 CorePerson?                 @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  serviceAccount                         CoreServiceAccount?         @relation(fields: [serviceAccountId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   identities                             CoreUserIdentity[]
   credentials                            CoreUserCredential[]
   sessions                               CoreUserSession[]
@@ -399,9 +423,12 @@ model CoreUserExternalIdentity {
   @@map("core_user_external_identities")
 }
 
+// A CoreMembership belongs to a human (personId) OR a machine/integration
+// identity (serviceAccountId) — never both, never neither. See ADR 0035.
 model CoreMembership {
-  id              String    @id @default(uuid()) @db.Uuid
-  personId        String    @map("person_id") @db.Uuid
+  id               String    @id @default(uuid()) @db.Uuid
+  personId         String?   @map("person_id") @db.Uuid
+  serviceAccountId String?   @map("service_account_id") @db.Uuid
   organizationId  String    @map("organization_id") @db.Uuid
   membershipType  String    @map("membership_type") @db.VarChar(64)
   referenceNumber String?   @map("reference_number") @db.VarChar(128)
@@ -412,12 +439,14 @@ model CoreMembership {
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  person            CorePerson             @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  person            CorePerson?            @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  serviceAccount    CoreServiceAccount?    @relation(fields: [serviceAccountId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   organization      CoreOrganization       @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   membershipRoles   CoreMembershipRole[]
   objectAssignments CoreObjectAssignment[]
 
   @@index([personId, status])
+  @@index([serviceAccountId, status])
   @@index([organizationId, membershipType, status])
   @@map("core_memberships")
 }

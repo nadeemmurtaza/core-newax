@@ -22,6 +22,7 @@ import {
   HTTP_AUTHENTICATION_SENSITIVE_KEY,
   HTTP_CONTEXT_MODE_KEY,
   HTTP_PUBLIC_AUTHENTICATION_MUTATION_KEY,
+  HTTP_PUBLIC_SIGNED_MUTATION_KEY,
   HTTP_REQUIRED_PERMISSIONS_KEY,
 } from './http-security.decorators';
 import type {
@@ -102,12 +103,18 @@ export class HttpSecurityGuard implements CanActivate {
         executionContext.getHandler(),
         executionContext.getClass(),
       ]) ?? false;
+    const publicSignedMutation =
+      this.reflector.getAllAndOverride<boolean>(HTTP_PUBLIC_SIGNED_MUTATION_KEY, [
+        executionContext.getHandler(),
+        executionContext.getClass(),
+      ]) ?? false;
     const stateChanging = this.originPolicy.isStateChanging(method);
     this.assertMetadataCompatibility(
       contextMode,
       requiredPermissions,
       authenticationSensitive,
       publicAuthenticationMutation,
+      publicSignedMutation,
       stateChanging,
     );
 
@@ -115,13 +122,17 @@ export class HttpSecurityGuard implements CanActivate {
     request.newaxRequiredPermissions = [...requiredPermissions];
 
     if (contextMode === 'public') {
-      if (stateChanging && !publicAuthenticationMutation) {
+      if (stateChanging && !publicAuthenticationMutation && !publicSignedMutation) {
         throw new HttpSecurityError(
           'HTTP_SECURITY_FORBIDDEN',
           'Unauthenticated state-changing HTTP endpoints are not enabled.',
           403,
         );
       }
+      // A signed-mutation endpoint authenticates itself (e.g. a request-signature
+      // guard applied at the controller) instead of via session/CSRF — this guard's
+      // job for such a route ends here, having confirmed the metadata is internally
+      // consistent below.
       return true;
     }
 
@@ -169,6 +180,7 @@ export class HttpSecurityGuard implements CanActivate {
     requiredPermissions: readonly string[],
     authenticationSensitive: boolean,
     publicAuthenticationMutation: boolean,
+    publicSignedMutation: boolean,
     stateChanging: boolean,
   ): void {
     if (requiredPermissions.length > 0 && contextMode !== 'organization') {
@@ -185,6 +197,20 @@ export class HttpSecurityGuard implements CanActivate {
       throw new HttpSecurityError(
         'HTTP_SECURITY_INVALID_INPUT',
         'Public authentication mutation metadata is inconsistent.',
+        500,
+      );
+    }
+    if (publicSignedMutation && (contextMode !== 'public' || !stateChanging)) {
+      throw new HttpSecurityError(
+        'HTTP_SECURITY_INVALID_INPUT',
+        'Public signed mutation metadata is inconsistent.',
+        500,
+      );
+    }
+    if (publicAuthenticationMutation && publicSignedMutation) {
+      throw new HttpSecurityError(
+        'HTTP_SECURITY_INVALID_INPUT',
+        'An endpoint cannot be both a public authentication mutation and a public signed mutation.',
         500,
       );
     }

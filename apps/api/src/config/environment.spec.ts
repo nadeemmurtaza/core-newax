@@ -187,6 +187,45 @@ describe('validateEnvironment', () => {
     ).toThrow('AUTH_TOKEN_PEPPER must contain at least 32 characters.');
   });
 
+  it('leaves lead-harvester integration settings unset by default', () => {
+    const result = validateEnvironment({});
+    expect(result.LEAD_HARVESTER_TENANT_ID).toBeUndefined();
+    expect(result.LEAD_HARVESTER_SERVICE_USER_ID).toBeUndefined();
+    expect(result.LEAD_HARVESTER_SERVICE_MEMBERSHIP_ID).toBeUndefined();
+    expect(result.LEAD_HARVESTER_WEBHOOK_SECRET).toBeUndefined();
+  });
+
+  it('accepts valid lead-harvester integration settings', () => {
+    const webhookSecret = 'lead-harvester-webhook-secret-with-more-than-32-characters';
+    expect(
+      validateEnvironment({
+        LEAD_HARVESTER_TENANT_ID: '11111111-1111-1111-1111-111111111111',
+        LEAD_HARVESTER_SERVICE_USER_ID: '22222222-2222-2222-2222-222222222222',
+        LEAD_HARVESTER_SERVICE_MEMBERSHIP_ID: '33333333-3333-3333-3333-333333333333',
+        LEAD_HARVESTER_WEBHOOK_SECRET: webhookSecret,
+      }),
+    ).toMatchObject({
+      LEAD_HARVESTER_TENANT_ID: '11111111-1111-1111-1111-111111111111',
+      LEAD_HARVESTER_SERVICE_USER_ID: '22222222-2222-2222-2222-222222222222',
+      LEAD_HARVESTER_SERVICE_MEMBERSHIP_ID: '33333333-3333-3333-3333-333333333333',
+      LEAD_HARVESTER_WEBHOOK_SECRET: webhookSecret,
+    });
+  });
+
+  it('rejects an invalid LEAD_HARVESTER_TENANT_ID', () => {
+    expect(() =>
+      validateEnvironment({ LEAD_HARVESTER_TENANT_ID: 'not-a-uuid' }),
+    ).toThrow('LEAD_HARVESTER_TENANT_ID must be a valid UUID.');
+  });
+
+  it('rejects a short LEAD_HARVESTER_WEBHOOK_SECRET', () => {
+    expect(() =>
+      validateEnvironment({ LEAD_HARVESTER_WEBHOOK_SECRET: 'too-short' }),
+    ).toThrow(
+      'LEAD_HARVESTER_WEBHOOK_SECRET must contain at least 32 characters.',
+    );
+  });
+
   it('rejects an inverted authentication password range', () => {
     expect(() =>
       validateEnvironment({
