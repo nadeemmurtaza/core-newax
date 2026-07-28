@@ -160,7 +160,8 @@ describe('OAuthHttpController', () => {
       const result = controller.initiateGitHub(response);
 
       const cookie = response.headers.get('Set-Cookie') as string;
-      const cookieState = cookie.split(';')[0].split('=')[1];
+      const cookieState = (cookie.split(';')[0] ?? '').split('=')[1] ?? '';
+      expect(cookieState).not.toBe('');
 
       expect(result.redirectUrl).toContain(`state=${cookieState}`);
     });
