@@ -34,3 +34,12 @@ This is `core-newax`, a pnpm/Turborepo monorepo (NestJS, Next.js, Prisma) with a
 - **Prefer existing conventions over new patterns.** Check whether a similar workflow,
   script, or module already exists before introducing a new one; flag unnecessary
   duplication or unused code, dependencies, and abstractions.
+
+## Merge Policy
+
+- **Every Codex review finding must be resolved before a pull request merges.**
+  "Resolved" means either the underlying issue is fixed and the review thread marked
+  resolved, or the finding is dismissed with a written justification (e.g. a false
+  positive) and the thread marked resolved. A pull request with open, unaddressed Codex
+  review threads must not merge, regardless of CI status. This applies to every severity
+  level Codex reports (P0 through P2), not only the highest-priority findings.
