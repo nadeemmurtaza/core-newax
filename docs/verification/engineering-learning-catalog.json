@@ -25,6 +25,8 @@
     "engineering-executive-reporting-quality",
     "external-tool-operation",
     "engineering-failure-intake-quality",
+    "dependency-update-governance-scope",
+    "security-scanning-coverage",
     "unknown"
   ],
   "rootCauses": [
@@ -422,6 +424,30 @@
       "unsuccessfulMethod": "Capture every failed step of the governance job identically, treating a bookkeeping-consistency failure caused by the capture mechanism itself the same as a real defect in the code under review.",
       "successfulMethod": "Exclude the governance job's self-referential bookkeeping steps from automatic capture when they are the only failed steps in a run, while still capturing real CI failures and every governance check that evaluates evidence about the change itself.",
       "preventionControl": "tooling/workflow-failure-capture.mjs classifies failed steps before capture and skips a job whose only failed steps are self-referential governance bookkeeping."
+    },
+    {
+      "id": "ROOT-GOVERNANCE-TEMPLATE-BLOCKS-AUTOMATED-PR",
+      "ledgerEntry": "EL-0034",
+      "category": "dependency-update-governance-scope",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": ["Missing required heading", "Missing required field", "dependabot"],
+      "rootCause": "The pull-request governance job's structural, planning, and evidence checks assumed every pull request was human-authored and filled in the governance template, with no exemption for automated dependency-update pull requests, so every Dependabot pull request failed structural validation immediately regardless of the actual dependency change's correctness.",
+      "unsuccessfulMethod": "Apply the full human-authored governance record requirement uniformly to every pull request regardless of author, with no path for a routine automated dependency bump to ever pass.",
+      "successfulMethod": "Skip the entire governance-record job for pull requests authored by dependabot[bot], since those pull requests carry no engineering decision for the record to capture, while the separate Continuous Integration workflow still fully gates mergeability for them.",
+      "preventionControl": ".github/workflows/pr-governance.yml's verify-learning-record job carries a job-level if condition exempting dependabot[bot]-authored pull requests."
+    },
+    {
+      "id": "ROOT-SECURITY-SCANNING-SINGLE-TOOL-COVERAGE",
+      "ledgerEntry": "EL-0035",
+      "category": "security-scanning-coverage",
+      "confidence": "medium",
+      "deterministic": false,
+      "signatures": ["single static-analysis engine", "single dependency-vulnerability source"],
+      "rootCause": "The repository's automated security posture relied on a single static-analysis engine (CodeQL) and a single dependency-vulnerability source (Dependabot alerts), with no second, differently-sourced tool to cross-check findings.",
+      "unsuccessfulMethod": "Treat one static-analysis engine and one dependency-alert source as complete security coverage.",
+      "successfulMethod": "Add Semgrep and Snyk as informational, non-blocking workflows uploading SARIF results to GitHub Code Scanning alongside CodeQL, without introducing a new required check.",
+      "preventionControl": ".github/workflows/semgrep.yml and .github/workflows/snyk.yml run on push, pull request, and a weekly schedule; the Snyk workflow degrades gracefully when SNYK_TOKEN is not configured."
     }
   ]
 }
