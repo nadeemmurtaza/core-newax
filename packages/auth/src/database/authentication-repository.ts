@@ -3,7 +3,9 @@ import type {
   AuthenticationSessionPage,
   AuthenticationSessionRecord,
   CreateAuthenticationSessionInput,
+  CreateExternalIdentityInput,
   CreatePasswordCredentialInput,
+  ExternalIdentityRecord,
   PasswordCredentialRecord,
   RecordAuthenticationAttemptInput,
   SessionStatus,
@@ -19,6 +21,10 @@ export interface AuthenticationRepository {
     input: CreatePasswordCredentialInput,
   ): Promise<PasswordCredentialRecord | null>;
   createSession(input: CreateAuthenticationSessionInput): Promise<AuthenticationSessionRecord>;
+  findExternalIdentity(
+    provider: string,
+    providerSubject: string,
+  ): Promise<ExternalIdentityRecord | null>;
   findPasswordCredential(userId: string): Promise<PasswordCredentialRecord | null>;
   findSessionByTokenHash(sessionTokenHash: string): Promise<AuthenticationSessionRecord | null>;
   listSessions(
@@ -48,4 +54,5 @@ export interface AuthenticationRepository {
     occurredAt: Date,
   ): Promise<AuthenticationSessionRecord | null>;
   touchSession(sessionId: string, occurredAt: Date): Promise<AuthenticationSessionRecord | null>;
+  upsertExternalIdentity(input: CreateExternalIdentityInput): Promise<ExternalIdentityRecord>;
 }

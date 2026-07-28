@@ -20,6 +20,7 @@ import type {
   AuthenticationSessionListQuery,
   AuthenticationSessionPage,
   AuthenticationSessionRecord,
+  OAuthLoginInput,
   PasswordChangeInput,
   PasswordCredentialRecord,
   PasswordEnrollmentInput,
@@ -249,6 +250,131 @@ export class AuthenticationService {
       sessionToken: issuedToken.token,
       session,
     };
+  }
+
+  async loginWithExternalIdentity(input: OAuthLoginInput): Promise<PasswordLoginResult> {
+    const provider = this.requireText(input.provider, 'provider', 64);
+    const subject = this.requireText(input.profile.subject, 'profile.subject', 256);
+    const metadata = this.normalizeMetadata(input);
+    const occurredAt = this.clock.now();
+    const identityFingerprint = this.loginFingerprintService.fingerprint(
+      'external',
+      `${provider}:${subject}`,
+    );
+    const providerUsername = this.normalizedProviderUsername(input.profile.username);
+
+    let userId: string | null = null;
+
+    const existingIdentity = await this.repository.findExternalIdentity(provider, subject);
+    if (existingIdentity !== null) {
+      const linkedIdentity = await this.repository.upsertExternalIdentity({
+        userId: existingIdentity.userId,
+        provider,
+        providerSubject: subject,
+        providerUsername,
+        occurredAt,
+      });
+      userId = linkedIdentity.userId;
+    } else if (input.profile.email !== null && input.profile.email.trim().length > 0) {
+      const emailIdentity = await this.userDirectory.resolveIdentity(
+        'email',
+        input.profile.email.trim().toLowerCase(),
+      );
+      if (
+        emailIdentity !== null &&
+        emailIdentity.isVerified &&
+        emailIdentity.account.status === 'active'
+      ) {
+        const linkedIdentity = await this.repository.upsertExternalIdentity({
+          userId: emailIdentity.account.userId,
+          provider,
+          providerSubject: subject,
+          providerUsername,
+          occurredAt,
+        });
+        userId = linkedIdentity.userId;
+      }
+    }
+
+    if (userId === null) {
+      await this.recordFailure(
+        null,
+        identityFingerprint,
+        'failed_unknown_identity',
+        metadata,
+        occurredAt,
+      );
+      throw this.authenticationFailed();
+    }
+
+    const account = await this.userDirectory.findAccountById(userId);
+    if (account === null || account.status !== 'active') {
+      await this.recordFailure(
+        userId,
+        identityFingerprint,
+        'blocked_account_status',
+        metadata,
+        occurredAt,
+      );
+      throw this.authenticationFailed();
+    }
+    if (account.lockedUntil !== null && account.lockedUntil > occurredAt) {
+      await this.recordFailure(
+        userId,
+        identityFingerprint,
+        'blocked_account_lock',
+        metadata,
+        occurredAt,
+      );
+      throw this.authenticationFailed();
+    }
+
+    const updatedAccount = await this.userDirectory.recordSuccessfulLogin(
+      account.userId,
+      occurredAt,
+    );
+    const issuedToken = this.sessionTokenService.issue();
+    const expiresAt = this.addMinutes(occurredAt, this.policy.sessionTtlMinutes);
+    const session = await this.repository.createSession({
+      userId: account.userId,
+      sessionTokenHash: issuedToken.tokenHash,
+      ipAddress: metadata.ipAddress,
+      userAgent: metadata.userAgent,
+      expiresAt,
+      occurredAt,
+    });
+
+    await this.repository.recordAttempt({
+      userId: account.userId,
+      identityFingerprint,
+      outcome: 'succeeded',
+      ipAddress: metadata.ipAddress,
+      userAgent: metadata.userAgent,
+      occurredAt,
+    });
+    await this.eventPublisher.publish({
+      name: 'authentication.session_created',
+      occurredAt,
+      session,
+    });
+    await this.eventPublisher.publish({
+      name: 'authentication.login_succeeded',
+      occurredAt,
+      userId: account.userId,
+      sessionId: session.id,
+      ipAddress: metadata.ipAddress,
+    });
+
+    return {
+      userId: updatedAccount.userId,
+      personId: updatedAccount.personId,
+      sessionToken: issuedToken.token,
+      session,
+    };
+  }
+
+  private normalizedProviderUsername(username: string | null): string | null {
+    return username !== null && username.trim().length > 0 ? username.trim().slice(0, 256) : null;
   }
 
   async changePassword(input: PasswordChangeInput): Promise<void> {

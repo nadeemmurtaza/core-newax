@@ -6,6 +6,7 @@ import { AccountAccessModule } from './account-access/account-access.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { AuditModule } from './audit/audit.module';
 import { AuthenticationHttpController } from './authentication-http/authentication-http.controller';
+import { OAuthHttpController } from './authentication-http/oauth-http.controller';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { validateEnvironment } from './config/environment';
 import { ContactsModule } from './contacts/contacts.module';
@@ -50,7 +51,7 @@ import { UsersModule } from './users/users.module';
     HttpSecurityModule,
     AccountAccessModule,
   ],
-  controllers: [HealthController, AuthenticationHttpController],
+  controllers: [HealthController, AuthenticationHttpController, OAuthHttpController],
   providers: [],
 })
 export class AppModule {}

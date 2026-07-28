@@ -5,6 +5,7 @@ import { AuthenticationService, validateAuthenticationPolicy } from '@newax/auth
 import type { ApplicationEnvironment } from '../config/environment';
 import { DatabaseModule } from '../database/database.module';
 import { UsersModule } from '../users/users.module';
+import { GitHubOAuthProvider } from './github-oauth.provider';
 import { LoggingAuthenticationEventPublisher } from './logging-authentication-event.publisher';
 import {
   BaselinePasswordBlocklist,
@@ -15,6 +16,7 @@ import {
 } from './node-authentication-security';
 import { PrismaAuthenticationRepository } from './prisma-authentication.repository';
 import { UsersAuthenticationDirectory } from './users-authentication.directory';
+import { GITHUB_OAUTH_PROVIDER } from '../authentication-http/oauth-http.controller';
 
 @Module({
   imports: [DatabaseModule, UsersModule],
@@ -97,7 +99,23 @@ import { UsersAuthenticationDirectory } from './users-authentication.directory';
           }),
         ),
     },
+    {
+      provide: GITHUB_OAUTH_PROVIDER,
+      inject: [ConfigService],
+      useFactory: (
+        configuration: ConfigService<ApplicationEnvironment, true>,
+      ): GitHubOAuthProvider =>
+        new GitHubOAuthProvider({
+          clientId: configuration.get('OAUTH_GITHUB_CLIENT_ID', { infer: true }) ?? '',
+          clientSecret: configuration.get('OAUTH_GITHUB_CLIENT_SECRET', { infer: true }) ?? '',
+          redirectUri: configuration.get('OAUTH_GITHUB_REDIRECT_URI', { infer: true }) ?? '',
+          authorizeUrl: configuration.get('OAUTH_GITHUB_AUTHORIZE_URL', { infer: true }),
+          tokenUrl: configuration.get('OAUTH_GITHUB_TOKEN_URL', { infer: true }),
+          userinfoUrl: configuration.get('OAUTH_GITHUB_USERINFO_URL', { infer: true }),
+          emailsUrl: configuration.get('OAUTH_GITHUB_EMAILS_URL', { infer: true }),
+        }),
+    },
   ],
-  exports: [AuthenticationService],
+  exports: [AuthenticationService, GITHUB_OAUTH_PROVIDER],
 })
 export class AuthenticationModule {}

@@ -3,8 +3,8 @@ import { promisify } from 'node:util';
 
 import type {
   AuthenticationClock,
-  AuthenticationIdentityType,
   IssuedSessionToken,
+  LoginFingerprintIdentityType,
   LoginFingerprintService,
   PasswordBlocklist,
   PasswordHasher,
@@ -203,7 +203,7 @@ export class NodeLoginFingerprintService
   extends HmacAuthenticationSecurity
   implements LoginFingerprintService
 {
-  fingerprint(identityType: AuthenticationIdentityType, identityValue: string): string {
+  fingerprint(identityType: LoginFingerprintIdentityType, identityValue: string): string {
     return this.digest(
       'newax-auth-login-fingerprint-v1',
       `${identityType}:${identityValue.trim().toLowerCase()}`,

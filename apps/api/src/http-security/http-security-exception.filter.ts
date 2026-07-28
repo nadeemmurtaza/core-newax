@@ -169,6 +169,13 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
     ) {
       return 400;
     }
+    // An unavailable upstream provider is a retryable server-side failure,
+    // not a conflict with the current resource state — checked ahead of the
+    // generic _UNAVAILABLE rule below, which covers client/account-state
+    // conflicts such as AUTHENTICATION_ACCOUNT_UNAVAILABLE.
+    if (code.endsWith('_PROVIDER_UNAVAILABLE')) {
+      return 503;
+    }
     if (code.endsWith('_UNAVAILABLE')) {
       return 409;
     }
@@ -209,6 +216,9 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
     if (statusCode === 429) {
       return 'RATE_LIMITED';
     }
+    if (statusCode === 503) {
+      return 'SERVICE_UNAVAILABLE';
+    }
     return 'INTERNAL_ERROR';
   }
 
@@ -239,6 +249,9 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
     }
     if (statusCode === 429) {
       return 'Too many requests. Try again later.';
+    }
+    if (statusCode === 503) {
+      return 'The service is temporarily unavailable. Try again later.';
     }
     return 'The request could not be completed.';
   }
