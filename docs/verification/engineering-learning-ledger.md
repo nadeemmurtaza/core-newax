@@ -375,10 +375,30 @@ framework, error, or workflow.
   Verification Protocol.
 - Recurrence status: Must be checked in every final report.
 
+## EL-0036: GitHub Actions Referenced by Mutable Tags Instead of Pinned Commits
+
+- Date: 2026-07 retrospective
+- Pull request or task: Semgrep code-scanning findings review
+- Category: Supply-chain pinning
+- Symptom: Semgrep's `github-actions-mutable-action-tag` rule flagged `uses:`
+  steps referencing mutable version tags and one mutable branch across
+  multiple workflow files.
+- Root cause: Third-party actions were referenced by mutable tag or branch,
+  letting a repointed reference inject arbitrary code into workflow runs.
+- Unsuccessful method: Reference actions by version tag or branch name and
+  trust the publisher never to repoint it.
+- Successful method: Pin every `uses:` reference to its exact commit SHA,
+  with a trailing comment noting the human-readable version.
+- Prevention control: Semgrep's `github-actions-mutable-action-tag` rule
+  continues to flag any future unpinned reference in Code Scanning.
+- Verification evidence: Defined by the NEWAX Engineering Accuracy and
+  Verification Protocol.
+- Recurrence status: Must be checked in every final report.
+
 ## Next Entry
 
 Use the next identifier:
 
 ```text
-EL-0036
+EL-0037
 ```
