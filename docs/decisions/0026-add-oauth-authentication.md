@@ -79,9 +79,9 @@ Access tokens returned by OAuth providers are **not** stored.
 
 The OAuth initiation endpoint generates a 32-byte cryptographically random hex `state` value and stores it in a short-lived cookie:
 
-- Name: `newax_oauth_state`
+- Name: `__Host-newax_oauth_state` (the `__Host-` prefix forces the browser to accept it only over `Secure`, host-only, `Path=/` — the same convention `SecureCookieTransport` already uses for the session and CSRF cookies — so a less-trusted sibling subdomain cannot plant a `Domain`-scoped cookie of the same name)
 - `HttpOnly`, `Secure`, `SameSite=Lax`
-- `Path=/api/auth/oauth/github/callback` (scoped to the callback)
+- `Path=/` (required by the `__Host-` prefix)
 - `Max-Age=600` (10-minute TTL)
 
 The callback endpoint validates the `state` query parameter against the cookie value before proceeding. A mismatch or missing cookie results in a 401 response. The state cookie is cleared (Max-Age=0) after a successful callback.
@@ -96,11 +96,19 @@ OAuth login issues a session through the same `repository.createSession` path as
 
 ### 5.7 HTTP boundary
 
-Both OAuth endpoints are marked `@PublicAuthenticationEndpoint()`, which applies:
+Both OAuth endpoints are marked `@PublicEndpoint()` and `@AuthenticationSensitiveEndpoint()`, which applies:
 
 - Public context mode (no existing session required).
 - Authentication-sensitive rate limiting.
 - HTTP security controls from the `HttpBoundaryMiddleware` (origin, fetch-metadata).
+
+`@PublicAuthenticationEndpoint()` (the decorator used for POST-style public mutations such as
+password login) is not used here: it sets `HTTP_PUBLIC_AUTHENTICATION_MUTATION_KEY`, which
+`HttpSecurityGuard` only permits on state-changing HTTP methods, and both OAuth routes are `GET`.
+
+The callback is additionally marked `@AuditAsStateChanging()` so it still receives an
+`http.request.completed` HTTP-boundary audit record on success, even though GET requests are not
+otherwise treated as state-changing by `HttpSecurityGuard`.
 
 No client-supplied `redirect_uri` is accepted. The redirect URI is fixed in server configuration (`OAUTH_GITHUB_REDIRECT_URI`).
 
@@ -114,16 +122,27 @@ No client-supplied `redirect_uri` is accepted. The redirect URI is fixed in serv
 | `OAUTH_GITHUB_AUTHORIZE_URL` | No                     | `https://github.com/login/oauth/authorize`    |
 | `OAUTH_GITHUB_TOKEN_URL`     | No                     | `https://github.com/login/oauth/access_token` |
 | `OAUTH_GITHUB_USERINFO_URL`  | No                     | `https://api.github.com/user`                 |
+| `OAUTH_GITHUB_EMAILS_URL`    | No                     | `https://api.github.com/user/emails`          |
 
-URL overrides allow testing against a stub server in development and test environments.
+URL overrides allow testing against a stub server in development and test environments. In
+production, the redirect URI and all four provider URL overrides must use `https:`; a non-HTTPS
+value fails environment validation at startup.
 
 ### 5.9 GitHub-specific behavior
 
 - Authorization scope: `read:user user:email`.
 - Token exchange uses `application/x-www-form-urlencoded` POST to the token URL.
 - The GitHub numeric user ID (stable, immutable) is used as `provider_subject`.
-- The GitHub `login` handle is stored as `provider_username` (display only; can change).
-- The primary email is taken from the `/user` endpoint response.
+- The GitHub `login` handle is stored as `provider_username` (display only; can change) and
+  refreshed on every login, including logins through an existing external-identity link.
+- The email is always taken from the verified primary entry returned by the `/user/emails`
+  endpoint, never from the `/user` endpoint's public-facing `email` field directly, since that
+  field may reflect a verified non-primary address or be hidden entirely. The public field is
+  used only as a last-resort fallback when no verified primary entry exists.
+- Outbound requests to GitHub (token exchange, profile fetch, email list fetch) are bounded by a
+  10-second timeout. A timeout, network failure, or 5xx response is reported as a retryable
+  `AUTHENTICATION_PROVIDER_UNAVAILABLE` (HTTP 503), distinct from an invalid code or token
+  (`AUTHENTICATION_FAILED`, HTTP 401).
 
 ## 6. Consequences
 

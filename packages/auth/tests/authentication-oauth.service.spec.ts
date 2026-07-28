@@ -361,7 +361,6 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
       profile: {
         subject: '12345',
         email: 'octocat@github.com',
-        name: 'The Octocat',
         username: 'octocat',
       },
     });
@@ -384,7 +383,6 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
       profile: {
         subject: '99999',
         email: 'octocat@github.com',
-        name: null,
         username: 'octocat',
       },
     });
@@ -404,7 +402,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
     await expect(
       service.loginWithExternalIdentity({
         provider: 'github',
-        profile: { subject: '00000', email: null, name: null, username: null },
+        profile: { subject: '00000', email: null, username: null },
       }),
     ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
   });
@@ -421,7 +419,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
     await expect(
       service.loginWithExternalIdentity({
         provider: 'github',
-        profile: { subject: '12345', email: null, name: null, username: null },
+        profile: { subject: '12345', email: null, username: null },
       }),
     ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
   });
@@ -439,7 +437,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
     await expect(
       service.loginWithExternalIdentity({
         provider: 'github',
-        profile: { subject: '12345', email: null, name: null, username: null },
+        profile: { subject: '12345', email: null, username: null },
       }),
     ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
   });
@@ -459,7 +457,6 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
         profile: {
           subject: '99999',
           email: 'unverified@github.com',
-          name: null,
           username: null,
         },
       }),
@@ -477,7 +474,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
 
     await service.loginWithExternalIdentity({
       provider: 'github',
-      profile: { subject: '12345', email: null, name: null, username: null },
+      profile: { subject: '12345', email: null, username: null },
       ipAddress: '192.0.2.1',
     });
 
@@ -496,7 +493,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
 
     await service.loginWithExternalIdentity({
       provider: 'github',
-      profile: { subject: '12345', email: null, name: null, username: null },
+      profile: { subject: '12345', email: null, username: null },
     });
 
     expect(repository.attempts).toHaveLength(1);
@@ -512,7 +509,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
     await expect(
       service.loginWithExternalIdentity({
         provider: 'github',
-        profile: { subject: '00000', email: null, name: null, username: null },
+        profile: { subject: '00000', email: null, username: null },
       }),
     ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
 
@@ -536,7 +533,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
     await expect(
       service.loginWithExternalIdentity({
         provider: 'github',
-        profile: { subject: '12345', email: null, name: null, username: null },
+        profile: { subject: '12345', email: null, username: null },
       }),
     ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
 
@@ -559,7 +556,6 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
         profile: {
           subject: '99999',
           email: 'octocat@github.com',
-          name: null,
           username: 'octocat',
         },
       }),
@@ -580,7 +576,7 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
 
     await service.loginWithExternalIdentity({
       provider: 'github',
-      profile: { subject: '12345', email: null, name: null, username: 'new-handle' },
+      profile: { subject: '12345', email: null, username: 'new-handle' },
     });
 
     expect(repository.upsertCount).toBe(1);

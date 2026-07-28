@@ -21,7 +21,6 @@ interface GitHubTokenResponse {
 interface GitHubUserResponse {
   readonly id?: number;
   readonly login?: string;
-  readonly name?: string | null;
   readonly email?: string | null;
 }
 
@@ -98,20 +97,22 @@ export class GitHubOAuthProvider implements OAuthProvider {
       typeof data.email === 'string' && data.email.trim().length > 0
         ? data.email.trim().toLowerCase()
         : null;
+    const verifiedPrimaryEmail = await this.fetchVerifiedPrimaryEmail(accessToken);
 
     return {
       subject: String(data.id),
-      email: profileEmail ?? (await this.fetchVerifiedPrimaryEmail(accessToken)),
-      name: typeof data.name === 'string' && data.name.trim().length > 0 ? data.name.trim() : null,
+      email: verifiedPrimaryEmail ?? profileEmail,
       username:
         typeof data.login === 'string' && data.login.trim().length > 0 ? data.login.trim() : null,
     };
   }
 
   /**
-   * GitHub omits `email` from `/user` when a user has hidden their public
-   * email, even with the `user:email` scope granted. Fall back to the
-   * verified primary address from `/user/emails` in that case.
+   * The `/user` response's `email` field is the user's chosen public email,
+   * which may be a verified secondary address, or null when hidden — never
+   * a reliable stand-in for the account's true primary address. Always
+   * prefer the verified primary from `/user/emails`, falling back to the
+   * public field only when no verified primary is available.
    */
   private async fetchVerifiedPrimaryEmail(accessToken: string): Promise<string | null> {
     const response = await this.request(

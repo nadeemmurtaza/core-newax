@@ -57,7 +57,6 @@ class FakeGitHubProvider implements OAuthProvider {
     return {
       subject: '12345',
       email: 'octocat@github.com',
-      name: 'The Octocat',
       username: 'octocat',
     };
   }

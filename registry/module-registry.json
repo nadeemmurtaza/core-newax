@@ -291,7 +291,10 @@
         "maximum_failed_attempts",
         "account_lock_minutes",
         "session_touch_interval_minutes",
-        "token_pepper"
+        "token_pepper",
+        "oauth_github_client_credentials",
+        "oauth_github_redirect_uri",
+        "oauth_github_provider_endpoints"
       ],
       "database_ownership": [
         "core_user_credentials",

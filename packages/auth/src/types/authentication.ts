@@ -151,7 +151,6 @@ export interface IssuedSessionToken {
 export interface ExternalIdentityProfile {
   readonly subject: string;
   readonly email: string | null;
-  readonly name: string | null;
   readonly username: string | null;
 }
 

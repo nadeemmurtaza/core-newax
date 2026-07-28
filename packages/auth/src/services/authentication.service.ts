@@ -329,6 +329,10 @@ export class AuthenticationService {
       throw this.authenticationFailed();
     }
 
+    const updatedAccount = await this.userDirectory.recordSuccessfulLogin(
+      account.userId,
+      occurredAt,
+    );
     const issuedToken = this.sessionTokenService.issue();
     const expiresAt = this.addMinutes(occurredAt, this.policy.sessionTtlMinutes);
     const session = await this.repository.createSession({
@@ -339,11 +343,6 @@ export class AuthenticationService {
       expiresAt,
       occurredAt,
     });
-
-    const updatedAccount = await this.userDirectory.recordSuccessfulLogin(
-      account.userId,
-      occurredAt,
-    );
 
     await this.repository.recordAttempt({
       userId: account.userId,
