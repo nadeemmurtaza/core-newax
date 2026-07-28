@@ -1,0 +1,14 @@
+# Temporary file to verify OpenAI Codex's automatic PR code review picks up
+# AGENTS.md's Code Review Rules. This workflow never runs automatically
+# (workflow_dispatch only) and this pull request is not intended to merge.
+name: Codex Review Test (temporary)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
