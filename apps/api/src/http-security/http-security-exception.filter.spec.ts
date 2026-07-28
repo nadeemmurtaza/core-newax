@@ -1,5 +1,6 @@
 import type { ArgumentsHost } from '@nestjs/common';
 import { AddressModuleError } from '@newax/addresses';
+import { AuthenticationError } from '@newax/auth';
 import { ObjectModuleError } from '@newax/objects';
 import { PeopleModuleError } from '@newax/people';
 import { describe, expect, it } from 'vitest';
@@ -224,5 +225,51 @@ describe('HttpSecurityExceptionFilter current-person error mapping', () => {
     expect(JSON.stringify(response.body)).not.toContain('parent object');
     expect(JSON.stringify(response.body)).not.toContain('current tenant');
     expect(auditSink.records).toHaveLength(1);
+  });
+
+  it('maps an unavailable authentication provider to a retryable service-unavailable envelope', async () => {
+    const auditSink = new RecordingAuditSink();
+    const response = new FakeResponse();
+
+    await createFilter(auditSink).catch(
+      new AuthenticationError(
+        'AUTHENTICATION_PROVIDER_UNAVAILABLE',
+        'GitHub token exchange failed: the provider returned a server error.',
+      ),
+      createHost(response),
+    );
+
+    expect(response.statusCode).toBe(503);
+    expect(response.body).toEqual({
+      error: {
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'The service is temporarily unavailable. Try again later.',
+        requestId: 'request-1',
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain('GitHub');
+    expect(auditSink.records).toHaveLength(1);
+  });
+
+  it('still maps an unavailable account to a conflict envelope, not service-unavailable', async () => {
+    const auditSink = new RecordingAuditSink();
+    const response = new FakeResponse();
+
+    await createFilter(auditSink).catch(
+      new AuthenticationError(
+        'AUTHENTICATION_ACCOUNT_UNAVAILABLE',
+        'Only invited accounts may enroll an initial password.',
+      ),
+      createHost(response),
+    );
+
+    expect(response.statusCode).toBe(409);
+    expect(response.body).toEqual({
+      error: {
+        code: 'CONFLICT',
+        message: 'The request conflicts with the current resource state.',
+        requestId: 'request-1',
+      },
+    });
   });
 });

@@ -6,6 +6,7 @@ export const HTTP_REQUIRED_PERMISSIONS_KEY = 'newax:http-security:required-permi
 export const HTTP_AUTHENTICATION_SENSITIVE_KEY = 'newax:http-security:authentication-sensitive';
 export const HTTP_PUBLIC_AUTHENTICATION_MUTATION_KEY =
   'newax:http-security:public-authentication-mutation';
+export const HTTP_AUDIT_AS_STATE_CHANGING_KEY = 'newax:http-security:audit-as-state-changing';
 
 const PERMISSION_CODE_PATTERN = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/u;
 
@@ -53,4 +54,9 @@ export function RequirePermissions(
 
 export function AuthenticationSensitiveEndpoint(): MethodDecorator & ClassDecorator {
   return SetMetadata(HTTP_AUTHENTICATION_SENSITIVE_KEY, true);
+}
+
+// Forces an HTTP-boundary audit record on success even for a safe HTTP method (e.g. a GET OAuth callback); independent of the CSRF-driving newaxStateChanging flag.
+export function AuditAsStateChanging(): MethodDecorator & ClassDecorator {
+  return SetMetadata(HTTP_AUDIT_AS_STATE_CHANGING_KEY, true);
 }

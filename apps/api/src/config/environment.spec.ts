@@ -116,6 +116,18 @@ describe('validateEnvironment', () => {
     ).toThrow('OAUTH_GITHUB_REDIRECT_URI must be a valid URL.');
   });
 
+  it('rejects a non-https OAuth GitHub redirect URI in production', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        AUTH_TOKEN_PEPPER: productionPepper,
+        OAUTH_GITHUB_CLIENT_ID: productionOauthClientId,
+        OAUTH_GITHUB_CLIENT_SECRET: productionOauthClientSecret,
+        OAUTH_GITHUB_REDIRECT_URI: 'http://api.example.test/api/auth/oauth/github/callback',
+      }),
+    ).toThrow('OAUTH_GITHUB_REDIRECT_URI must use https in production.');
+  });
+
   it('accepts OAuth GitHub URL overrides in development', () => {
     expect(
       validateEnvironment({
@@ -132,10 +144,38 @@ describe('validateEnvironment', () => {
     });
   });
 
+  it('accepts a non-https OAuth GitHub URL override in development', () => {
+    expect(
+      validateEnvironment({
+        OAUTH_GITHUB_AUTHORIZE_URL: 'http://github.example.test/login/oauth/authorize',
+      }),
+    ).toMatchObject({
+      OAUTH_GITHUB_AUTHORIZE_URL: 'http://github.example.test/login/oauth/authorize',
+    });
+  });
+
   it('rejects an invalid OAUTH_GITHUB_AUTHORIZE_URL', () => {
     expect(() => validateEnvironment({ OAUTH_GITHUB_AUTHORIZE_URL: 'not-a-url' })).toThrow(
       'OAUTH_GITHUB_AUTHORIZE_URL must be a valid URL.',
     );
+  });
+
+  it.each([
+    ['OAUTH_GITHUB_AUTHORIZE_URL', 'http://github.example.test/login/oauth/authorize'],
+    ['OAUTH_GITHUB_TOKEN_URL', 'http://github.example.test/login/oauth/access_token'],
+    ['OAUTH_GITHUB_USERINFO_URL', 'http://api.github.example.test/user'],
+    ['OAUTH_GITHUB_EMAILS_URL', 'http://api.github.example.test/user/emails'],
+  ])('rejects a non-https %s in production', (name, value) => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        AUTH_TOKEN_PEPPER: productionPepper,
+        OAUTH_GITHUB_CLIENT_ID: productionOauthClientId,
+        OAUTH_GITHUB_CLIENT_SECRET: productionOauthClientSecret,
+        OAUTH_GITHUB_REDIRECT_URI: productionOauthRedirectUri,
+        [name]: value,
+      }),
+    ).toThrow(`${name} must use https in production.`);
   });
 
   it('rejects a short authentication token pepper', () => {

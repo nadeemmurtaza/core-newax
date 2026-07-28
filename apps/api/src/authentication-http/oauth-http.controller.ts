@@ -9,6 +9,7 @@ import {
 } from '@newax/http-security';
 
 import {
+  AuditAsStateChanging,
   AuthenticationSensitiveEndpoint,
   PublicEndpoint,
 } from '../http-security/http-security.decorators';
@@ -63,6 +64,7 @@ export class OAuthHttpController {
   @Header('Cache-Control', 'no-store')
   @PublicEndpoint()
   @AuthenticationSensitiveEndpoint()
+  @AuditAsStateChanging()
   async callbackGitHub(
     @Query('code') code: unknown,
     @Query('state') state: unknown,
