@@ -28,6 +28,7 @@ import type {
   CreatePasswordCredentialInput,
   ExternalIdentityRecord,
   IssuedSessionToken,
+  LoginFingerprintIdentityType,
   PasswordCredentialRecord,
   PasswordVerificationResult,
   RecordAuthenticationAttemptInput,
@@ -415,7 +416,7 @@ class FakeSessionTokenService implements SessionTokenService {
 }
 
 class FakeFingerprintService implements LoginFingerprintService {
-  fingerprint(identityType: AuthenticationIdentityType, identityValue: string): string {
+  fingerprint(identityType: LoginFingerprintIdentityType, identityValue: string): string {
     return `fingerprint:${identityType}:${identityValue.toLowerCase()}`;
   }
 }

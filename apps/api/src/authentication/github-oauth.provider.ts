@@ -1,5 +1,7 @@
 import { AuthenticationError, type ExternalIdentityProfile, type OAuthProvider } from '@newax/auth';
 
+const OUTBOUND_REQUEST_TIMEOUT_MILLISECONDS = 10_000;
+
 export interface GitHubOAuthConfig {
   readonly clientId: string;
   readonly clientSecret: string;
@@ -51,18 +53,18 @@ export class GitHubOAuthProvider implements OAuthProvider {
       redirect_uri: this.config.redirectUri,
     });
 
-    const response = await fetch(this.config.tokenUrl, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const response = await this.request(
+      this.config.tokenUrl,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
       },
-      body: body.toString(),
-    });
-
-    if (!response.ok) {
-      throw new AuthenticationError('AUTHENTICATION_FAILED', 'GitHub token exchange failed.');
-    }
+      'GitHub token exchange',
+    );
 
     const data = (await response.json()) as GitHubTokenResponse;
 
@@ -77,17 +79,11 @@ export class GitHubOAuthProvider implements OAuthProvider {
   }
 
   async fetchProfile(accessToken: string): Promise<ExternalIdentityProfile> {
-    const response = await fetch(this.config.userinfoUrl, {
-      headers: {
-        Authorization: 'Bearer ' + accessToken,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    });
-
-    if (!response.ok) {
-      throw new AuthenticationError('AUTHENTICATION_FAILED', 'GitHub user profile fetch failed.');
-    }
+    const response = await this.request(
+      this.config.userinfoUrl,
+      { headers: this.authorizedHeaders(accessToken) },
+      'GitHub user profile fetch',
+    );
 
     const data = (await response.json()) as GitHubUserResponse;
 
@@ -118,17 +114,11 @@ export class GitHubOAuthProvider implements OAuthProvider {
    * verified primary address from `/user/emails` in that case.
    */
   private async fetchVerifiedPrimaryEmail(accessToken: string): Promise<string | null> {
-    const response = await fetch(this.config.emailsUrl, {
-      headers: {
-        Authorization: 'Bearer ' + accessToken,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    });
-
-    if (!response.ok) {
-      throw new AuthenticationError('AUTHENTICATION_FAILED', 'GitHub email list fetch failed.');
-    }
+    const response = await this.request(
+      this.config.emailsUrl,
+      { headers: this.authorizedHeaders(accessToken) },
+      'GitHub email list fetch',
+    );
 
     const emails = (await response.json()) as GitHubEmailResponse[];
     const verifiedPrimary = emails.find(
@@ -138,5 +128,48 @@ export class GitHubOAuthProvider implements OAuthProvider {
     return typeof verifiedPrimary?.email === 'string'
       ? verifiedPrimary.email.trim().toLowerCase()
       : null;
+  }
+
+  private authorizedHeaders(accessToken: string): Record<string, string> {
+    return {
+      Authorization: 'Bearer ' + accessToken,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+  }
+
+  /**
+   * Bounds every outbound request with a timeout and maps failures to a
+   * status-appropriate error: a 5xx response, a network failure, or a
+   * timeout is a provider-availability problem, not an authentication
+   * rejection, and must not be reported the same way as an invalid code or
+   * token (which would surface as 401 and be indistinguishable from a
+   * genuine credential failure during a GitHub outage).
+   */
+  private async request(url: string, init: RequestInit, description: string): Promise<Response> {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(OUTBOUND_REQUEST_TIMEOUT_MILLISECONDS),
+      });
+    } catch {
+      throw new AuthenticationError(
+        'AUTHENTICATION_PROVIDER_UNAVAILABLE',
+        `${description} failed: the provider did not respond in time.`,
+      );
+    }
+
+    if (!response.ok) {
+      if (response.status >= 500) {
+        throw new AuthenticationError(
+          'AUTHENTICATION_PROVIDER_UNAVAILABLE',
+          `${description} failed: the provider returned a server error.`,
+        );
+      }
+      throw new AuthenticationError('AUTHENTICATION_FAILED', `${description} failed.`);
+    }
+
+    return response;
   }
 }

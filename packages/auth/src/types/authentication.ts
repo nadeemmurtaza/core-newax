@@ -1,4 +1,5 @@
 export type AuthenticationIdentityType = 'email' | 'username' | 'phone';
+export type LoginFingerprintIdentityType = AuthenticationIdentityType | 'external';
 export type AuthenticationAccountStatus =
   'invited' | 'active' | 'suspended' | 'disabled' | 'archived';
 export type CredentialStatus = 'active' | 'disabled' | 'revoked' | 'expired';

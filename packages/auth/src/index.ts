@@ -42,6 +42,7 @@ export type {
   ExternalIdentityProfile,
   ExternalIdentityRecord,
   IssuedSessionToken,
+  LoginFingerprintIdentityType,
   OAuthLoginInput,
   PasswordChangeInput,
   PasswordCredentialRecord,

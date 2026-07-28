@@ -259,7 +259,7 @@
       "module_name": "Authentication",
       "module_key": "authentication",
       "module_layer": "foundation",
-      "module_version": "0.1.0",
+      "module_version": "0.2.0",
       "module_status": "draft",
       "module_owner": "NEWAX Engineering",
       "description": "Proves login identity, protects password credentials, records failed attempts, and issues revocable account sessions.",
@@ -296,7 +296,8 @@
       "database_ownership": [
         "core_user_credentials",
         "core_user_sessions",
-        "core_authentication_attempts"
+        "core_authentication_attempts",
+        "core_user_external_identities"
       ],
       "tenant_scope": "global_account_authentication",
       "documentation_path": "packages/auth/README.md",

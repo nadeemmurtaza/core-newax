@@ -257,41 +257,75 @@ export class AuthenticationService {
     const subject = this.requireText(input.profile.subject, 'profile.subject', 256);
     const metadata = this.normalizeMetadata(input);
     const occurredAt = this.clock.now();
+    const identityFingerprint = this.loginFingerprintService.fingerprint(
+      'external',
+      `${provider}:${subject}`,
+    );
+    const providerUsername = this.normalizedProviderUsername(input.profile.username);
 
     let userId: string | null = null;
 
     const existingIdentity = await this.repository.findExternalIdentity(provider, subject);
     if (existingIdentity !== null) {
       userId = existingIdentity.userId;
+      await this.repository.upsertExternalIdentity({
+        userId: existingIdentity.userId,
+        provider,
+        providerSubject: subject,
+        providerUsername,
+        occurredAt,
+      });
     } else if (input.profile.email !== null && input.profile.email.trim().length > 0) {
       const emailIdentity = await this.userDirectory.resolveIdentity(
         'email',
         input.profile.email.trim().toLowerCase(),
       );
-      if (emailIdentity !== null && emailIdentity.isVerified) {
+      if (
+        emailIdentity !== null &&
+        emailIdentity.isVerified &&
+        emailIdentity.account.status === 'active'
+      ) {
         userId = emailIdentity.account.userId;
         await this.repository.upsertExternalIdentity({
           userId,
           provider,
           providerSubject: subject,
-          providerUsername:
-            input.profile.username !== null && input.profile.username.trim().length > 0
-              ? input.profile.username.trim().slice(0, 256)
-              : null,
+          providerUsername,
           occurredAt,
         });
       }
     }
 
     if (userId === null) {
+      await this.recordFailure(
+        null,
+        identityFingerprint,
+        'failed_unknown_identity',
+        metadata,
+        occurredAt,
+      );
       throw this.authenticationFailed();
     }
 
     const account = await this.userDirectory.findAccountById(userId);
     if (account === null || account.status !== 'active') {
+      await this.recordFailure(
+        userId,
+        identityFingerprint,
+        'blocked_account_status',
+        metadata,
+        occurredAt,
+      );
       throw this.authenticationFailed();
     }
     if (account.lockedUntil !== null && account.lockedUntil > occurredAt) {
+      await this.recordFailure(
+        userId,
+        identityFingerprint,
+        'blocked_account_lock',
+        metadata,
+        occurredAt,
+      );
       throw this.authenticationFailed();
     }
 
@@ -311,6 +345,14 @@ export class AuthenticationService {
       occurredAt,
     );
 
+    await this.repository.recordAttempt({
+      userId: account.userId,
+      identityFingerprint,
+      outcome: 'succeeded',
+      ipAddress: metadata.ipAddress,
+      userAgent: metadata.userAgent,
+      occurredAt,
+    });
     await this.eventPublisher.publish({
       name: 'authentication.session_created',
       occurredAt,
@@ -330,6 +372,10 @@ export class AuthenticationService {
       sessionToken: issuedToken.token,
       session,
     };
+  }
+
+  private normalizedProviderUsername(username: string | null): string | null {
+    return username !== null && username.trim().length > 0 ? username.trim().slice(0, 256) : null;
   }
 
   async changePassword(input: PasswordChangeInput): Promise<void> {

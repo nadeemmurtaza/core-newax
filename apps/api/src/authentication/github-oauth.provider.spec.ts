@@ -77,7 +77,19 @@ describe('GitHubOAuthProvider', () => {
       expect(capturedBody).toContain(`redirect_uri=${encodeURIComponent(config.redirectUri)}`);
     });
 
-    it('throws AuthenticationError when the HTTP response is not OK', async () => {
+    it('throws AuthenticationError when the HTTP response is a client error', async () => {
+      const provider = new GitHubOAuthProvider(config);
+
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response('Bad Request', { status: 400 }),
+      );
+
+      await expect(provider.exchangeCode('bad-code')).rejects.toMatchObject({
+        code: 'AUTHENTICATION_FAILED',
+      });
+    });
+
+    it('throws AUTHENTICATION_PROVIDER_UNAVAILABLE when the HTTP response is a server error', async () => {
       const provider = new GitHubOAuthProvider(config);
 
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
@@ -85,7 +97,19 @@ describe('GitHubOAuthProvider', () => {
       );
 
       await expect(provider.exchangeCode('bad-code')).rejects.toMatchObject({
-        code: 'AUTHENTICATION_FAILED',
+        code: 'AUTHENTICATION_PROVIDER_UNAVAILABLE',
+      });
+    });
+
+    it('throws AUTHENTICATION_PROVIDER_UNAVAILABLE when the request fails or times out', async () => {
+      const provider = new GitHubOAuthProvider(config);
+
+      vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(
+        new DOMException('The operation was aborted.', 'TimeoutError'),
+      );
+
+      await expect(provider.exchangeCode('slow-code')).rejects.toMatchObject({
+        code: 'AUTHENTICATION_PROVIDER_UNAVAILABLE',
       });
     });
 

@@ -1,7 +1,7 @@
 import type {
-  AuthenticationIdentityType,
   ExternalIdentityProfile,
   IssuedSessionToken,
+  LoginFingerprintIdentityType,
   PasswordVerificationResult,
 } from '../types/authentication';
 
@@ -16,7 +16,7 @@ export interface SessionTokenService {
 }
 
 export interface LoginFingerprintService {
-  fingerprint(identityType: AuthenticationIdentityType, identityValue: string): string;
+  fingerprint(identityType: LoginFingerprintIdentityType, identityValue: string): string;
 }
 
 export interface AuthenticationClock {

@@ -19,6 +19,7 @@ The module owns:
 - Password credential hashing and lifecycle.
 - Password enrollment and change flows.
 - Password login verification.
+- OAuth login via a linked external identity.
 - Failed authentication attempt records.
 - Temporary account locking after repeated failures.
 - Opaque session token issuance, validation, touch, expiry, and revocation.
@@ -29,6 +30,7 @@ Database ownership:
 - `core_user_credentials`
 - `core_user_sessions`
 - `core_authentication_attempts`
+- `core_user_external_identities`
 
 The module does not own:
 

@@ -26,8 +26,10 @@ import type {
   CreateExternalIdentityInput,
   ExternalIdentityRecord,
   IssuedSessionToken,
+  LoginFingerprintIdentityType,
   PasswordCredentialRecord,
   PasswordVerificationResult,
+  RecordAuthenticationAttemptInput,
   SessionStatus,
 } from '../src/types/authentication';
 
@@ -100,7 +102,9 @@ class FakeRepository implements AuthenticationRepository {
   readonly sessions = new Map<string, AuthenticationSessionRecord>();
   readonly sessionHashes = new Map<string, string>();
   readonly externalIdentities = new Map<string, ExternalIdentityRecord>();
+  readonly attempts: RecordAuthenticationAttemptInput[] = [];
   upsertedIdentity: CreateExternalIdentityInput | null = null;
+  upsertCount = 0;
 
   async countRecentFailures(): Promise<number> {
     return 0;
@@ -142,6 +146,7 @@ class FakeRepository implements AuthenticationRepository {
     input: CreateExternalIdentityInput,
   ): Promise<ExternalIdentityRecord> {
     this.upsertedIdentity = input;
+    this.upsertCount += 1;
     const record = externalIdentity({
       userId: input.userId,
       provider: input.provider,
@@ -177,7 +182,9 @@ class FakeRepository implements AuthenticationRepository {
 
   async markCredentialUsed(): Promise<void> {}
 
-  async recordAttempt(): Promise<void> {}
+  async recordAttempt(input: RecordAuthenticationAttemptInput): Promise<void> {
+    this.attempts.push(input);
+  }
 
   async replacePasswordCredential(): Promise<PasswordCredentialRecord> {
     throw new Error('not implemented');
@@ -297,7 +304,7 @@ class FakeSessionTokenService implements SessionTokenService {
 }
 
 class FakeFingerprintService implements LoginFingerprintService {
-  fingerprint(_identityType: AuthenticationIdentityType, identityValue: string): string {
+  fingerprint(_identityType: LoginFingerprintIdentityType, identityValue: string): string {
     return `fingerprint:${identityValue}`;
   }
 }
@@ -476,5 +483,111 @@ describe('AuthenticationService.loginWithExternalIdentity', () => {
 
     const loginEvent = publisher.events.find((e) => e.name === 'authentication.login_succeeded');
     expect(loginEvent).toMatchObject({ ipAddress: '192.0.2.1' });
+  });
+
+  it('records a succeeded attempt for a known external identity', async () => {
+    const { service, repository, directory } = createService();
+    const activeAccount = account();
+    directory.accounts.set(activeAccount.userId, activeAccount);
+    repository.externalIdentities.set(
+      'github:12345',
+      externalIdentity({ userId: activeAccount.userId }),
+    );
+
+    await service.loginWithExternalIdentity({
+      provider: 'github',
+      profile: { subject: '12345', email: null, name: null, username: null },
+    });
+
+    expect(repository.attempts).toHaveLength(1);
+    expect(repository.attempts[0]).toMatchObject({
+      userId: activeAccount.userId,
+      outcome: 'succeeded',
+    });
+  });
+
+  it('records a failed attempt and publishes login_failed when no identity resolves', async () => {
+    const { service, repository, publisher } = createService();
+
+    await expect(
+      service.loginWithExternalIdentity({
+        provider: 'github',
+        profile: { subject: '00000', email: null, name: null, username: null },
+      }),
+    ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
+
+    expect(repository.attempts).toHaveLength(1);
+    expect(repository.attempts[0]).toMatchObject({
+      userId: null,
+      outcome: 'failed_unknown_identity',
+    });
+    expect(publisher.events.map((e) => e.name)).toContain('authentication.login_failed');
+  });
+
+  it('records a blocked_account_status attempt when the linked account is not active', async () => {
+    const { service, repository, directory } = createService();
+    const suspendedAccount = account({ status: 'suspended' });
+    directory.accounts.set(suspendedAccount.userId, suspendedAccount);
+    repository.externalIdentities.set(
+      'github:12345',
+      externalIdentity({ userId: suspendedAccount.userId }),
+    );
+
+    await expect(
+      service.loginWithExternalIdentity({
+        provider: 'github',
+        profile: { subject: '12345', email: null, name: null, username: null },
+      }),
+    ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
+
+    expect(repository.attempts).toHaveLength(1);
+    expect(repository.attempts[0]).toMatchObject({
+      userId: suspendedAccount.userId,
+      outcome: 'blocked_account_status',
+    });
+  });
+
+  it('does not persist an external identity link for a non-active email-matched account', async () => {
+    const { service, repository, directory } = createService();
+    const suspendedAccount = account({ status: 'suspended' });
+    directory.accounts.set(suspendedAccount.userId, suspendedAccount);
+    directory.resolvedIdentity = identity({ account: suspendedAccount });
+
+    await expect(
+      service.loginWithExternalIdentity({
+        provider: 'github',
+        profile: {
+          subject: '99999',
+          email: 'octocat@github.com',
+          name: null,
+          username: 'octocat',
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'AUTHENTICATION_FAILED' });
+
+    expect(repository.upsertedIdentity).toBeNull();
+    expect(repository.attempts[0]).toMatchObject({ outcome: 'failed_unknown_identity' });
+  });
+
+  it('refreshes the stored username for an existing external identity link', async () => {
+    const { service, repository, directory } = createService();
+    const activeAccount = account();
+    directory.accounts.set(activeAccount.userId, activeAccount);
+    repository.externalIdentities.set(
+      'github:12345',
+      externalIdentity({ userId: activeAccount.userId, providerUsername: 'old-handle' }),
+    );
+
+    await service.loginWithExternalIdentity({
+      provider: 'github',
+      profile: { subject: '12345', email: null, name: null, username: 'new-handle' },
+    });
+
+    expect(repository.upsertCount).toBe(1);
+    expect(repository.upsertedIdentity).toMatchObject({
+      provider: 'github',
+      providerSubject: '12345',
+      providerUsername: 'new-handle',
+    });
   });
 });
