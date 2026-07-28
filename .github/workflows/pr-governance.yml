@@ -24,6 +24,14 @@ jobs:
     name: Verify engineering learning record
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Automated dependency-update pull requests carry no engineering decision
+    # for this record to capture: no root cause, no plan, no AI output, no
+    # architecture change. Dependabot's own generated body cannot satisfy the
+    # human-authored governance template, and it shouldn't need to — actual
+    # correctness (format, lint, typecheck, test, build, lockfile
+    # supply-chain policy) is still fully enforced by the separate
+    # Continuous Integration workflow.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
 
     steps:
       - name: Check out candidate pull request
