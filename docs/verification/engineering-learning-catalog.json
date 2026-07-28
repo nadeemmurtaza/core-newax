@@ -27,6 +27,7 @@
     "engineering-failure-intake-quality",
     "dependency-update-governance-scope",
     "security-scanning-coverage",
+    "supply-chain-pinning",
     "unknown"
   ],
   "rootCauses": [
@@ -448,6 +449,22 @@
       "unsuccessfulMethod": "Treat one static-analysis engine and one dependency-alert source as complete security coverage.",
       "successfulMethod": "Add Semgrep and Snyk as informational, non-blocking workflows uploading SARIF results to GitHub Code Scanning alongside CodeQL, without introducing a new required check.",
       "preventionControl": ".github/workflows/semgrep.yml and .github/workflows/snyk.yml run on push, pull request, and a weekly schedule; the Snyk workflow degrades gracefully when SNYK_TOKEN is not configured."
+    },
+    {
+      "id": "ROOT-GITHUB-ACTIONS-MUTABLE-TAG-REFERENCE",
+      "ledgerEntry": "EL-0036",
+      "category": "supply-chain-pinning",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "mutable action tag",
+        "github-actions-mutable-action-tag",
+        "supply-chain attack"
+      ],
+      "rootCause": "Workflow steps referenced third-party GitHub Actions by mutable version tags, and one by a mutable branch, so an action's tag or branch could be silently repointed by its owner or a compromised account to inject arbitrary code into every workflow run.",
+      "unsuccessfulMethod": "Reference third-party actions by human-readable version tag or branch name and trust the publisher never to repoint that reference.",
+      "successfulMethod": "Pin every uses: reference across all workflow files to its exact 40-character commit SHA, with a trailing comment noting the human-readable version.",
+      "preventionControl": "Semgrep's github-actions-mutable-action-tag rule flags any future unpinned uses: reference in GitHub's Code Scanning UI."
     }
   ]
 }
