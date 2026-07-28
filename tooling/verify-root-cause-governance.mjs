@@ -92,20 +92,9 @@ const linkedIssues = issues.filter((issue) => {
   return Number(parseMetadata(issue.body)['pr-number']) === pullRequest.number;
 });
 const runs = await listPullRequestRuns(commits);
-<<<<<<< HEAD
 const failedRuns = await filterExecutedFailures(runs);
-const declaredOutcome = parsePullRequestField(pullRequest.body ?? '', '- Learning outcome:');
-const outcomeDecision = evaluateLearningOutcome({
-  declaredOutcome,
-  failedRuns,
-  linkedIssues,
-});
-const errors = [...outcomeDecision.errors];
-=======
-const failedRuns = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
 const evidenceCount = failedRuns.length + linkedIssues.length;
 const errors = [];
->>>>>>> origin/main
 const catalog = loadCatalog();
 const explanationDecisions = [];
 

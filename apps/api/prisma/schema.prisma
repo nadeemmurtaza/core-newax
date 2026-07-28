@@ -286,25 +286,12 @@ model CoreUser {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-<<<<<<< HEAD
-  person                   CorePerson                  @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  identities               CoreUserIdentity[]
-  credentials              CoreUserCredential[]
-  sessions                 CoreUserSession[]
-  authenticationAttempts   CoreAuthenticationAttempt[]
-  externalIdentities       CoreUserExternalIdentity[]
-  rolePermissionsCreated   CoreRolePermission[]        @relation("RolePermissionCreatedBy")
-  membershipRolesAssigned  CoreMembershipRole[]        @relation("MembershipRoleAssignedBy")
-  membershipRolesRevoked   CoreMembershipRole[]        @relation("MembershipRoleRevokedBy")
-  objectAssignmentsCreated CoreObjectAssignment[]      @relation("ObjectAssignmentCreatedBy")
-  filesCreated             CoreFile[]                  @relation("FileCreatedBy")
-  auditLogs                CoreAuditLog[]              @relation("AuditActor")
-=======
   person                                 CorePerson                  @relation(fields: [personId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   identities                             CoreUserIdentity[]
   credentials                            CoreUserCredential[]
   sessions                               CoreUserSession[]
   authenticationAttempts                 CoreAuthenticationAttempt[]
+  externalIdentities                     CoreUserExternalIdentity[]
   rolePermissionsCreated                 CoreRolePermission[]        @relation("RolePermissionCreatedBy")
   membershipRolesAssigned                CoreMembershipRole[]        @relation("MembershipRoleAssignedBy")
   membershipRolesRevoked                 CoreMembershipRole[]        @relation("MembershipRoleRevokedBy")
@@ -319,7 +306,6 @@ model CoreUser {
   certificateImportsExtracted            CoreCertificateImport[]     @relation("CertificateImportExtractedBy")
   certificateImportsReviewed             CoreCertificateImport[]     @relation("CertificateImportReviewedBy")
   certificateImportsApplied              CoreCertificateImport[]     @relation("CertificateImportAppliedBy")
->>>>>>> origin/main
 
   @@index([status])
   @@map("core_users")
