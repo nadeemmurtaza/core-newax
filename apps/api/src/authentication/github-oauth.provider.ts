@@ -1,5 +1,4 @@
-import type { ExternalIdentityProfile, OAuthProvider } from '@newax/auth';
-import { AuthenticationError } from '@newax/auth';
+import { AuthenticationError, type ExternalIdentityProfile, type OAuthProvider } from '@newax/auth';
 
 export interface GitHubOAuthConfig {
   readonly clientId: string;

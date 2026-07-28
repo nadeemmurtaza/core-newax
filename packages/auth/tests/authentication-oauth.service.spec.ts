@@ -24,12 +24,10 @@ import type {
   AuthenticationSessionRecord,
   CreateAuthenticationSessionInput,
   CreateExternalIdentityInput,
-  CreatePasswordCredentialInput,
   ExternalIdentityRecord,
   IssuedSessionToken,
   PasswordCredentialRecord,
   PasswordVerificationResult,
-  RecordAuthenticationAttemptInput,
   SessionStatus,
 } from '../src/types/authentication';
 
@@ -203,7 +201,9 @@ class FakeRepository implements AuthenticationRepository {
     occurredAt: Date,
   ): Promise<AuthenticationSessionRecord | null> {
     const current = this.sessions.get(sessionId);
-    if (current === undefined) return null;
+    if (current === undefined) {
+      return null;
+    }
     const updated = { ...current, status, revokedAt: status === 'active' ? null : occurredAt };
     this.sessions.set(sessionId, updated);
     return updated;
@@ -220,7 +220,9 @@ class FakeDirectory implements AuthenticationUserDirectory {
 
   async activateInvitedUser(userId: string): Promise<AuthenticationAccountRecord> {
     const current = this.accounts.get(userId);
-    if (current === undefined) throw new Error('user not found');
+    if (current === undefined) {
+      throw new Error('user not found');
+    }
     const activated = { ...current, status: 'active' as const };
     this.accounts.set(userId, activated);
     return activated;
@@ -235,7 +237,9 @@ class FakeDirectory implements AuthenticationUserDirectory {
     _occurredAt: Date,
   ): Promise<AuthenticationAccountRecord> {
     const current = this.accounts.get(userId);
-    if (current === undefined) throw new Error('user not found');
+    if (current === undefined) {
+      throw new Error('user not found');
+    }
     return current;
   }
 
@@ -251,7 +255,9 @@ class FakeDirectory implements AuthenticationUserDirectory {
     lockedUntil: Date | null,
   ): Promise<AuthenticationAccountRecord> {
     const current = this.accounts.get(userId);
-    if (current === undefined) throw new Error('user not found');
+    if (current === undefined) {
+      throw new Error('user not found');
+    }
     const updated = { ...current, lockedUntil };
     this.accounts.set(userId, updated);
     return updated;
