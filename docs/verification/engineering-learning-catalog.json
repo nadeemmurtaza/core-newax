@@ -26,6 +26,7 @@
     "external-tool-operation",
     "engineering-failure-intake-quality",
     "dependency-update-governance-scope",
+    "security-scanning-coverage",
     "unknown"
   ],
   "rootCauses": [
@@ -435,6 +436,18 @@
       "unsuccessfulMethod": "Apply the full human-authored governance record requirement uniformly to every pull request regardless of author, with no path for a routine automated dependency bump to ever pass.",
       "successfulMethod": "Skip the entire governance-record job for pull requests authored by dependabot[bot], since those pull requests carry no engineering decision for the record to capture, while the separate Continuous Integration workflow still fully gates mergeability for them.",
       "preventionControl": ".github/workflows/pr-governance.yml's verify-learning-record job carries a job-level if condition exempting dependabot[bot]-authored pull requests."
+    },
+    {
+      "id": "ROOT-SECURITY-SCANNING-SINGLE-TOOL-COVERAGE",
+      "ledgerEntry": "EL-0035",
+      "category": "security-scanning-coverage",
+      "confidence": "medium",
+      "deterministic": false,
+      "signatures": ["single static-analysis engine", "single dependency-vulnerability source"],
+      "rootCause": "The repository's automated security posture relied on a single static-analysis engine (CodeQL) and a single dependency-vulnerability source (Dependabot alerts), with no second, differently-sourced tool to cross-check findings.",
+      "unsuccessfulMethod": "Treat one static-analysis engine and one dependency-alert source as complete security coverage.",
+      "successfulMethod": "Add Semgrep and Snyk as informational, non-blocking workflows uploading SARIF results to GitHub Code Scanning alongside CodeQL, without introducing a new required check.",
+      "preventionControl": ".github/workflows/semgrep.yml and .github/workflows/snyk.yml run on push, pull request, and a weekly schedule; the Snyk workflow degrades gracefully when SNYK_TOKEN is not configured."
     }
   ]
 }
