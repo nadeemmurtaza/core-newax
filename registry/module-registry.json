@@ -1,7 +1,7 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.18",
+  "registry_version": "0.1.19",
   "registry_status": "draft",
   "last_updated": "2026-07-16",
   "owner": "NEWAX Engineering",
@@ -84,10 +84,10 @@
       "module_name": "People Intake",
       "module_key": "people-intake",
       "module_layer": "foundation",
-      "module_version": "0.1.0",
+      "module_version": "0.2.0",
       "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Stages and independently verifies proposed people, identifiers, and person relationships before canonical People Registry application.",
+      "description": "Stages family data, evidence files, and independently reviewed certificate extraction before canonical application.",
       "dependencies": [
         {
           "module_key": "tenants",
@@ -115,7 +115,12 @@
         "people_intake.create",
         "people_intake.update",
         "people_intake.submit",
-        "people_intake.review"
+        "people_intake.review",
+        "people_intake.evidence.view",
+        "people_intake.evidence.attach",
+        "people_intake.certificate_import.extract",
+        "people_intake.certificate_import.review",
+        "people_intake.certificate_import.apply"
       ],
       "exposed_events": [],
       "consumed_events": [],
@@ -124,7 +129,11 @@
         "people_intake_max_relationships",
         "people_intake_review_policy"
       ],
-      "database_ownership": ["core_people_intakes"],
+      "database_ownership": [
+        "core_people_intakes",
+        "core_people_intake_evidence",
+        "core_certificate_imports"
+      ],
       "tenant_scope": "organization_scoped_staging",
       "documentation_path": "packages/people-intake/README.md",
       "changelog_path": "packages/people-intake/CHANGELOG.md",

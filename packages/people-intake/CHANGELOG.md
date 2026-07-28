@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 - 2026-07-16
+
+- Added same-Organization evidence-file attachment.
+- Added structured certificate extraction, independent review, and explicit draft application.
+- Added PostgreSQL ownership, state, and reviewer-separation constraints.
+- Added an internal certificate-import workspace.
+
 ## 0.1.0 - 2026-07-16
 
 ### Added

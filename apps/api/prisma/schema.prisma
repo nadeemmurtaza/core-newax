@@ -22,6 +22,8 @@ model CoreTenant {
   organizationRelationships CoreOrganizationRelationship[]
   personRelationships       CorePersonRelationship[]
   peopleIntakes             CorePeopleIntake[]
+  peopleIntakeEvidence      CorePeopleIntakeEvidence[]
+  certificateImports        CoreCertificateImport[]
   objects                   CoreObject[]
   files                     CoreFile[]
   auditLogs                 CoreAuditLog[]
@@ -60,6 +62,8 @@ model CoreOrganization {
   auditLogs             CoreAuditLog[]
   externalReferences    CoreExternalReference[]
   peopleIntakes         CorePeopleIntake[]
+  peopleIntakeEvidence  CorePeopleIntakeEvidence[]
+  certificateImports    CoreCertificateImport[]
 
   @@unique([tenantId, id])
   @@index([tenantId, parentOrganizationId])
@@ -195,17 +199,81 @@ model CorePeopleIntake {
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  tenant         CoreTenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  organization   CoreOrganization @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
-  createdByUser  CoreUser         @relation("PeopleIntakeCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  reviewedByUser CoreUser?        @relation("PeopleIntakeReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  tenant         CoreTenant                 @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization   CoreOrganization           @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
+  createdByUser  CoreUser                   @relation("PeopleIntakeCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reviewedByUser CoreUser?                  @relation("PeopleIntakeReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  evidence       CorePeopleIntakeEvidence[]
 
   // Workflow state, four-eye review, immutable submission, payload shape,
   // and transition integrity are enforced by migration-owned PostgreSQL constraints.
+  @@unique([tenantId, organizationId, id])
   @@index([tenantId, organizationId, status, submittedAt, id])
   @@index([createdByUserId, status])
   @@index([reviewedByUserId, reviewedAt])
   @@map("core_people_intakes")
+}
+
+model CorePeopleIntakeEvidence {
+  id               String   @id @default(uuid()) @db.Uuid
+  tenantId         String   @map("tenant_id") @db.Uuid
+  organizationId   String   @map("organization_id") @db.Uuid
+  intakeId         String   @map("intake_id") @db.Uuid
+  fileId           String   @map("file_id") @db.Uuid
+  documentType     String   @map("document_type") @db.VarChar(64)
+  evidenceRole     String   @default("primary") @map("evidence_role") @db.VarChar(32)
+  attachedByUserId String   @map("attached_by_user_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  tenant             CoreTenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization       CoreOrganization        @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
+  intake             CorePeopleIntake        @relation(fields: [tenantId, organizationId, intakeId], references: [tenantId, organizationId, id], onDelete: Restrict, onUpdate: Cascade)
+  file               CoreFile                @relation(fields: [tenantId, organizationId, fileId], references: [tenantId, organizationId, id], onDelete: Restrict, onUpdate: Cascade)
+  attachedByUser     CoreUser                @relation("PeopleIntakeEvidenceAttachedBy", fields: [attachedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  certificateImports CoreCertificateImport[]
+
+  @@unique([tenantId, organizationId, id])
+  @@unique([tenantId, organizationId, intakeId, fileId])
+  @@index([tenantId, organizationId, intakeId, createdAt, id])
+  @@index([fileId])
+  @@map("core_people_intake_evidence")
+}
+
+model CoreCertificateImport {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @map("tenant_id") @db.Uuid
+  organizationId    String    @map("organization_id") @db.Uuid
+  evidenceId        String    @map("evidence_id") @db.Uuid
+  status            String    @default("pending") @db.VarChar(32)
+  extractionPayload Json?     @map("extraction_payload") @db.JsonB
+  extractorCode     String?   @map("extractor_code") @db.VarChar(64)
+  extractionVersion String?   @map("extraction_version") @db.VarChar(64)
+  confidenceBps     Int?      @map("confidence_bps")
+  extractedByUserId String?   @map("extracted_by_user_id") @db.Uuid
+  extractedAt       DateTime? @map("extracted_at") @db.Timestamptz(6)
+  reviewedByUserId  String?   @map("reviewed_by_user_id") @db.Uuid
+  reviewedAt        DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  reviewDecision    String?   @map("review_decision") @db.VarChar(16)
+  reviewNotes       String?   @map("review_notes") @db.VarChar(2000)
+  appliedByUserId   String?   @map("applied_by_user_id") @db.Uuid
+  appliedAt         DateTime? @map("applied_at") @db.Timestamptz(6)
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant          CoreTenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization    CoreOrganization         @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
+  evidence        CorePeopleIntakeEvidence @relation(fields: [tenantId, organizationId, evidenceId], references: [tenantId, organizationId, id], onDelete: Restrict, onUpdate: Cascade)
+  extractedByUser CoreUser?                @relation("CertificateImportExtractedBy", fields: [extractedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reviewedByUser  CoreUser?                @relation("CertificateImportReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  appliedByUser   CoreUser?                @relation("CertificateImportAppliedBy", fields: [appliedByUserId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([tenantId, organizationId, evidenceId])
+  @@index([tenantId, organizationId, status, createdAt, id])
+  @@index([extractedByUserId, extractedAt])
+  @@index([reviewedByUserId, reviewedAt])
+  @@index([appliedByUserId, appliedAt])
+  @@map("core_certificate_imports")
 }
 
 model CoreUser {
@@ -233,6 +301,10 @@ model CoreUser {
   personRelationshipVerificationsRevoked CorePersonRelationship[]    @relation("PersonRelationshipVerificationRevokedBy")
   peopleIntakesCreated                   CorePeopleIntake[]          @relation("PeopleIntakeCreatedBy")
   peopleIntakesReviewed                  CorePeopleIntake[]          @relation("PeopleIntakeReviewedBy")
+  peopleIntakeEvidenceAttached           CorePeopleIntakeEvidence[]  @relation("PeopleIntakeEvidenceAttachedBy")
+  certificateImportsExtracted            CoreCertificateImport[]     @relation("CertificateImportExtractedBy")
+  certificateImportsReviewed             CoreCertificateImport[]     @relation("CertificateImportReviewedBy")
+  certificateImportsApplied              CoreCertificateImport[]     @relation("CertificateImportAppliedBy")
 
   @@index([status])
   @@map("core_users")
@@ -627,11 +699,13 @@ model CoreFile {
   createdByUserId String?  @map("created_by_user_id") @db.Uuid
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  tenant        CoreTenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  organization  CoreOrganization @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
-  createdByUser CoreUser?        @relation("FileCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  tenant               CoreTenant                 @relation(fields: [tenantId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  organization         CoreOrganization           @relation(fields: [tenantId, organizationId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade)
+  createdByUser        CoreUser?                  @relation("FileCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  peopleIntakeEvidence CorePeopleIntakeEvidence[]
 
   @@unique([tenantId, id])
+  @@unique([tenantId, organizationId, id])
   @@unique([storageProvider, storageKey])
   @@index([tenantId, organizationId, status, createdAt])
   @@map("core_files")

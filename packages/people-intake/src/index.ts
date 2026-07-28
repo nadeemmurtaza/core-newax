@@ -1,3 +1,4 @@
+export type { CertificateImportRepository } from './database/certificate-import-repository';
 export type { PeopleIntakeRepository } from './database/people-intake-repository';
 export {
   PeopleIntakeModuleError,
@@ -7,6 +8,7 @@ export {
   PEOPLE_INTAKE_PERMISSIONS,
   type PeopleIntakePermission,
 } from './permissions/people-intake-permissions';
+export { CertificateImportService } from './services/certificate-import.service';
 export { PeopleIntakeService } from './services/people-intake.service';
 export type {
   CreatePeopleIntakeDraftInput,
@@ -41,3 +43,24 @@ export type {
   UpdatePeopleIntakeRecordInput,
   UpdatePeopleIntakeRecordResult,
 } from './types/people-intake';
+
+export type {
+  ApplyCertificateImportInput,
+  ApplyCertificateImportRecordInput,
+  AttachEvidenceInput,
+  AttachEvidenceRecordInput,
+  AttachEvidenceRecordResult,
+  CertificateEvidenceRequestContext,
+  CertificateImportIdentityInput,
+  CertificateImportRecord,
+  CertificateImportReviewDecision,
+  CertificateImportStatus,
+  ChangeCertificateImportResult,
+  CreateCertificateImportRecordResult,
+  EvidenceFileSummary,
+  EvidenceScopeInput,
+  ExtractCertificateImportRecordInput,
+  RecordCertificateExtractionInput,
+  ReviewCertificateImportInput,
+  ReviewCertificateImportRecordInput,
+} from './types/certificate-import';
