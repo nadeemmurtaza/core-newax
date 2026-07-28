@@ -19,9 +19,8 @@ import type {
 
 export const GITHUB_OAUTH_PROVIDER = Symbol('GITHUB_OAUTH_PROVIDER');
 
-const OAUTH_STATE_COOKIE_NAME = 'newax_oauth_state';
+const OAUTH_STATE_COOKIE_NAME = '__Host-newax_oauth_state';
 const OAUTH_STATE_MAX_AGE_SECONDS = 600;
-const OAUTH_STATE_COOKIE_PATH = '/api/auth/oauth/github/callback';
 
 interface OAuthInitiateResponse {
   readonly redirectUrl: string;
@@ -118,7 +117,7 @@ export class OAuthHttpController {
   private serializeStateCookie(state: string, maxAgeSeconds: number): string {
     return [
       `${OAUTH_STATE_COOKIE_NAME}=${state}`,
-      `Path=${OAUTH_STATE_COOKIE_PATH}`,
+      'Path=/',
       `Max-Age=${String(maxAgeSeconds)}`,
       'Secure',
       'HttpOnly',
@@ -129,7 +128,7 @@ export class OAuthHttpController {
   private clearStateCookie(): string {
     return [
       `${OAUTH_STATE_COOKIE_NAME}=`,
-      `Path=${OAUTH_STATE_COOKIE_PATH}`,
+      'Path=/',
       'Max-Age=0',
       'Secure',
       'HttpOnly',

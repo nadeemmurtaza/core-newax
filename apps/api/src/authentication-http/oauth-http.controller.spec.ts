@@ -144,11 +144,11 @@ describe('OAuthHttpController', () => {
       expect(result.redirectUrl).toContain('state=');
 
       const cookie = response.headers.get('Set-Cookie') as string;
-      expect(cookie).toContain('newax_oauth_state=');
+      expect(cookie).toContain('__Host-newax_oauth_state=');
       expect(cookie).toContain('HttpOnly');
       expect(cookie).toContain('Secure');
       expect(cookie).toContain('SameSite=Lax');
-      expect(cookie).toContain('Path=/api/auth/oauth/github/callback');
+      expect(cookie).toContain('Path=/');
     });
 
     it('includes the state in both the redirect URL and the cookie', () => {
@@ -181,7 +181,7 @@ describe('OAuthHttpController', () => {
         request({
           headers: {
             'user-agent': 'vitest-browser',
-            cookie: 'newax_oauth_state=valid-state',
+            cookie: '__Host-newax_oauth_state=valid-state',
           },
         }),
         response,
@@ -233,7 +233,7 @@ describe('OAuthHttpController', () => {
           'github-code',
           'tampered-state',
           request({
-            headers: { cookie: 'newax_oauth_state=original-state' },
+            headers: { cookie: '__Host-newax_oauth_state=original-state' },
           }),
           new FakeResponse(),
         ),
@@ -252,7 +252,7 @@ describe('OAuthHttpController', () => {
         controller.callbackGitHub(
           undefined,
           'valid-state',
-          request({ headers: { cookie: 'newax_oauth_state=valid-state' } }),
+          request({ headers: { cookie: '__Host-newax_oauth_state=valid-state' } }),
           new FakeResponse(),
         ),
       ).rejects.toMatchObject({
@@ -270,7 +270,7 @@ describe('OAuthHttpController', () => {
         controller.callbackGitHub(
           'github-code',
           undefined,
-          request({ headers: { cookie: 'newax_oauth_state=valid-state' } }),
+          request({ headers: { cookie: '__Host-newax_oauth_state=valid-state' } }),
           new FakeResponse(),
         ),
       ).rejects.toMatchObject({
@@ -289,12 +289,12 @@ describe('OAuthHttpController', () => {
       await controller.callbackGitHub(
         'github-code',
         'valid-state',
-        request({ headers: { cookie: 'newax_oauth_state=valid-state' } }),
+        request({ headers: { cookie: '__Host-newax_oauth_state=valid-state' } }),
         response,
       );
 
       const cookies = response.headers.get('Set-Cookie') as string[];
-      const stateCookie = cookies.find((c) => c.startsWith('newax_oauth_state='));
+      const stateCookie = cookies.find((c) => c.startsWith('__Host-newax_oauth_state='));
       expect(stateCookie).toContain('Max-Age=0');
     });
   });

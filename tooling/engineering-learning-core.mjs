@@ -18,6 +18,24 @@ const CATALOG_PATH = resolve(
 
 export const FAILURE_CONCLUSIONS = new Set(['action_required', 'failure', 'timed_out']);
 
+/**
+ * A workflow run concluding `action_required` can mean an actual failure
+ * (e.g. a required environment approval was requested after real jobs
+ * failed) or simply that the run is waiting on approval and no job has
+ * executed yet. Only the former is an executed failure; the latter has no
+ * failed job and must not be treated as engineering-learning evidence.
+ */
+export async function isExecutedFailure(run) {
+  if (!FAILURE_CONCLUSIONS.has(run.conclusion)) {
+    return false;
+  }
+  if (run.conclusion !== 'action_required') {
+    return true;
+  }
+  const jobs = await listAll(`/actions/runs/${run.id}/jobs`, { collectionKey: 'jobs' });
+  return jobs.some((job) => FAILURE_CONCLUSIONS.has(job.conclusion));
+}
+
 export function loadCatalog(path = CATALOG_PATH) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }

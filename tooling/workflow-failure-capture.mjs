@@ -58,6 +58,11 @@ export async function captureWorkflowRunFailure(workflowRun) {
   });
   const failedJobs = jobs.filter((job) => FAILURE_CONCLUSIONS.has(job.conclusion));
   if (failedJobs.length === 0) {
+    if (workflowRun.conclusion === 'action_required') {
+      // An action_required run with no failed job is waiting on approval,
+      // not an executed failure — there is nothing to capture yet.
+      return { captured: 0, results: [] };
+    }
     throw new Error(`Workflow run ${workflowRun.id} failed but GitHub returned no failed job.`);
   }
 

@@ -4,6 +4,7 @@ import {
   FAILURE_CONCLUSIONS,
   createEngineeringEvent,
   githubRequest,
+  isExecutedFailure,
   listAll,
   loadCatalog,
   parseIssueNumbers,
@@ -181,13 +182,7 @@ async function listPullRequestRuns(commits) {
 async function filterExecutedFailures(runs) {
   const candidates = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
   const results = await Promise.all(
-    candidates.map(async (run) => {
-      if (run.conclusion !== 'action_required') {
-        return run;
-      }
-      const jobs = await listAll(`/actions/runs/${run.id}/jobs`, { collectionKey: 'jobs' });
-      return jobs.some((job) => FAILURE_CONCLUSIONS.has(job.conclusion)) ? run : null;
-    }),
+    candidates.map(async (run) => ((await isExecutedFailure(run)) ? run : null)),
   );
   return results.filter(Boolean);
 }
