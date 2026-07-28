@@ -112,6 +112,7 @@ import { GITHUB_OAUTH_PROVIDER } from '../authentication-http/oauth-http.control
           authorizeUrl: configuration.get('OAUTH_GITHUB_AUTHORIZE_URL', { infer: true }),
           tokenUrl: configuration.get('OAUTH_GITHUB_TOKEN_URL', { infer: true }),
           userinfoUrl: configuration.get('OAUTH_GITHUB_USERINFO_URL', { infer: true }),
+          emailsUrl: configuration.get('OAUTH_GITHUB_EMAILS_URL', { infer: true }),
         }),
     },
   ],

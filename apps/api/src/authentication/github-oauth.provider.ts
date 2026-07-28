@@ -7,6 +7,7 @@ export interface GitHubOAuthConfig {
   readonly authorizeUrl: string;
   readonly tokenUrl: string;
   readonly userinfoUrl: string;
+  readonly emailsUrl: string;
 }
 
 interface GitHubTokenResponse {
@@ -20,6 +21,12 @@ interface GitHubUserResponse {
   readonly login?: string;
   readonly name?: string | null;
   readonly email?: string | null;
+}
+
+interface GitHubEmailResponse {
+  readonly email?: string;
+  readonly primary?: boolean;
+  readonly verified?: boolean;
 }
 
 export class GitHubOAuthProvider implements OAuthProvider {
@@ -91,15 +98,45 @@ export class GitHubOAuthProvider implements OAuthProvider {
       );
     }
 
+    const profileEmail =
+      typeof data.email === 'string' && data.email.trim().length > 0
+        ? data.email.trim().toLowerCase()
+        : null;
+
     return {
       subject: String(data.id),
-      email:
-        typeof data.email === 'string' && data.email.trim().length > 0
-          ? data.email.trim().toLowerCase()
-          : null,
+      email: profileEmail ?? (await this.fetchVerifiedPrimaryEmail(accessToken)),
       name: typeof data.name === 'string' && data.name.trim().length > 0 ? data.name.trim() : null,
       username:
         typeof data.login === 'string' && data.login.trim().length > 0 ? data.login.trim() : null,
     };
+  }
+
+  /**
+   * GitHub omits `email` from `/user` when a user has hidden their public
+   * email, even with the `user:email` scope granted. Fall back to the
+   * verified primary address from `/user/emails` in that case.
+   */
+  private async fetchVerifiedPrimaryEmail(accessToken: string): Promise<string | null> {
+    const response = await fetch(this.config.emailsUrl, {
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+
+    if (!response.ok) {
+      throw new AuthenticationError('AUTHENTICATION_FAILED', 'GitHub email list fetch failed.');
+    }
+
+    const emails = (await response.json()) as GitHubEmailResponse[];
+    const verifiedPrimary = emails.find(
+      (entry) => entry.primary === true && entry.verified === true,
+    );
+
+    return typeof verifiedPrimary?.email === 'string'
+      ? verifiedPrimary.email.trim().toLowerCase()
+      : null;
   }
 }

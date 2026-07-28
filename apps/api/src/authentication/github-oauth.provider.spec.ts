@@ -11,6 +11,7 @@ const config = {
   authorizeUrl: 'https://github.com/login/oauth/authorize',
   tokenUrl: 'https://github.com/login/oauth/access_token',
   userinfoUrl: 'https://api.github.com/user',
+  emailsUrl: 'https://api.github.com/user/emails',
 };
 
 afterEach(() => {
@@ -46,7 +47,7 @@ describe('GitHubOAuthProvider', () => {
       const provider = new GitHubOAuthProvider(config);
 
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({ access_token: 'gho_test_token' }), {
+        new Response(JSON.stringify({ access_token: 'fixture-not-a-real-token' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         }),
@@ -54,7 +55,7 @@ describe('GitHubOAuthProvider', () => {
 
       const token = await provider.exchangeCode('test-code');
 
-      expect(token).toBe('gho_test_token');
+      expect(token).toBe('fixture-not-a-real-token');
     });
 
     it('sends the correct parameters to the token endpoint', async () => {
@@ -63,7 +64,7 @@ describe('GitHubOAuthProvider', () => {
 
       vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async (_url, init) => {
         capturedBody = init?.body as string;
-        return new Response(JSON.stringify({ access_token: 'gho_test_token' }), {
+        return new Response(JSON.stringify({ access_token: 'fixture-not-a-real-token' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         });
@@ -123,7 +124,7 @@ describe('GitHubOAuthProvider', () => {
         ),
       );
 
-      const profile = await provider.fetchProfile('gho_test_token');
+      const profile = await provider.fetchProfile('fixture-not-a-real-token');
 
       expect(profile).toEqual({
         subject: '12345',
@@ -133,23 +134,80 @@ describe('GitHubOAuthProvider', () => {
       });
     });
 
-    it('normalizes profile with null email and name', async () => {
+    it('normalizes profile with null email and name when no verified email exists', async () => {
       const provider = new GitHubOAuthProvider(config);
 
-      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      const fetchSpy = vi.spyOn(globalThis, 'fetch');
+      fetchSpy.mockResolvedValueOnce(
         new Response(JSON.stringify({ id: 99999, login: 'anon-user', name: null, email: null }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         }),
       );
+      fetchSpy.mockResolvedValueOnce(
+        new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
 
-      const profile = await provider.fetchProfile('gho_test_token');
+      const profile = await provider.fetchProfile('fixture-not-a-real-token');
 
       expect(profile).toEqual({
         subject: '99999',
         email: null,
         name: null,
         username: 'anon-user',
+      });
+    });
+
+    it('falls back to the verified primary email when the profile hides it', async () => {
+      const provider = new GitHubOAuthProvider(config);
+
+      const fetchSpy = vi.spyOn(globalThis, 'fetch');
+      fetchSpy.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ id: 42, login: 'private-user', name: 'Private User', email: null }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+      fetchSpy.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
+            { email: 'secondary@example.com', primary: false, verified: true },
+            { email: 'unverified@example.com', primary: true, verified: false },
+            { email: 'Primary@Example.com', primary: true, verified: true },
+          ]),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+
+      const profile = await provider.fetchProfile('fixture-not-a-real-token');
+
+      expect(profile.email).toBe('primary@example.com');
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+      expect(fetchSpy).toHaveBeenLastCalledWith(
+        config.emailsUrl,
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer fixture-not-a-real-token' }),
+        }),
+      );
+    });
+
+    it('throws AuthenticationError when the email list fetch is not OK', async () => {
+      const provider = new GitHubOAuthProvider(config);
+
+      const fetchSpy = vi.spyOn(globalThis, 'fetch');
+      fetchSpy.mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: 42, login: 'private-user', name: null, email: null }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+      fetchSpy.mockResolvedValueOnce(new Response('Forbidden', { status: 403 }));
+
+      await expect(provider.fetchProfile('fixture-not-a-real-token')).rejects.toMatchObject({
+        code: 'AUTHENTICATION_FAILED',
       });
     });
 
@@ -175,7 +233,7 @@ describe('GitHubOAuthProvider', () => {
         }),
       );
 
-      await expect(provider.fetchProfile('gho_test_token')).rejects.toMatchObject({
+      await expect(provider.fetchProfile('fixture-not-a-real-token')).rejects.toMatchObject({
         code: 'AUTHENTICATION_FAILED',
       });
     });

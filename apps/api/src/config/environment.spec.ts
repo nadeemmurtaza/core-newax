@@ -27,6 +27,7 @@ describe('validateEnvironment', () => {
       OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.com/login/oauth/authorize',
       OAUTH_GITHUB_TOKEN_URL: 'https://github.com/login/oauth/access_token',
       OAUTH_GITHUB_USERINFO_URL: 'https://api.github.com/user',
+      OAUTH_GITHUB_EMAILS_URL: 'https://api.github.com/user/emails',
     });
   });
 
@@ -103,17 +104,31 @@ describe('validateEnvironment', () => {
     ).toThrow('OAUTH_GITHUB_REDIRECT_URI is required in production.');
   });
 
+  it('rejects an OAuth GitHub redirect URI that is not a valid URL', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        AUTH_TOKEN_PEPPER: productionPepper,
+        OAUTH_GITHUB_CLIENT_ID: productionOauthClientId,
+        OAUTH_GITHUB_CLIENT_SECRET: productionOauthClientSecret,
+        OAUTH_GITHUB_REDIRECT_URI: 'not-a-url',
+      }),
+    ).toThrow('OAUTH_GITHUB_REDIRECT_URI must be a valid URL.');
+  });
+
   it('accepts OAuth GitHub URL overrides in development', () => {
     expect(
       validateEnvironment({
         OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.example.test/login/oauth/authorize',
         OAUTH_GITHUB_TOKEN_URL: 'https://github.example.test/login/oauth/access_token',
         OAUTH_GITHUB_USERINFO_URL: 'https://api.github.example.test/user',
+        OAUTH_GITHUB_EMAILS_URL: 'https://api.github.example.test/user/emails',
       }),
     ).toMatchObject({
       OAUTH_GITHUB_AUTHORIZE_URL: 'https://github.example.test/login/oauth/authorize',
       OAUTH_GITHUB_TOKEN_URL: 'https://github.example.test/login/oauth/access_token',
       OAUTH_GITHUB_USERINFO_URL: 'https://api.github.example.test/user',
+      OAUTH_GITHUB_EMAILS_URL: 'https://api.github.example.test/user/emails',
     });
   });
 

@@ -17,6 +17,7 @@ const DEFAULT_AUTH_SESSION_TOUCH_INTERVAL_MINUTES = 5;
 const DEFAULT_OAUTH_GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
 const DEFAULT_OAUTH_GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const DEFAULT_OAUTH_GITHUB_USERINFO_URL = 'https://api.github.com/user';
+const DEFAULT_OAUTH_GITHUB_EMAILS_URL = 'https://api.github.com/user/emails';
 const NODE_ENVIRONMENTS = ['development', 'test', 'production'] as const;
 
 type NodeEnvironment = (typeof NODE_ENVIRONMENTS)[number];
@@ -40,6 +41,7 @@ export interface ApplicationEnvironment extends HttpSecurityEnvironment {
   readonly OAUTH_GITHUB_AUTHORIZE_URL: string;
   readonly OAUTH_GITHUB_TOKEN_URL: string;
   readonly OAUTH_GITHUB_USERINFO_URL: string;
+  readonly OAUTH_GITHUB_EMAILS_URL: string;
 }
 
 function parseNodeEnvironment(value: unknown): NodeEnvironment {
@@ -187,6 +189,23 @@ function parseOAuthClientId(
   return trimmed;
 }
 
+function parseOAuthRedirectUri(
+  value: unknown,
+  name: string,
+  nodeEnvironment: NodeEnvironment,
+): string | undefined {
+  const trimmed = parseOAuthClientId(value, name, nodeEnvironment);
+  if (trimmed === undefined) {
+    return undefined;
+  }
+  try {
+    new URL(trimmed);
+  } catch {
+    throw new Error(`${name} must be a valid URL.`);
+  }
+  return trimmed;
+}
+
 function parseOAuthUrl(value: unknown, name: string, defaultValue: string): string {
   if (value === undefined) {
     return defaultValue;
@@ -240,7 +259,7 @@ export function validateEnvironment(
     'OAUTH_GITHUB_CLIENT_SECRET',
     nodeEnvironment,
   );
-  const oauthGithubRedirectUri = parseOAuthClientId(
+  const oauthGithubRedirectUri = parseOAuthRedirectUri(
     configuration.OAUTH_GITHUB_REDIRECT_URI,
     'OAUTH_GITHUB_REDIRECT_URI',
     nodeEnvironment,
@@ -306,6 +325,11 @@ export function validateEnvironment(
       configuration.OAUTH_GITHUB_USERINFO_URL,
       'OAUTH_GITHUB_USERINFO_URL',
       DEFAULT_OAUTH_GITHUB_USERINFO_URL,
+    ),
+    OAUTH_GITHUB_EMAILS_URL: parseOAuthUrl(
+      configuration.OAUTH_GITHUB_EMAILS_URL,
+      'OAUTH_GITHUB_EMAILS_URL',
+      DEFAULT_OAUTH_GITHUB_EMAILS_URL,
     ),
     ...validateHttpSecurityEnvironment(configuration, nodeEnvironment),
   };

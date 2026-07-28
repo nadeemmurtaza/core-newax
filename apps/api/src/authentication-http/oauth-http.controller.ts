@@ -8,7 +8,10 @@ import {
   SignedCsrfTokenService,
 } from '@newax/http-security';
 
-import { PublicAuthenticationEndpoint } from '../http-security/http-security.decorators';
+import {
+  AuthenticationSensitiveEndpoint,
+  PublicEndpoint,
+} from '../http-security/http-security.decorators';
 import type {
   HttpSecurityRequestAdapter,
   HttpSecurityResponseAdapter,
@@ -44,7 +47,8 @@ export class OAuthHttpController {
   @Get('github')
   @HttpCode(200)
   @Header('Cache-Control', 'no-store')
-  @PublicAuthenticationEndpoint()
+  @PublicEndpoint()
+  @AuthenticationSensitiveEndpoint()
   initiateGitHub(
     @Res({ passthrough: true }) response: HttpSecurityResponseAdapter,
   ): OAuthInitiateResponse {
@@ -58,7 +62,8 @@ export class OAuthHttpController {
   @Get('github/callback')
   @HttpCode(200)
   @Header('Cache-Control', 'no-store')
-  @PublicAuthenticationEndpoint()
+  @PublicEndpoint()
+  @AuthenticationSensitiveEndpoint()
   async callbackGitHub(
     @Query('code') code: unknown,
     @Query('state') state: unknown,

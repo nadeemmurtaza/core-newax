@@ -50,7 +50,7 @@ class FakeGitHubProvider implements OAuthProvider {
 
   async exchangeCode(code: string): Promise<string> {
     this.capturedCode = code;
-    return 'gho_test_access_token';
+    return 'fixture-not-a-real-token-access';
   }
 
   async fetchProfile(_accessToken: string): Promise<ExternalIdentityProfile> {
