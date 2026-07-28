@@ -1,0 +1,426 @@
+.plain-language-explainer .section-heading h2,
+.relationship-explorer h2 {
+  margin: 0.15rem 0;
+}
+.plain-intro {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1.15rem;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--teal);
+  border-radius: 14px;
+  background: #fff;
+}
+.plain-intro h3 {
+  margin: 0;
+}
+.plain-intro p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+.plain-intro-icon {
+  min-width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 900;
+}
+.explain-spaced {
+  margin-top: 2rem;
+}
+.reading-guide {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+.reading-guide article {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+}
+.reading-guide article > span {
+  flex: 0 0 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 900;
+}
+.reading-guide article > span.required {
+  background: var(--green);
+}
+.reading-guide article > span.optional {
+  background: var(--amber);
+}
+.reading-guide article > span.owner {
+  background: var(--teal);
+}
+.reading-guide h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+.reading-guide p {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.business-map {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.business-domain {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-top: 5px solid var(--teal);
+  border-radius: 14px;
+  background: #fff;
+}
+.business-domain h3 {
+  margin: 0;
+}
+.business-domain p {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--muted);
+}
+.domain-number {
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 900;
+}
+.domain-models {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.explain-model-pill,
+.journey-step {
+  display: inline-flex;
+  flex-direction: column;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--soft);
+}
+.explain-model-pill small,
+.journey-step small,
+.explain-table-link small {
+  display: block;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+}
+.explain-model-pill:hover,
+.journey-step:hover,
+.relationship-card:hover,
+.explain-table-link:hover {
+  border-color: var(--teal);
+  box-shadow: 0 6px 18px #0097b21a;
+}
+.journey-grid {
+  display: grid;
+  gap: 1rem;
+}
+.journey-card {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff, #f7f9fc);
+}
+.journey-card h3 {
+  margin: 0;
+}
+.journey-card > p {
+  margin: 0.25rem 0 0.9rem;
+  color: var(--muted);
+}
+.journey-flow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  overflow-x: auto;
+}
+.journey-step {
+  min-width: 145px;
+  justify-content: center;
+}
+.journey-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--teal);
+  font-weight: 900;
+  font-size: 1.25rem;
+}
+.relationship-explorer {
+  margin-bottom: 2rem;
+}
+.explorer-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+.explorer-heading h2 {
+  font-size: 1.6rem;
+}
+.explorer-heading label {
+  min-width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 800;
+}
+.explorer-heading label span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.focus-summary {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 1rem;
+  padding: 1.1rem;
+  border-left: 5px solid var(--teal);
+}
+.focus-summary h2 {
+  font-size: clamp(1.5rem, 3vw, 2.3rem);
+}
+.focus-purpose {
+  font-size: 1.03rem;
+}
+.focus-summary dl {
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.focus-summary dl div {
+  display: grid;
+  grid-template-columns: 125px 1fr;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.focus-summary dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.focus-summary dd {
+  margin: 0;
+}
+.focus-map {
+  display: grid;
+  grid-template-columns: 1fr 260px 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.focus-column {
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+}
+.focus-column h3 {
+  margin: 0;
+}
+.focus-column > p {
+  margin: 0.2rem 0 0.7rem;
+  color: var(--muted);
+}
+.relationship-card {
+  width: 100%;
+  margin-top: 0.55rem;
+  text-align: left;
+  padding: 0.75rem;
+  background: #fff;
+  border-left: 5px solid var(--green);
+}
+.relationship-card.optional {
+  border-left-color: var(--amber);
+}
+.relationship-card > span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.relationship-card strong,
+.relationship-card small {
+  display: block;
+}
+.relationship-card small {
+  color: var(--muted);
+}
+.relationship-card p {
+  margin: 0.3rem 0 0;
+  font-weight: 500;
+}
+.focus-center {
+  display: grid;
+  place-items: center;
+}
+.focus-center > div {
+  width: 100%;
+  min-height: 185px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  text-align: center;
+  border-radius: 18px;
+  background: var(--navy);
+  color: #fff;
+  box-shadow: 0 14px 36px #0e132326;
+}
+.focus-center span {
+  color: #9de4ef;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+.focus-center strong {
+  font-size: 1.25rem;
+}
+.focus-center code {
+  background: #ffffff18;
+  color: #fff;
+}
+.focus-center small {
+  color: #c9d3e2;
+}
+.relationship-explanations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.relationship-explanation {
+  padding: 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.relationship-explanation h3 {
+  margin: 0.35rem 0 0.2rem;
+  font-size: 1rem;
+}
+.relationship-explanation p {
+  color: var(--muted);
+}
+.relationship-explanation dl {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+}
+.relationship-explanation dl div {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 0.4rem;
+}
+.relationship-explanation dt {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.relationship-explanation dd {
+  margin: 0;
+}
+.detail-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+.detail-heading h3 {
+  margin: 0.1rem 0;
+}
+.field-table {
+  min-width: 850px;
+}
+.explain-table-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--ink);
+}
+#database-map .model-node.explain-dimmed {
+  opacity: 0.16;
+}
+#database-map .model-node.explain-selected rect {
+  stroke: var(--teal);
+  stroke-width: 4;
+}
+#database-map .relation-line.explain-dimmed {
+  opacity: 0.05;
+}
+#database-map .relation-line.explain-selected {
+  stroke: var(--teal);
+  stroke-width: 4;
+  opacity: 1;
+}
+#database-map .relation-line.optional-link {
+  stroke-dasharray: 7 5;
+}
+@media (max-width: 1200px) {
+  .reading-guide {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .focus-map {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 850px) {
+  .business-map,
+  .relationship-explanations,
+  .focus-summary {
+    grid-template-columns: 1fr;
+  }
+  .explorer-heading,
+  .detail-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .explorer-heading label {
+    min-width: 0;
+  }
+}
+@media (max-width: 560px) {
+  .reading-guide {
+    grid-template-columns: 1fr;
+  }
+  .business-domain {
+    grid-template-columns: 1fr;
+  }
+  .plain-intro {
+    flex-direction: column;
+  }
+  .focus-summary dl div,
+  .relationship-explanation dl div {
+    grid-template-columns: 1fr;
+  }
+}

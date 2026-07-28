@@ -1,11 +1,24 @@
 # Changelog
 
+## 0.3.0 - 2026-07-16
+
+### Added
+
+- Governed family relationship creation, correction, ending, verification, and verification-revocation services.
+- Bounded current-Organization family-tree reads with separate sensitive-field permission.
+- Optimistic relationship versions and durable verification-revocation metadata.
+- Current-Organization HTTP endpoints, PostgreSQL integrity tests, and relationship events.
+
 All notable changes to the NEWAX People module are documented here.
 
 ## Unreleased
 
 ### Added
 
+- Tenant-scoped `CorePersonRelationship` storage for family, guardian, spouse, sibling, dependent, and other directed person links.
+- Relationship role, basis, validity, verification, verifier, and source-reference fields.
+- Database protection against self-links, invalid validity ranges, inconsistent verification, duplicate current relationships, and active parentage cycles.
+- Focused schema and migration regression tests.
 - Bounded `CurrentPersonRequestContext` and `CurrentPersonProfile` contracts.
 - `PeopleService.getCurrent` for authenticated account self-profile access.
 - `GET /api/core/people/current` through trusted account context.
@@ -23,6 +36,8 @@ All notable changes to the NEWAX People module are documented here.
 
 ### Database
 
+- Adds `core_person_relationships` as a People-owned, Tenant-scoped relationship registry.
+- Keeps official identifiers in `core_person_identifiers` rather than duplicating them in family links.
 - Reuses the existing `core_people` Central Registry table.
 - Adds no schema change, migration, cache, or alternative source of truth.
 

@@ -15,6 +15,97 @@ State the business or engineering outcome this change must produce.
 - Applicable standards:
 - Applicable learning-ledger entries:
 
+## Planning evidence
+
+- Planning issues: `#123`, comma-separated issues, or `not-required` only for an explicitly exempt maintenance change
+- Declared scope source: Identify the planning issue containing the repository path boundaries.
+- Task sequence source: Identify the planning issue containing ordered tasks and dependencies.
+- Architecture review evidence: Identify the approval event or write `not-required` when every task explicitly says review is not required.
+- Estimate source: Identify the task estimates and any approved revisions.
+- Scope-change approvals: Identify approval events or write `none`.
+
+Review-ready pull requests require at least one planning issue, a declared task sequence, and declared scope paths. Planning mistake governance evaluates the issue history and commit sequence; these fields do not override that evidence.
+
+## Communication evidence
+
+- Communication issues: `#123`, comma-separated issues, or `not-required` only for an explicitly exempt maintenance change
+- Requirement confirmations: Identify the structured requirement and interpretation records.
+- Assumptions awaiting confirmation: Identify open assumptions or write `none`.
+- Decision records: Identify canonical decisions required by this change.
+- Approval evidence: Identify approval records or write `not-required`.
+- Conflicts and resolutions: Identify supersession or resolution records or write `none`.
+
+Review-ready pull requests require at least one linked communication issue and structured communication evidence. Pull-request prose does not override the issue, comment, review, and commit history evaluated by communication governance.
+
+## AI and tool quality evidence
+
+- AI or engineering-tool assistance used: `yes` or `no`
+- AI quality issues: `#123`, comma-separated issues, or `not-required` when no structured AI or tool output record exists
+- Attributed output records: Identify output IDs, model or tool metadata, hashes, occurrence times, and artifact references, or write `none`.
+- Validation evidence: Identify version, compiler, runtime, review, package, documentation, copy-provenance, or static-analysis records, or write `none`.
+- Corrections and regressions: Identify correction commits and exact regression evidence, or write `none`.
+- Dataset privacy review: Confirm the record contains bounded metadata, hashes, and durable references only.
+
+Assistance alone is not a mistake. Review-ready pull requests with structured output evidence require a linked AI quality issue. Trusted governance blocks only attributable, unresolved, unwaived, high-confidence findings supported by verified evidence.
+
+## Prevention evidence
+
+- Prevention records: `#123`, comma-separated resolved learning issues, or `not-required` when no resolved learning occurrence is linked
+- Resolved root causes: Identify the root-cause IDs or write `none`.
+- Generated control packs: Identify pack IDs and revisions or write `none`.
+- Control paths: Identify the seven deterministic paths per root cause or write `none`.
+- Candidate executable controls: Identify CI or static-analysis controls awaiting ownership, implementation, review, or verification, or write `none`.
+- Supersession approvals: Identify structured approvals or write `none`.
+
+Resolved mistakes require a complete current seven-control pack. Closed but unverified issues do not qualify. Prevention governance compares generated expected content with the exact pull-request head; pull-request prose does not override the evidence.
+
+## Confidence evidence
+
+- Confidence records: `#123`, comma-separated structured confidence issues, or `not-required` only when no finding issue is linked
+- Scoring policy: `CONFIDENCE-1.0.0`
+- Finding coverage: Identify which linked finding issue each confidence input record represents.
+- Recalculation evidence: Identify the generated score records or analysis output.
+- Missing subsystem evidence: Identify metrics that remain `insufficient-evidence`, or write `none`.
+- Manual final scores supplied: `no`
+
+Confidence percentages and evidence-quality labels are generated from recalculable inputs. They measure evidence support under the named policy and are not statistical probabilities. Authors must not type final scores into this pull request. A high metric cannot substitute for missing evidence in another metric.
+
+## Knowledge graph evidence
+
+- Knowledge graph records: `#123`, comma-separated canonical history issues, or `not-required` only when no finding issue is linked
+- Complete engineering history: Link the one canonical knowledge-record issue.
+- Focus node: Identify the bug, root-cause, or other node used as the primary view, or write `none`.
+- Graph schema: `1`
+- Missing stages: Identify exact gaps or write `none` only when the recalculated graph is complete.
+- Candidate links: Identify links that do not satisfy completeness, or write `none`.
+- Manual completeness claim supplied: `no`
+
+The canonical issue is the one-click history view. Verified links require exact GitHub objects, structured markers, canonical fields, or explicit durable references. Similar wording, chronology, category, author, or shared pull-request context cannot establish causality. The Error Relationship Graph remains authoritative for causal failure relationships.
+
+## Recurrence evidence
+
+- Recurrence records: `#123`, comma-separated recurrence or learning issues, or `not-required` when no confirmed repeated root cause exists
+- Current occurrence: Identify the exact occurrence ID and current pull request.
+- Previous occurrences: List the earlier pull requests in chronological order.
+- Root cause ID: Identify the exact confirmed or machine-supported root-cause ID.
+- Applicable rule: Identify the prevention rule, state, source, and effective time, or write `none`.
+- Why the rule was not followed: Use the structured disposition and evidence references, or write `pending` only while draft.
+- Escalation: Generated by recurrence governance; do not type a final level manually.
+- Manual recurrence count supplied: `no`
+
+Recurrence requires exact verified root-cause identity. Pre-rule occurrences remain history and are not retroactively treated as control violations. Review-ready unresolved post-rule recurrence blocks according to the recalculated escalation.
+
+## Executive dashboard evidence
+
+- Executive dashboard records: `#123`, comma-separated dashboard-record issues, or `not-required` when this pull request does not change dashboard sources, formulas, rendering, workflow, or governance
+- Reporting window: Identify the explicit start and end timestamps.
+- Snapshot policy: `EXECUTIVE-DASHBOARD-1.0.0`
+- Snapshot digest: Generated from the recalculable record; do not type a replacement value.
+- Coverage gaps: Identify metrics with `insufficient-evidence`, or write `none` only when recalculation confirms complete coverage.
+- Manual KPI values supplied: `no`
+
+Executive metrics are generated from source-backed records. Missing evidence is not zero; verified and estimated values remain separate; currencies are not silently combined. Pull-request prose cannot override the recalculated snapshot.
+
 ## Acceptance criteria
 
 - [ ] The intended behavior is testable.
@@ -60,27 +151,44 @@ Record the latest source state only. Replace `pending` after the final source ch
 
 ## Engineering learning record
 
-Complete this section for every pull request. `none` is allowed only when the automated reconciliation check finds no failed workflow, linked learning issue, local-event intake, or external-tool event for this pull request.
+Complete this section for every pull request.
 
-- Learning outcome: `new`, `existing`, or `none`
+Do not add a `Learning outcome` field. Trusted governance computes the outcome from the pull-request diff and reconciled evidence. The outcome is automatically `required` when any of these conditions is true:
+
+- A new rule, policy, or engineering standard is created.
+- A checklist is created or updated.
+- An engineering process or governance control changes.
+- A pull-request, issue, or operational template changes.
+- Engineering automation is added.
+- A failed workflow, linked learning issue, local event, or external-tool event exists.
+
+The author cannot choose `none`.
+
 - Ledger entries: `EL-XXXX`, comma-separated entries, or `not-required`
 - Learning issues: `#123`, comma-separated issues, or `not-required`
 - Root-cause status: `confirmed`, `machine-supported`, or `not-required`
-- Root-cause evidence: Identify the failed run, issue, log, reproduction, or reviewer confirmation.
+- Root-cause evidence: Identify the failed run, issue, log, reproduction, reviewer confirmation, or rule-engine trigger.
 - Resolution evidence: Identify the fix commit and successful focused and complete verification.
 - Successful method used: Describe the evidence-backed method used.
 - Unsuccessful method avoided: Name the known failed method that was not repeated.
-- New prevention control: Describe the new control or write `not-required`.
+- New prevention control: Describe the new control or write `not-required` only when the rule engine returns `not-required`.
 - Ledger consulted before implementation: `yes`
 - Failure history reconciled: `yes`
 - External and tool events reconciled: `yes`
 
-When `Learning outcome` is `new`, update either:
+When learning is required, governance determines whether each ledger entry is:
+
+- `new` because the entry is introduced in this pull request; or
+- `existing` because it is already present in the trusted learning catalog.
+
+A required outcome must include at least one ledger entry and one occurrence-specific learning issue. A not-required outcome must use `not-required` for ledger entries, learning issues, and root-cause status.
+
+New learning must update either:
 
 - `docs/verification/engineering-learning-ledger.md`
 - `docs/verification/engineering-learning-ledger/EL-XXXX-description.md`
 
-When the same root cause already exists, use `existing`, link the existing ledger entry, and still link the occurrence-specific engineering-learning issue.
+When the same root cause already exists, link the existing ledger entry and still link the occurrence-specific engineering-learning issue.
 
 ## Code necessity and simplicity audit
 

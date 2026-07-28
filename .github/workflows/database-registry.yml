@@ -1,0 +1,121 @@
+name: Database Registry Map
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: database-registry-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    name: Generate database registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Test database registry generator
+        run: node --test tooling/database-registry/generate.test.mjs
+
+      - name: Generate publishable registry
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node tooling/database-registry/generate.mjs
+          --mode publish
+          --output docs/generated/database-registry
+          --write
+
+      - name: Verify generated registry contract
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          node - <<'NODE'
+          const { readFileSync } = require('node:fs');
+          const inventory = JSON.parse(
+            readFileSync('docs/generated/database-registry/inventory.json', 'utf8'),
+          );
+
+          const failures = [];
+          if (inventory.source.sha !== process.env.EXPECTED_SHA) {
+            failures.push('inventory source SHA does not match the checked-out commit');
+          }
+          if (!Number.isInteger(inventory.database.modelCount) || inventory.database.modelCount < 1) {
+            failures.push('no Prisma models were discovered');
+          }
+          if (!Array.isArray(inventory.registry.modules) || inventory.registry.modules.length < 1) {
+            failures.push('no Module Registry entries were discovered');
+          }
+          if (!Array.isArray(inventory.database.migrations)) {
+            failures.push('migration inventory is missing');
+          }
+          if (!Array.isArray(inventory.api.endpoints)) {
+            failures.push('API inventory is missing');
+          }
+          if (failures.length > 0) {
+            throw new Error(failures.join('\n'));
+          }
+          NODE
+          test -s docs/generated/database-registry/index.html
+          test -s docs/generated/database-registry/inventory.json
+          test -f docs/generated/database-registry/.nojekyll
+
+      - name: Upload review artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: database-registry-${{ github.sha }}
+          path: docs/generated/database-registry
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload GitHub Pages artifact
+        if: >-
+          github.event_name == 'push' &&
+          github.ref == 'refs/heads/main' &&
+          vars.DATABASE_REGISTRY_PAGES_ENABLED == 'true'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: docs/generated/database-registry
+
+  deploy:
+    name: Publish database registry
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.DATABASE_REGISTRY_PAGES_ENABLED == 'true'
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

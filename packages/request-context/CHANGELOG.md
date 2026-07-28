@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 - 2026-07-12
+
+- Add server-derived `tenantId` to trusted organization and module request contexts.
+- Reject organization context when the owning Tenant is inactive.
+- Confirm Tenant identity alongside membership and Organization identity.
+
 All notable changes to the NEWAX Trusted Request Context module are documented here.
 
 ## Unreleased

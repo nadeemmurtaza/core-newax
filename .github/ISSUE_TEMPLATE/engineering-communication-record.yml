@@ -1,0 +1,149 @@
+name: Engineering communication record
+description: Record a requirement, assumption, interpretation, question, decision, instruction, clarification, correction, approval, resolution, or waiver.
+title: '[Engineering communication] '
+labels:
+  - engineering-learning
+body:
+  - type: input
+    id: communication_id
+    attributes:
+      label: Communication ID
+      description: Use a stable ID such as COM-REQ-0042.
+    validations:
+      required: true
+  - type: dropdown
+    id: event_type
+    attributes:
+      label: Event type
+      options:
+        - Requirement
+        - Assumption
+        - Interpretation
+        - Question
+        - Decision required
+        - Decision
+        - Instruction
+        - Clarification
+        - Correction
+        - Confirmation
+        - Approval request
+        - Approval
+        - Implementation
+        - Resolution
+        - Waiver
+    validations:
+      required: true
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      description: Stable topic key shared by related records.
+    validations:
+      required: true
+  - type: dropdown
+    id: authority
+    attributes:
+      label: Authority
+      options:
+        - Observer
+        - Implementer
+        - Reviewer
+        - Architect
+        - Approver
+        - Owner
+    validations:
+      required: true
+  - type: input
+    id: status
+    attributes:
+      label: Status
+      description: Examples are active, open, confirmed, approved, resolved, superseded, rejected, or withdrawn.
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Value or interpretation
+      description: Record the requirement, option, choice, interpretation, or approval outcome.
+  - type: input
+    id: effective_time
+    attributes:
+      label: Effective time
+      description: ISO 8601 timestamp when known.
+  - type: textarea
+    id: applies_to
+    attributes:
+      label: Applies to
+      description: Comma-separated repository paths or scopes for dependent work.
+  - type: input
+    id: references
+    attributes:
+      label: References
+      description: Comma-separated communication IDs this record confirms or depends on.
+  - type: input
+    id: conflicts_with
+    attributes:
+      label: Conflicts with
+      description: Comma-separated communication IDs.
+  - type: input
+    id: supersedes
+    attributes:
+      label: Supersedes
+      description: Comma-separated communication IDs replaced by this record.
+  - type: input
+    id: resolves
+    attributes:
+      label: Resolves
+      description: Finding ID, source communication IDs, or the exact finding type.
+  - type: dropdown
+    id: requires_confirmation
+    attributes:
+      label: Requires confirmation
+      options:
+        - 'No'
+        - 'Yes'
+  - type: dropdown
+    id: requires_approval
+    attributes:
+      label: Requires approval
+      options:
+        - 'No'
+        - 'Yes'
+  - type: dropdown
+    id: requires_decision
+    attributes:
+      label: Requires decision
+      options:
+        - 'No'
+        - 'Yes'
+  - type: dropdown
+    id: confirms_misunderstanding
+    attributes:
+      label: Confirms misunderstanding
+      options:
+        - 'No'
+        - 'Yes'
+  - type: input
+    id: finding_type
+    attributes:
+      label: Finding type
+      description: Required for a waiver; otherwise leave blank.
+  - type: input
+    id: reviewer
+    attributes:
+      label: Reviewer
+      description: Required for a waiver.
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason
+      description: Explain the decision, resolution, or waiver.
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Evidence confirmation
+      options:
+        - label: I recorded the topic, authority, status, and references accurately.
+          required: true
+        - label: I did not convert an unconfirmed interpretation into a requirement.
+          required: true

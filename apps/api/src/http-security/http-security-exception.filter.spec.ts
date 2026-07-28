@@ -1,4 +1,6 @@
 import type { ArgumentsHost } from '@nestjs/common';
+import { AddressModuleError } from '@newax/addresses';
+import { ObjectModuleError } from '@newax/objects';
 import { PeopleModuleError } from '@newax/people';
 import { describe, expect, it } from 'vitest';
 
@@ -8,7 +10,7 @@ import type {
   HttpSecurityResponseAdapter,
 } from './http-security-request';
 import type { SystemHttpSecurityClock } from './node-http-security.infrastructure';
-import type { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
+import type { AuditHttpSecuritySink } from '../audit/http-security-audit.sink';
 
 class RecordingAuditSink {
   readonly records: unknown[] = [];
@@ -78,7 +80,7 @@ function createHost(response: FakeResponse): ArgumentsHost {
 
 function createFilter(auditSink: RecordingAuditSink): HttpSecurityExceptionFilter {
   return new HttpSecurityExceptionFilter(
-    auditSink as unknown as PrismaHttpSecurityAuditSink,
+    auditSink as unknown as AuditHttpSecuritySink,
     new FixedClock() as unknown as SystemHttpSecurityClock,
   );
 }
@@ -127,6 +129,100 @@ describe('HttpSecurityExceptionFilter current-person error mapping', () => {
     });
     expect(JSON.stringify(response.body)).not.toContain('repository');
     expect(JSON.stringify(response.body)).not.toContain('trusted person boundary');
+    expect(auditSink.records).toHaveLength(1);
+  });
+
+  it('maps address conflicts without exposing physical address details', async () => {
+    const auditSink = new RecordingAuditSink();
+    const response = new FakeResponse();
+
+    await createFilter(auditSink).catch(
+      new AddressModuleError('ADDRESS_CONFLICT', 'The office address already exists at Street 1.'),
+      createHost(response),
+    );
+
+    expect(response.statusCode).toBe(409);
+    expect(response.body).toEqual({
+      error: {
+        code: 'CONFLICT',
+        message: 'The request conflicts with the current resource state.',
+        requestId: 'request-1',
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain('Street 1');
+    expect(auditSink.records).toHaveLength(1);
+  });
+
+  it('maps invalid address cursors to a generic invalid-request envelope', async () => {
+    const auditSink = new RecordingAuditSink();
+    const response = new FakeResponse();
+
+    await createFilter(auditSink).catch(
+      new AddressModuleError(
+        'ADDRESS_CURSOR_INVALID',
+        'The address cursor belongs to another organization.',
+      ),
+      createHost(response),
+    );
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toEqual({
+      error: {
+        code: 'INVALID_REQUEST',
+        message: 'The request is invalid.',
+        requestId: 'request-1',
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain('another organization');
+    expect(auditSink.records).toHaveLength(1);
+  });
+
+  it('maps invalid object cursors to a generic invalid-request envelope', async () => {
+    const auditSink = new RecordingAuditSink();
+    const response = new FakeResponse();
+
+    await createFilter(auditSink).catch(
+      new ObjectModuleError(
+        'OBJECT_CURSOR_INVALID',
+        'The object cursor belongs to another organization.',
+      ),
+      createHost(response),
+    );
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toEqual({
+      error: {
+        code: 'INVALID_REQUEST',
+        message: 'The request is invalid.',
+        requestId: 'request-1',
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain('another organization');
+    expect(auditSink.records).toHaveLength(1);
+  });
+
+  it('maps unavailable object relationships to a generic conflict envelope', async () => {
+    const auditSink = new RecordingAuditSink();
+    const response = new FakeResponse();
+
+    await createFilter(auditSink).catch(
+      new ObjectModuleError(
+        'OBJECT_PARENT_UNAVAILABLE',
+        'The parent object is unavailable in the current tenant.',
+      ),
+      createHost(response),
+    );
+
+    expect(response.statusCode).toBe(409);
+    expect(response.body).toEqual({
+      error: {
+        code: 'CONFLICT',
+        message: 'The request conflicts with the current resource state.',
+        requestId: 'request-1',
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain('parent object');
+    expect(JSON.stringify(response.body)).not.toContain('current tenant');
     expect(auditSink.records).toHaveLength(1);
   });
 });

@@ -31,6 +31,8 @@ function membership(overrides: Partial<TrustedMembershipRecord> = {}): TrustedMe
   return {
     id: '00000000-0000-4000-8000-000000000300',
     personId: '00000000-0000-4000-8000-000000000001',
+    tenantId: '00000000-0000-4000-8000-000000000350',
+    tenantStatus: 'active',
     organizationId: '00000000-0000-4000-8000-000000000400',
     membershipStatus: 'active',
     organizationStatus: 'active',
@@ -145,6 +147,7 @@ describe('TrustedRequestContextService', () => {
       scope: 'organization',
       requestId: 'external-request-id',
       membershipId: membership().id,
+      tenantId: membership().tenantId,
       organizationId: membership().organizationId,
     });
     expect([...context.permissionCodes]).toEqual(['memberships.view', 'people.view']);
@@ -201,6 +204,7 @@ describe('ContextAuthorizer', () => {
     authorizer.requirePermission(context, 'people.view');
     expect(authorizer.toModuleContext(context)).toEqual({
       actorUserId: context.userId,
+      tenantId: context.tenantId,
       organizationId: context.organizationId,
       permissionCodes: context.permissionCodes,
     });

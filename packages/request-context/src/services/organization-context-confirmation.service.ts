@@ -6,6 +6,7 @@ import type {
   TrustedMembershipStatus,
   TrustedOrganizationRequestContext,
   TrustedOrganizationStatus,
+  TrustedTenantStatus,
 } from '../types/request-context';
 import type { OrganizationContextConfirmationDirectory } from './request-context-ports';
 
@@ -68,6 +69,7 @@ export class OrganizationContextConfirmationService {
     if (
       validated.membershipId !== trusted.membershipId ||
       validated.personId !== trusted.personId ||
+      validated.tenantId !== trusted.tenantId ||
       validated.organizationId !== trusted.organizationId
     ) {
       throw this.integrityFailure(
@@ -75,7 +77,11 @@ export class OrganizationContextConfirmationService {
       );
     }
 
-    if (validated.membershipStatus !== 'active' || validated.organizationStatus !== 'active') {
+    if (
+      validated.membershipStatus !== 'active' ||
+      validated.tenantStatus !== 'active' ||
+      validated.organizationStatus !== 'active'
+    ) {
       throw this.membershipUnavailable();
     }
 
@@ -83,6 +89,7 @@ export class OrganizationContextConfirmationService {
 
     return Object.freeze({
       membershipId: validated.membershipId,
+      tenantId: validated.tenantId,
       organizationId: validated.organizationId,
       organizationDisplayName: validated.organizationDisplayName,
       organizationType: validated.organizationType,
@@ -97,6 +104,7 @@ export class OrganizationContextConfirmationService {
   private assertOrganizationContext(context: TrustedOrganizationRequestContext): {
     readonly personId: string;
     readonly membershipId: string;
+    readonly tenantId: string;
     readonly organizationId: string;
     readonly sessionExpiresAt: Date;
     readonly evaluatedAt: Date;
@@ -111,6 +119,7 @@ export class OrganizationContextConfirmationService {
     const personId = this.requireUuid(context.personId, 'context.personId');
     this.requireUuid(context.sessionId, 'context.sessionId');
     const membershipId = this.requireUuid(context.membershipId, 'context.membershipId');
+    const tenantId = this.requireUuid(context.tenantId, 'context.tenantId');
     const organizationId = this.requireUuid(context.organizationId, 'context.organizationId');
     this.requireText(context.requestId, 'context.requestId', 128);
     const sessionExpiresAt = this.requireDate(context.sessionExpiresAt, 'context.sessionExpiresAt');
@@ -130,6 +139,7 @@ export class OrganizationContextConfirmationService {
     return {
       personId,
       membershipId,
+      tenantId,
       organizationId,
       sessionExpiresAt,
       evaluatedAt,
@@ -142,6 +152,8 @@ export class OrganizationContextConfirmationService {
     return {
       membershipId: this.requireUuid(record.membershipId, 'confirmation.membershipId'),
       personId: this.requireUuid(record.personId, 'confirmation.personId'),
+      tenantId: this.requireUuid(record.tenantId, 'confirmation.tenantId'),
+      tenantStatus: this.requireTenantStatus(record.tenantStatus),
       organizationId: this.requireUuid(record.organizationId, 'confirmation.organizationId'),
       organizationDisplayName: this.requireText(
         record.organizationDisplayName,
@@ -179,6 +191,13 @@ export class OrganizationContextConfirmationService {
 
   private hasAny(permissions: ReadonlySet<string>, required: readonly string[]): boolean {
     return required.some((permission) => permissions.has(permission));
+  }
+
+  private requireTenantStatus(value: string): TrustedTenantStatus {
+    if (value === 'active' || value === 'suspended' || value === 'archived') {
+      return value;
+    }
+    throw this.integrityFailure('confirmation.tenantStatus is invalid.');
   }
 
   private requireMembershipStatus(value: string): TrustedMembershipStatus {

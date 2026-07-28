@@ -1,9 +1,9 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.9",
+  "registry_version": "0.1.19",
   "registry_status": "draft",
-  "last_updated": "2026-07-12",
+  "last_updated": "2026-07-16",
   "owner": "NEWAX Engineering",
   "purpose": "Internal source of truth for planned, draft, active, deprecated, replaced, and archived NEWAX modules.",
   "governance": {
@@ -16,13 +16,32 @@
   },
   "modules": [
     {
-      "module_name": "People",
-      "module_key": "people",
+      "module_name": "Tenants",
+      "module_key": "tenants",
       "module_layer": "foundation",
       "module_version": "0.1.0",
       "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Maintains one central record for each real person across NEWAX project domains.",
+      "description": "Maintains the customer ownership and data-isolation boundary independently from legal and operating organizations.",
+      "dependencies": [],
+      "required_permissions": ["tenants.view", "tenants.create"],
+      "exposed_events": ["tenant.created"],
+      "consumed_events": [],
+      "configuration_options": ["tenant_status_values"],
+      "database_ownership": ["core_tenants"],
+      "tenant_scope": "global_customer_boundary",
+      "documentation_path": "packages/tenants/README.md",
+      "changelog_path": "packages/tenants/CHANGELOG.md",
+      "compatibility_notes": "Licensing, deployment, support entitlement, data-region, retention, configuration, and organization records reference tenant_id. Tenant identity is not an organization record."
+    },
+    {
+      "module_name": "People",
+      "module_key": "people",
+      "module_layer": "foundation",
+      "module_version": "0.3.0",
+      "module_status": "draft",
+      "module_owner": "NEWAX Engineering",
+      "description": "Maintains central person identity, official identifiers, and governed tenant-scoped family relationships with current-Organization access boundaries.",
       "dependencies": [],
       "required_permissions": [
         "people.view",
@@ -30,32 +49,110 @@
         "people.update",
         "people.archive",
         "people.identifiers.view",
-        "people.identifiers.manage"
+        "people.identifiers.manage",
+        "people.relationships.view",
+        "people.relationships.manage",
+        "people.relationships.verify",
+        "people.family_sensitive.view"
       ],
       "exposed_events": [
         "person.created",
         "person.updated",
         "person.archived",
         "person.identifier_added",
-        "person.identifier_verified"
+        "person.identifier_verified",
+        "person.relationship.created",
+        "person.relationship.updated",
+        "person.relationship.ended",
+        "person.relationship.verified",
+        "person.relationship.verification_revoked"
       ],
       "consumed_events": [],
-      "configuration_options": ["person_status_values", "identity_deduplication_policy"],
-      "database_ownership": ["core_people", "core_person_identifiers"],
+      "configuration_options": [
+        "person_status_values",
+        "identity_deduplication_policy",
+        "family_graph_max_depth",
+        "family_sensitive_disclosure_policy"
+      ],
+      "database_ownership": ["core_people", "core_person_identifiers", "core_person_relationships"],
       "tenant_scope": "mixed_global_and_organization_context",
       "documentation_path": "packages/people/README.md",
       "changelog_path": "packages/people/CHANGELOG.md",
-      "compatibility_notes": "Shared identity foundation. Domain modules must reference people through person_id instead of duplicating identity data."
+      "compatibility_notes": "Shared identity and relationship foundation. Domain modules reference person_id; official identifiers remain separate. Current-Organization family access starts from an active membership, sensitive disclosure requires a dedicated permission, and relationship history is changed through optimistic versioned operations rather than deletion."
+    },
+    {
+      "module_name": "People Intake",
+      "module_key": "people-intake",
+      "module_layer": "foundation",
+      "module_version": "0.2.0",
+      "module_status": "draft",
+      "module_owner": "NEWAX Engineering",
+      "description": "Stages family data, evidence files, and independently reviewed certificate extraction before canonical application.",
+      "dependencies": [
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "organizations",
+          "version": ">=0.2.0"
+        },
+        {
+          "module_key": "people",
+          "version": ">=0.2.0"
+        },
+        {
+          "module_key": "users",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "audit",
+          "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": [
+        "people_intake.view",
+        "people_intake.create",
+        "people_intake.update",
+        "people_intake.submit",
+        "people_intake.review",
+        "people_intake.evidence.view",
+        "people_intake.evidence.attach",
+        "people_intake.certificate_import.extract",
+        "people_intake.certificate_import.review",
+        "people_intake.certificate_import.apply"
+      ],
+      "exposed_events": [],
+      "consumed_events": [],
+      "configuration_options": [
+        "people_intake_max_people",
+        "people_intake_max_relationships",
+        "people_intake_review_policy"
+      ],
+      "database_ownership": [
+        "core_people_intakes",
+        "core_people_intake_evidence",
+        "core_certificate_imports"
+      ],
+      "tenant_scope": "organization_scoped_staging",
+      "documentation_path": "packages/people-intake/README.md",
+      "changelog_path": "packages/people-intake/CHANGELOG.md",
+      "compatibility_notes": "Draft and reviewed intake records are not canonical People Registry records. Applying an approved intake remains a separate controlled capability."
     },
     {
       "module_name": "Organizations",
       "module_key": "organizations",
       "module_layer": "foundation",
-      "module_version": "0.1.0",
+      "module_version": "0.2.0",
       "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Maintains client organizations, institutes, companies, branches, departments, and business units.",
-      "dependencies": [],
+      "description": "Maintains legal entities, companies, institutions, branches, departments, schools, hospitals, and business units inside one Tenant.",
+      "dependencies": [
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        }
+      ],
       "required_permissions": [
         "organizations.view",
         "organizations.create",
@@ -66,10 +163,10 @@
       "consumed_events": [],
       "configuration_options": ["organization_status_values", "organization_type_values"],
       "database_ownership": ["core_organizations", "core_organization_relationships"],
-      "tenant_scope": "foundation_tenant_context",
+      "tenant_scope": "tenant_scoped",
       "documentation_path": "packages/organizations/README.md",
       "changelog_path": "packages/organizations/CHANGELOG.md",
-      "compatibility_notes": "Provides the organization boundary used by tenant-scoped modules."
+      "compatibility_notes": "Every organization has one immutable tenant_id. Parent-child hierarchy and organization relationships cannot cross tenant boundaries."
     },
     {
       "module_name": "Memberships",
@@ -267,11 +364,15 @@
       "module_name": "Trusted Request Context",
       "module_key": "request-context",
       "module_layer": "platform_service",
-      "module_version": "0.1.0",
+      "module_version": "0.2.0",
       "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Resolves tenant-safe execution context from authenticated sessions, active memberships, organizations, and effective permissions.",
+      "description": "Resolves tenant-safe execution context from authenticated sessions, active tenants, memberships, organizations, and effective permissions.",
       "dependencies": [
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        },
         {
           "module_key": "authentication",
           "version": ">=0.1.0"
@@ -294,10 +395,10 @@
         "permission_evaluation_policy"
       ],
       "database_ownership": [],
-      "tenant_scope": "authenticated_account_and_organization_scoped",
+      "tenant_scope": "authenticated_account_and_tenant_organization_scoped",
       "documentation_path": "packages/request-context/README.md",
       "changelog_path": "packages/request-context/CHANGELOG.md",
-      "compatibility_notes": "Clients may select a membership identifier only. User, person, organization, and permission authority must be derived from trusted server-side records."
+      "compatibility_notes": "Trusted organization context carries tenant_id and organization_id derived from server-side membership records. Client-declared tenant authority is never accepted."
     },
     {
       "module_name": "HTTP Security Boundary",
@@ -373,79 +474,164 @@
       "compatibility_notes": "The current implementation creates and reads organization contacts only. Person-contact visibility, update, removal, and verification require separate approved policies."
     },
     {
+      "module_name": "Addresses",
+      "module_key": "addresses",
+      "module_layer": "foundation",
+      "module_version": "0.1.0",
+      "module_status": "draft",
+      "module_owner": "NEWAX Engineering",
+      "description": "Maintains reusable canonical locations and permission-controlled Organization address links while keeping Person-address operations disabled.",
+      "dependencies": [
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "organizations",
+          "version": ">=0.2.0"
+        }
+      ],
+      "required_permissions": ["addresses.view", "addresses.create"],
+      "exposed_events": ["address.created"],
+      "consumed_events": [],
+      "configuration_options": [
+        "organization_address_type_values",
+        "address_normalization_policy",
+        "primary_address_policy"
+      ],
+      "database_ownership": [
+        "core_addresses",
+        "core_person_addresses",
+        "core_organization_addresses"
+      ],
+      "tenant_scope": "organization_scoped_with_global_canonical_records",
+      "documentation_path": "packages/addresses/README.md",
+      "changelog_path": "packages/addresses/CHANGELOG.md",
+      "compatibility_notes": "Organization address operations require trusted tenant_id and organization_id. Person-address creation, reads, search, and sharing remain disabled until a separate privacy policy is approved."
+    },
+    {
+      "module_name": "Objects",
+      "module_key": "objects",
+      "module_layer": "foundation",
+      "module_version": "0.2.0",
+      "module_status": "draft",
+      "module_owner": "NEWAX Engineering",
+      "description": "Maintains Tenant-owned identity for individually identifiable non-human entities such as vehicles, devices, equipment, facilities, rooms, machines, sensors, and property units.",
+      "dependencies": [
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "organizations",
+          "version": ">=0.2.0"
+        }
+      ],
+      "required_permissions": ["objects.types.manage", "objects.create", "objects.view"],
+      "exposed_events": ["object.type_registered", "object.created"],
+      "consumed_events": [],
+      "configuration_options": [],
+      "database_ownership": ["core_object_types", "core_objects"],
+      "tenant_scope": "tenant_and_current_organization_scoped",
+      "documentation_path": "packages/objects/README.md",
+      "changelog_path": "packages/objects/CHANGELOG.md",
+      "compatibility_notes": "Object Types are global reusable definitions. Object instances carry immutable tenant_id and owning_organization_id. Trusted current-Organization create and list HTTP endpoints are available. Assignments, locations, transfers, lifecycle operations, and domain extensions remain deferred."
+    },
+    {
       "module_name": "Audit",
       "module_key": "audit",
       "module_layer": "platform_service",
       "module_version": "0.1.0",
-      "module_status": "planned",
+      "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Records important system, identity, permission, tenant, security, and administrative actions.",
+      "description": "Records validated trusted system and security actions with explicit global, Tenant, and Organization scope and exposes bounded current-Organization summaries.",
       "dependencies": [
         {
-          "module_key": "organizations",
+          "module_key": "tenants",
           "version": ">=0.1.0"
+        },
+        {
+          "module_key": "organizations",
+          "version": ">=0.2.0"
         },
         {
           "module_key": "users",
           "version": ">=0.1.0"
         }
       ],
-      "required_permissions": ["audit.view", "audit.export"],
-      "exposed_events": ["audit.entry_recorded"],
-      "consumed_events": [
-        "user.login",
-        "permission.changed",
-        "payment.approved",
-        "report.exported",
-        "admin.accessed_sensitive_data"
-      ],
-      "configuration_options": [
-        "audit_retention_policy",
-        "sensitive_event_categories",
-        "export_controls"
-      ],
+      "required_permissions": ["audit.view"],
+      "exposed_events": [],
+      "consumed_events": [],
+      "configuration_options": [],
       "database_ownership": ["core_audit_logs"],
-      "tenant_scope": "mixed_global_and_organization_scoped",
+      "tenant_scope": "mixed_global_tenant_and_organization_scoped",
       "documentation_path": "packages/audit/README.md",
       "changelog_path": "packages/audit/CHANGELOG.md",
-      "compatibility_notes": "Security-sensitive modules should publish auditable events without creating reverse dependencies on Audit."
+      "compatibility_notes": "This release centralizes validated trusted writes and permission-gated current-Organization summary reads. The HTTP Security package remains independent and is connected through an application adapter. Export, raw metadata and network-detail disclosure, snapshot policy, retention, event ingestion, and HTTP endpoints remain deferred."
     },
     {
       "module_name": "Files",
       "module_key": "files",
       "module_layer": "platform_service",
       "module_version": "0.1.0",
-      "module_status": "planned",
+      "module_status": "draft",
       "module_owner": "NEWAX Engineering",
-      "description": "Provides permission-controlled file metadata, storage contracts, validation, and access rules.",
+      "description": "Registers Tenant- and current-Organization-owned metadata for binary objects already stored by a trusted component without exposing storage locators.",
       "dependencies": [
         {
-          "module_key": "organizations",
+          "module_key": "tenants",
           "version": ">=0.1.0"
+        },
+        {
+          "module_key": "organizations",
+          "version": ">=0.2.0"
         },
         {
           "module_key": "users",
           "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": ["files.register", "files.view"],
+      "exposed_events": ["file.registered"],
+      "consumed_events": [],
+      "configuration_options": [],
+      "database_ownership": ["core_files"],
+      "tenant_scope": "tenant_and_current_organization_scoped",
+      "documentation_path": "packages/files/README.md",
+      "changelog_path": "packages/files/CHANGELOG.md",
+      "compatibility_notes": "This release is metadata-only. Provider, storage key, checksum, and creator identity remain internal. Binary transfer, URLs, scanning, lifecycle operations, versions, Documents, and HTTP endpoints remain deferred."
+    },
+    {
+      "module_name": "External References",
+      "module_key": "external-references",
+      "module_layer": "platform_service",
+      "module_version": "0.1.0",
+      "module_status": "draft",
+      "module_owner": "NEWAX Engineering",
+      "description": "Maps Tenant- and current-Organization-owned NEWAX entity identifiers to opaque identifiers assigned by external systems without storing credentials or integration execution state.",
+      "dependencies": [
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
         },
         {
-          "module_key": "permissions",
+          "module_key": "organizations",
+          "version": ">=0.2.0"
+        },
+        {
+          "module_key": "users",
           "version": ">=0.1.0"
         }
       ],
-      "required_permissions": ["files.view", "files.upload", "files.download", "files.delete"],
-      "exposed_events": ["file.uploaded", "file.downloaded", "file.deleted"],
+      "required_permissions": ["external_references.register", "external_references.view"],
+      "exposed_events": ["external_reference.registered"],
       "consumed_events": [],
-      "configuration_options": [
-        "allowed_file_types",
-        "maximum_file_size",
-        "storage_provider",
-        "file_retention_policy"
-      ],
-      "database_ownership": ["core_files"],
-      "tenant_scope": "organization_scoped",
-      "documentation_path": "packages/files/README.md",
-      "changelog_path": "packages/files/CHANGELOG.md",
-      "compatibility_notes": "Sensitive files must not be publicly accessible by default."
+      "configuration_options": [],
+      "database_ownership": ["core_external_references"],
+      "tenant_scope": "tenant_and_current_organization_scoped_with_dormant_global_records",
+      "documentation_path": "packages/external-references/README.md",
+      "changelog_path": "packages/external-references/CHANGELOG.md",
+      "compatibility_notes": "This release supports trusted current-Organization registration and bounded listing only. Metadata, global and Tenant-only service operations, credentials, provider configuration, synchronization, reconciliation, lifecycle operations, and HTTP endpoints remain deferred."
     },
     {
       "module_name": "Notifications",

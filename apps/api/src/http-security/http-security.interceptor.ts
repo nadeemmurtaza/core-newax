@@ -9,13 +9,13 @@ import {
 import { SensitiveResponseRedactor, type HttpSecurityAuditSink } from '@newax/http-security';
 import { from, lastValueFrom, type Observable } from 'rxjs';
 
+import { AuditHttpSecuritySink } from '../audit/http-security-audit.sink';
 import { AsyncLocalStorageTrustedRequestContextStore } from '../request-context/node-request-context.infrastructure';
 import type {
   HttpSecurityRequestAdapter,
   HttpSecurityResponseAdapter,
 } from './http-security-request';
 import { SystemHttpSecurityClock } from './node-http-security.infrastructure';
-import { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
 
 @Injectable()
 export class HttpSecurityInterceptor implements NestInterceptor {
@@ -26,8 +26,8 @@ export class HttpSecurityInterceptor implements NestInterceptor {
     private readonly contextStore: AsyncLocalStorageTrustedRequestContextStore,
     @Inject(SensitiveResponseRedactor)
     private readonly redactor: SensitiveResponseRedactor,
-    @Inject(PrismaHttpSecurityAuditSink)
-    private readonly auditSink: PrismaHttpSecurityAuditSink,
+    @Inject(AuditHttpSecuritySink)
+    private readonly auditSink: AuditHttpSecuritySink,
     @Inject(SystemHttpSecurityClock)
     private readonly clock: SystemHttpSecurityClock,
   ) {}
@@ -73,7 +73,6 @@ export class HttpSecurityInterceptor implements NestInterceptor {
         metadata: {
           contextScope: context?.scope ?? 'public',
           membershipId: context?.scope === 'organization' ? context.membershipId : null,
-          authenticatedSessionId: request.newaxAuthenticatedSessionId ?? null,
           requiredPermissions: [...(request.newaxRequiredPermissions ?? [])],
         },
         occurredAt: this.clock.now(),
