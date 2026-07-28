@@ -7,3 +7,11 @@ root — read it before working in this repo. It covers commands, code-review ru
 In particular: **do not merge a pull request that has open, unresolved Codex review
 threads**, regardless of CI status. Fix the underlying issue or dismiss the finding with
 a written justification, then mark the thread resolved, before merging.
+
+**Do not skip, disable, or weaken a test to get real work merged**, and do not bypass a
+failing or required check (`--no-verify`, admin-merge override, etc.) to land real
+feature/fix work. Fix the underlying issue instead. The only exceptions are pre-existing,
+already-tracked infrastructure flakiness unrelated to the change, and this repo's
+documented self-referential governance-bookkeeping lag pattern, where an admin-bypass
+merge is an accepted, separately-documented exception once "Verify monorepo" and CodeQL
+are green.
