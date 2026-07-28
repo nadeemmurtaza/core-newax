@@ -58,6 +58,20 @@ async function listPullRequestRuns(commits) {
   return [...runsById.values()];
 }
 
+async function filterExecutedFailures(runs) {
+  const candidates = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
+  const results = await Promise.all(
+    candidates.map(async (run) => {
+      if (run.conclusion !== 'action_required') {
+        return run;
+      }
+      const jobs = await listAll(`/actions/runs/${run.id}/jobs`, { collectionKey: 'jobs' });
+      return jobs.some((job) => FAILURE_CONCLUSIONS.has(job.conclusion)) ? run : null;
+    }),
+  );
+  return results.filter(Boolean);
+}
+
 const eventPath = process.env.GITHUB_EVENT_PATH;
 if (eventPath === undefined || eventPath.length === 0) {
   fail(['GITHUB_EVENT_PATH is unavailable.']);
@@ -80,7 +94,7 @@ const linkedIssues = issues.filter((issue) => {
   return Number(parseMetadata(issue.body)['pr-number']) === pullRequest.number;
 });
 const runs = await listPullRequestRuns(commits);
-const failedRuns = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
+const failedRuns = await filterExecutedFailures(runs);
 const declaredOutcome = parsePullRequestField(pullRequest.body ?? '', '- Learning outcome:');
 const outcomeDecision = evaluateLearningOutcome({
   declaredOutcome,

@@ -174,6 +174,20 @@ async function listPullRequestRuns(commits) {
   return [...runsById.values()];
 }
 
+async function filterExecutedFailures(runs) {
+  const candidates = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
+  const results = await Promise.all(
+    candidates.map(async (run) => {
+      if (run.conclusion !== 'action_required') {
+        return run;
+      }
+      const jobs = await listAll(`/actions/runs/${run.id}/jobs`, { collectionKey: 'jobs' });
+      return jobs.some((job) => FAILURE_CONCLUSIONS.has(job.conclusion)) ? run : null;
+    }),
+  );
+  return results.filter(Boolean);
+}
+
 async function listPullRequestLearningIssues(pullRequestNumber) {
   const issues = await listAll('/issues?state=all');
   return issues.filter((issue) => {
@@ -230,7 +244,7 @@ const [runs, linkedIssues, changedFiles] = await Promise.all([
   listAll(`/pulls/${pullRequest.number}/files`),
 ]);
 
-const failedRuns = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
+const failedRuns = await filterExecutedFailures(runs);
 const linkedIssueNumbers = new Set(linkedIssues.map((issue) => issue.number));
 const listedIssueNumbers = new Set(learningIssueNumbers);
 const linkedIssueMetadata = new Map(
