@@ -306,7 +306,10 @@ export class AuthenticationService {
       occurredAt,
     });
 
-    const updatedAccount = await this.userDirectory.recordSuccessfulLogin(account.userId, occurredAt);
+    const updatedAccount = await this.userDirectory.recordSuccessfulLogin(
+      account.userId,
+      occurredAt,
+    );
 
     await this.eventPublisher.publish({
       name: 'authentication.session_created',

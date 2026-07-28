@@ -85,9 +85,7 @@ function session(
   };
 }
 
-function externalIdentity(
-  overrides: Partial<ExternalIdentityRecord> = {},
-): ExternalIdentityRecord {
+function externalIdentity(overrides: Partial<ExternalIdentityRecord> = {}): ExternalIdentityRecord {
   return {
     id: '00000000-0000-4000-8000-000000000500',
     userId: '00000000-0000-4000-8000-000000000100',
@@ -142,7 +140,9 @@ class FakeRepository implements AuthenticationRepository {
     return null;
   }
 
-  async upsertExternalIdentity(input: CreateExternalIdentityInput): Promise<ExternalIdentityRecord> {
+  async upsertExternalIdentity(
+    input: CreateExternalIdentityInput,
+  ): Promise<ExternalIdentityRecord> {
     this.upsertedIdentity = input;
     const record = externalIdentity({
       userId: input.userId,

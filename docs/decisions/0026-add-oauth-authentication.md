@@ -61,15 +61,15 @@ The linking algorithm applied on each OAuth login:
 
 A new table `core_user_external_identities` stores provider links:
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | UUID | Primary key |
-| `user_id` | UUID | Foreign key to `core_users`, CASCADE on delete |
-| `provider` | VARCHAR(64) | e.g., `github` |
-| `provider_subject` | VARCHAR(256) | Stable external user ID (numeric GitHub ID for GitHub) |
-| `provider_username` | VARCHAR(256) | Display-only handle, updated on each login |
-| `created_at` | TIMESTAMPTZ | Immutable |
-| `updated_at` | TIMESTAMPTZ | Updated on upsert |
+| Column              | Type         | Notes                                                  |
+| ------------------- | ------------ | ------------------------------------------------------ |
+| `id`                | UUID         | Primary key                                            |
+| `user_id`           | UUID         | Foreign key to `core_users`, CASCADE on delete         |
+| `provider`          | VARCHAR(64)  | e.g., `github`                                         |
+| `provider_subject`  | VARCHAR(256) | Stable external user ID (numeric GitHub ID for GitHub) |
+| `provider_username` | VARCHAR(256) | Display-only handle, updated on each login             |
+| `created_at`        | TIMESTAMPTZ  | Immutable                                              |
+| `updated_at`        | TIMESTAMPTZ  | Updated on upsert                                      |
 
 A unique constraint on `(provider, provider_subject)` prevents the same external account from linking to multiple NEWAX users.
 
@@ -106,14 +106,14 @@ No client-supplied `redirect_uri` is accepted. The redirect URI is fixed in serv
 
 ### 5.8 Environment configuration
 
-| Variable | Required in production | Default |
-|---|---|---|
-| `OAUTH_GITHUB_CLIENT_ID` | Yes | None |
-| `OAUTH_GITHUB_CLIENT_SECRET` | Yes | None |
-| `OAUTH_GITHUB_REDIRECT_URI` | Yes | None |
-| `OAUTH_GITHUB_AUTHORIZE_URL` | No | `https://github.com/login/oauth/authorize` |
-| `OAUTH_GITHUB_TOKEN_URL` | No | `https://github.com/login/oauth/access_token` |
-| `OAUTH_GITHUB_USERINFO_URL` | No | `https://api.github.com/user` |
+| Variable                     | Required in production | Default                                       |
+| ---------------------------- | ---------------------- | --------------------------------------------- |
+| `OAUTH_GITHUB_CLIENT_ID`     | Yes                    | None                                          |
+| `OAUTH_GITHUB_CLIENT_SECRET` | Yes                    | None                                          |
+| `OAUTH_GITHUB_REDIRECT_URI`  | Yes                    | None                                          |
+| `OAUTH_GITHUB_AUTHORIZE_URL` | No                     | `https://github.com/login/oauth/authorize`    |
+| `OAUTH_GITHUB_TOKEN_URL`     | No                     | `https://github.com/login/oauth/access_token` |
+| `OAUTH_GITHUB_USERINFO_URL`  | No                     | `https://api.github.com/user`                 |
 
 URL overrides allow testing against a stub server in development and test environments.
 

@@ -2,11 +2,13 @@ import { randomBytes } from 'node:crypto';
 
 import { Controller, Get, Header, HttpCode, Inject, Query, Req, Res } from '@nestjs/common';
 import { AuthenticationService, type OAuthProvider } from '@newax/auth';
-import { HttpSecurityError, SecureCookieTransport, SignedCsrfTokenService } from '@newax/http-security';
-
 import {
-  PublicAuthenticationEndpoint,
-} from '../http-security/http-security.decorators';
+  HttpSecurityError,
+  SecureCookieTransport,
+  SignedCsrfTokenService,
+} from '@newax/http-security';
+
+import { PublicAuthenticationEndpoint } from '../http-security/http-security.decorators';
 import type {
   HttpSecurityRequestAdapter,
   HttpSecurityResponseAdapter,
@@ -48,10 +50,7 @@ export class OAuthHttpController {
   ): OAuthInitiateResponse {
     const state = randomBytes(32).toString('hex');
 
-    response.setHeader(
-      'Set-Cookie',
-      this.serializeStateCookie(state, OAUTH_STATE_MAX_AGE_SECONDS),
-    );
+    response.setHeader('Set-Cookie', this.serializeStateCookie(state, OAUTH_STATE_MAX_AGE_SECONDS));
 
     return { redirectUrl: this.githubProvider.buildAuthorizationUrl(state) };
   }

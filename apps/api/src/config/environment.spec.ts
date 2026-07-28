@@ -118,9 +118,9 @@ describe('validateEnvironment', () => {
   });
 
   it('rejects an invalid OAUTH_GITHUB_AUTHORIZE_URL', () => {
-    expect(() =>
-      validateEnvironment({ OAUTH_GITHUB_AUTHORIZE_URL: 'not-a-url' }),
-    ).toThrow('OAUTH_GITHUB_AUTHORIZE_URL must be a valid URL.');
+    expect(() => validateEnvironment({ OAUTH_GITHUB_AUTHORIZE_URL: 'not-a-url' })).toThrow(
+      'OAUTH_GITHUB_AUTHORIZE_URL must be a valid URL.',
+    );
   });
 
   it('rejects a short authentication token pepper', () => {
@@ -168,14 +168,8 @@ describe('validateEnvironment', () => {
   });
 
   it.each([
-    [
-      ' postgresql://localhost:5432/newax ',
-      'postgresql://localhost:5432/newax',
-    ],
-    [
-      ' postgres://localhost:5432/newax ',
-      'postgres://localhost:5432/newax',
-    ],
+    [' postgresql://localhost:5432/newax ', 'postgresql://localhost:5432/newax'],
+    [' postgres://localhost:5432/newax ', 'postgres://localhost:5432/newax'],
   ])('normalizes a valid PostgreSQL database URL', (DATABASE_URL, expectedDatabaseUrl) => {
     expect(validateEnvironment({ DATABASE_URL })).toMatchObject({
       DATABASE_URL: expectedDatabaseUrl,

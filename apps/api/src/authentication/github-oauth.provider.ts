@@ -98,14 +98,9 @@ export class GitHubOAuthProvider implements OAuthProvider {
         typeof data.email === 'string' && data.email.trim().length > 0
           ? data.email.trim().toLowerCase()
           : null,
-      name:
-        typeof data.name === 'string' && data.name.trim().length > 0
-          ? data.name.trim()
-          : null,
+      name: typeof data.name === 'string' && data.name.trim().length > 0 ? data.name.trim() : null,
       username:
-        typeof data.login === 'string' && data.login.trim().length > 0
-          ? data.login.trim()
-          : null,
+        typeof data.login === 'string' && data.login.trim().length > 0 ? data.login.trim() : null,
     };
   }
 }

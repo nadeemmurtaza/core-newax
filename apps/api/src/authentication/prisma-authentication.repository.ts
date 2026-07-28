@@ -331,7 +331,9 @@ export class PrismaAuthenticationRepository implements AuthenticationRepository 
     return record === null ? null : this.mapExternalIdentity(record);
   }
 
-  async upsertExternalIdentity(input: CreateExternalIdentityInput): Promise<ExternalIdentityRecord> {
+  async upsertExternalIdentity(
+    input: CreateExternalIdentityInput,
+  ): Promise<ExternalIdentityRecord> {
     const record = await this.prisma.coreUserExternalIdentity.upsert({
       where: {
         provider_providerSubject: {

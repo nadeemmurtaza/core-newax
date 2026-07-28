@@ -73,9 +73,7 @@ describe('GitHubOAuthProvider', () => {
 
       expect(capturedBody).toContain('client_id=test-client-id');
       expect(capturedBody).toContain('code=my-code');
-      expect(capturedBody).toContain(
-        `redirect_uri=${encodeURIComponent(config.redirectUri)}`,
-      );
+      expect(capturedBody).toContain(`redirect_uri=${encodeURIComponent(config.redirectUri)}`);
     });
 
     it('throws AuthenticationError when the HTTP response is not OK', async () => {
@@ -103,7 +101,9 @@ describe('GitHubOAuthProvider', () => {
         ),
       );
 
-      await expect(provider.exchangeCode('expired-code')).rejects.toBeInstanceOf(AuthenticationError);
+      await expect(provider.exchangeCode('expired-code')).rejects.toBeInstanceOf(
+        AuthenticationError,
+      );
     });
   });
 
@@ -137,10 +137,10 @@ describe('GitHubOAuthProvider', () => {
       const provider = new GitHubOAuthProvider(config);
 
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ id: 99999, login: 'anon-user', name: null, email: null }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        ),
+        new Response(JSON.stringify({ id: 99999, login: 'anon-user', name: null, email: null }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
       );
 
       const profile = await provider.fetchProfile('gho_test_token');
