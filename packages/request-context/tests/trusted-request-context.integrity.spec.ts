@@ -16,6 +16,7 @@ import type {
 
 const now = new Date('2026-07-12T00:00:00.000Z');
 const membershipId = '00000000-0000-4000-8000-000000000300';
+const tenantId = '00000000-0000-4000-8000-000000000350';
 const organizationId = '00000000-0000-4000-8000-000000000400';
 const personId = '00000000-0000-4000-8000-000000000001';
 
@@ -37,6 +38,8 @@ class MembershipDirectory implements TrustedMembershipDirectory {
   record: TrustedMembershipRecord = {
     id: membershipId,
     personId,
+    tenantId,
+    tenantStatus: 'active',
     organizationId,
     membershipStatus: 'active',
     organizationStatus: 'active',

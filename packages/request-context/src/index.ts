@@ -35,4 +35,5 @@ export type {
   TrustedPermissionEvaluation,
   TrustedRequestContext,
   TrustedSessionRecord,
+  TrustedTenantStatus,
 } from './types/request-context';

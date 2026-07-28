@@ -9,12 +9,12 @@ import {
 } from '@nestjs/common';
 import { HttpSecurityError, type HttpSecurityMethod } from '@newax/http-security';
 
+import { AuditHttpSecuritySink } from '../audit/http-security-audit.sink';
 import type {
   HttpSecurityRequestAdapter,
   HttpSecurityResponseAdapter,
 } from './http-security-request';
 import { SystemHttpSecurityClock } from './node-http-security.infrastructure';
-import { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
 
 interface CodedError {
   readonly code: string;
@@ -30,7 +30,7 @@ interface MappedHttpError {
 }
 
 const KNOWN_ERROR_CODE_PATTERN =
-  /^(ORGANIZATION|PERSON|MEMBERSHIP|ACCESS|USER|AUTHENTICATION|REQUEST_CONTEXT|HTTP_SECURITY)_[A-Z0-9_]+$/u;
+  /^(ORGANIZATION|PERSON|PEOPLE_INTAKE|CONTACT|ADDRESS|OBJECT|MEMBERSHIP|ACCESS|USER|AUTHENTICATION|REQUEST_CONTEXT|HTTP_SECURITY)_[A-Z0-9_]+$/u;
 
 @Catch()
 @Injectable()
@@ -38,8 +38,8 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpSecurityExceptionFilter.name);
 
   constructor(
-    @Inject(PrismaHttpSecurityAuditSink)
-    private readonly auditSink: PrismaHttpSecurityAuditSink,
+    @Inject(AuditHttpSecuritySink)
+    private readonly auditSink: AuditHttpSecuritySink,
     @Inject(SystemHttpSecurityClock)
     private readonly clock: SystemHttpSecurityClock,
   ) {}
@@ -162,7 +162,11 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
     if (code.includes('_CONFLICT') || code.includes('_ALREADY_')) {
       return 409;
     }
-    if (code.endsWith('_INVALID_INPUT') || code.endsWith('_POLICY_FAILED')) {
+    if (
+      code.endsWith('_INVALID_INPUT') ||
+      code.endsWith('_CURSOR_INVALID') ||
+      code.endsWith('_POLICY_FAILED')
+    ) {
       return 400;
     }
     if (code.endsWith('_UNAVAILABLE')) {

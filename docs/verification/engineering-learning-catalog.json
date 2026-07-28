@@ -17,7 +17,16 @@
     "documentation-evidence-management",
     "process-communication-polling",
     "planning-decision-quality",
+    "ai-tool-quality",
+    "prevention-control-quality",
+    "confidence-evidence-quality",
+    "engineering-knowledge-provenance",
+    "engineering-recurrence-quality",
+    "engineering-executive-reporting-quality",
     "external-tool-operation",
+    "engineering-failure-intake-quality",
+    "dependency-update-governance-scope",
+    "security-scanning-coverage",
     "unknown"
   ],
   "rootCauses": [
@@ -228,6 +237,217 @@
       "unsuccessfulMethod": "Use one expected ancestor value for nearest-common-ancestor and common-root-ancestor assertions.",
       "successfulMethod": "Build a multi-level causal chain and assert nearest and canonical-root ancestry independently.",
       "preventionControl": "Every multi-level relationship-graph test must verify nearest and canonical-root ancestor outputs separately."
+    },
+    {
+      "id": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
+      "ledgerEntry": "EL-0023",
+      "category": "github-tool-operation",
+      "confidence": "high",
+      "deterministic": false,
+      "signatures": [
+        "requires at least one ledger entry",
+        "requires at least one linked learning issue",
+        "requires at least one linked engineering-learning issue"
+      ],
+      "rootCause": "A pull-request record set Learning outcome to `existing` or `new` while leaving Ledger entries, Learning issues, and Root-cause status as `not-required`, which only a `none` outcome is allowed to use.",
+      "unsuccessfulMethod": "Copy the `not-required` placeholder values from the `none`-outcome template row while using a non-`none` Learning outcome.",
+      "successfulMethod": "Set Learning outcome to `none` with `not-required` ledger, issue, and root-cause fields whenever no ledger entry or tracked issue applies; otherwise supply a real ledger entry and a linked, fully-resolved learning issue.",
+      "preventionControl": "Before submitting a PR record, confirm the Learning-outcome value and its dependent Ledger entries, Learning issues, and Root-cause status fields follow the `none` vs `existing`/`new` rule enforced by tooling/verify-pr-governance.mjs and tooling/reconcile-pr-learning.mjs."
+    },
+    {
+      "id": "ROOT-GOVERNANCE-MANUAL-LEARNING-OUTCOME",
+      "ledgerEntry": "EL-0024",
+      "category": "documentation-evidence-management",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": ["Learning outcome: none", "manual learning outcome", "new prevention control"],
+      "rootCause": "Pull-request governance trusted an author-selected learning outcome instead of calculating the requirement from the diff and reconciled evidence.",
+      "unsuccessfulMethod": "Allow the pull-request author to choose new, existing, or none from a free-text field.",
+      "successfulMethod": "Calculate required or not-required from rule, checklist, process, template, automation, and failure evidence, then infer ledger classification.",
+      "preventionControl": "The manual learning-outcome field is prohibited and trusted reconciliation enforces the rule-engine decision."
+    },
+    {
+      "id": "ROOT-PLANNING-HISTORY-NOT-ANALYZED",
+      "ledgerEntry": "EL-0025",
+      "category": "planning-decision-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": ["planning mistake", "commit history", "task sequencing"],
+      "rootCause": "Engineering planning evidence was not normalized and correlated across commit history, issue history, and declared task sequencing.",
+      "unsuccessfulMethod": "Wait for planning failures, rely on memory or commit-message keywords, and document the mistake manually afterward.",
+      "successfulMethod": "Create a structured plan before implementation, record task and approval events, reconstruct repository history, and evaluate bounded evidence-backed rules.",
+      "preventionControl": "Pull-request governance blocks unwaived high-confidence planning findings and preserves suspected or insufficient-evidence states separately."
+    },
+    {
+      "id": "ROOT-COMMUNICATION-HISTORY-NOT-ANALYZED",
+      "ledgerEntry": "EL-0026",
+      "category": "process-communication-polling",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "communication mistake",
+        "assumption",
+        "conflicting instructions",
+        "missing approval"
+      ],
+      "rootCause": "Engineering communication evidence was not normalized and correlated across requirements, assumptions, decisions, approvals, GitHub history, and dependent work.",
+      "unsuccessfulMethod": "Rely on memory, free-text summaries, recency, or retrospective explanations to decide what was understood and approved.",
+      "successfulMethod": "Record structured communication events before work, preserve authority and supersession, reconstruct GitHub history, and evaluate evidence-bounded rules.",
+      "preventionControl": "Pull-request governance blocks unwaived high-confidence communication findings and preserves suspected, resolved, waived, clear, and insufficient-evidence states separately."
+    },
+    {
+      "id": "ROOT-AI-TOOL-QUALITY-NOT-ANALYZED",
+      "ledgerEntry": "EL-0027",
+      "category": "ai-tool-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "AI hallucination",
+        "wrong framework API",
+        "wrong documentation version",
+        "deprecated package",
+        "unsafe suggestion",
+        "copy-paste bug",
+        "generated dead code"
+      ],
+      "rootCause": "AI and engineering-tool output provenance was not normalized and correlated with version-effective evidence, corrections, and regression outcomes.",
+      "unsuccessfulMethod": "Attribute every bug in AI-assisted work to AI, rely on keywords or current-version status, and copy raw output into informal datasets.",
+      "successfulMethod": "Record structured output provenance and hashes, evaluate verified evidence effective at generation time, preserve lifecycle state, and emit privacy-safe versioned records.",
+      "preventionControl": "Pull-request governance blocks only attributable unwaived high-confidence findings and generates bounded AI quality dataset records."
+    },
+    {
+      "id": "ROOT-RESOLVED-LESSON-NOT-MATERIALIZED",
+      "ledgerEntry": "EL-0028",
+      "category": "prevention-control-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "resolved mistake",
+        "prevention control pack",
+        "CI check",
+        "PR checklist",
+        "review checklist",
+        "coding standard",
+        "verification rule",
+        "static analysis rule",
+        "test template"
+      ],
+      "rootCause": "Resolved engineering lessons were recorded without deterministic current process controls, allowing the same failure mode to remain operationally possible.",
+      "unsuccessfulMethod": "Close a learning issue, document a prevention sentence, and rely on people to remember it.",
+      "successfulMethod": "Generate or update one versioned seven-control pack per root cause and compare every expected artifact with the exact pull-request head.",
+      "preventionControl": "Trusted governance rejects resolved learning evidence unless its complete current prevention control pack exists at the exact head."
+    },
+    {
+      "id": "ROOT-FINDING-CONFIDENCE-NOT-CALCULATED",
+      "ledgerEntry": "EL-0029",
+      "category": "confidence-evidence-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "root cause confidence",
+        "duplicate confidence",
+        "evidence quality",
+        "explanation confidence",
+        "automation confidence",
+        "manual score",
+        "confidence policy"
+      ],
+      "rootCause": "Engineering findings exposed categorical or subsystem-specific confidence without one versioned recalculable envelope, allowing scores to be missing, incomparable, stale, or manually asserted.",
+      "unsuccessfulMethod": "Display a confidence label or percentage without its policy version, normalized inputs, evidence references, missing evidence, caps, and deterministic input digest.",
+      "successfulMethod": "Calculate five independent evidence-support metrics from existing subsystem decisions, preserve insufficient evidence, version the policy, and validate every stored score by recalculation.",
+      "preventionControl": "Trusted governance rejects manual, missing, stale, uncovered, policy-mismatched, or altered confidence records and requires canonical confidence envelopes for linked findings."
+    },
+    {
+      "id": "ROOT-ENGINEERING-HISTORY-NOT-LINKED",
+      "ledgerEntry": "EL-0030",
+      "category": "engineering-knowledge-provenance",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "knowledge graph",
+        "complete engineering history",
+        "one-click history",
+        "engineering provenance chain"
+      ],
+      "rootCause": "Engineering artifacts were not connected through one versioned recalculable provenance graph.",
+      "unsuccessfulMethod": "Use isolated links or prose to reconstruct engineering history.",
+      "successfulMethod": "Build a deterministic twelve-stage provenance graph from exact objects, structured markers, canonical fields, and durable references.",
+      "preventionControl": "Trusted governance validates graph schema, digest, repository-owned references, legal transitions, and linked finding coverage."
+    },
+    {
+      "id": "ROOT-RECURRING-MISTAKE-NOT-ESCALATED",
+      "ledgerEntry": "EL-0031",
+      "category": "engineering-recurrence-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "recurrence series",
+        "repeated root cause",
+        "prior occurrence",
+        "existing prevention rule",
+        "post-rule escalation"
+      ],
+      "rootCause": "Confirmed root-cause occurrences were not correlated with effective prevention controls and escalation.",
+      "unsuccessfulMethod": "Record the latest occurrence without calculating prior history or rule applicability.",
+      "successfulMethod": "Build a deterministic recurrence series from exact identity, effective rule evidence, reviewed explanations, and occurrence counts.",
+      "preventionControl": "Trusted governance evaluates unresolved post-rule recurrence and preserves pre-rule history separately."
+    },
+    {
+      "id": "ROOT-ENGINEERING-QUALITY-REDUCED-TO-MISTAKE-COUNT",
+      "ledgerEntry": "EL-0032",
+      "category": "engineering-executive-reporting-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "executive dashboard",
+        "mistake count",
+        "aggregate mistake volume",
+        "engineering quality reporting"
+      ],
+      "rootCause": "Engineering reporting emphasized aggregate mistake volume without showing recurrence concentration, cost, lost time, prevention effectiveness, detection and resolution speed, AI accuracy, review effectiveness, or evidence coverage.",
+      "unsuccessfulMethod": "Display one total mistake count and ask leadership to infer operational risk, quality movement, and prevention performance from it.",
+      "successfulMethod": "Generate a versioned executive snapshot from normalized source evidence, showing distinct metric families with explicit formulas, denominators, coverage, freshness, verified and estimated shares, and missing-evidence states.",
+      "preventionControl": "Trusted governance recalculates linked dashboard snapshots and rejects manually supplied KPI values, altered digests, missing coverage, and unsupported records."
+    },
+    {
+      "id": "ROOT-GOVERNANCE-BOOKKEEPING-SELF-CAPTURED",
+      "ledgerEntry": "EL-0033",
+      "category": "engineering-failure-intake-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "Verify pull-request governance structure",
+        "Reconcile workflow failures and learning evidence",
+        "Detect planning mistakes"
+      ],
+      "rootCause": "The engineering failure-intake workflow captured every failed step of the pull-request governance job as a new engineering-learning issue, including steps that fail only because the pull request's own governance bookkeeping had not yet caught up with a previous capture from that same job, producing an unbounded capture loop instead of engineering signal.",
+      "unsuccessfulMethod": "Capture every failed step of the governance job identically, treating a bookkeeping-consistency failure caused by the capture mechanism itself the same as a real defect in the code under review.",
+      "successfulMethod": "Exclude the governance job's self-referential bookkeeping steps from automatic capture when they are the only failed steps in a run, while still capturing real CI failures and every governance check that evaluates evidence about the change itself.",
+      "preventionControl": "tooling/workflow-failure-capture.mjs classifies failed steps before capture and skips a job whose only failed steps are self-referential governance bookkeeping."
+    },
+    {
+      "id": "ROOT-GOVERNANCE-TEMPLATE-BLOCKS-AUTOMATED-PR",
+      "ledgerEntry": "EL-0034",
+      "category": "dependency-update-governance-scope",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": ["Missing required heading", "Missing required field", "dependabot"],
+      "rootCause": "The pull-request governance job's structural, planning, and evidence checks assumed every pull request was human-authored and filled in the governance template, with no exemption for automated dependency-update pull requests, so every Dependabot pull request failed structural validation immediately regardless of the actual dependency change's correctness.",
+      "unsuccessfulMethod": "Apply the full human-authored governance record requirement uniformly to every pull request regardless of author, with no path for a routine automated dependency bump to ever pass.",
+      "successfulMethod": "Skip the entire governance-record job for pull requests authored by dependabot[bot], since those pull requests carry no engineering decision for the record to capture, while the separate Continuous Integration workflow still fully gates mergeability for them.",
+      "preventionControl": ".github/workflows/pr-governance.yml's verify-learning-record job carries a job-level if condition exempting dependabot[bot]-authored pull requests."
+    },
+    {
+      "id": "ROOT-SECURITY-SCANNING-SINGLE-TOOL-COVERAGE",
+      "ledgerEntry": "EL-0035",
+      "category": "security-scanning-coverage",
+      "confidence": "medium",
+      "deterministic": false,
+      "signatures": ["single static-analysis engine", "single dependency-vulnerability source"],
+      "rootCause": "The repository's automated security posture relied on a single static-analysis engine (CodeQL) and a single dependency-vulnerability source (Dependabot alerts), with no second, differently-sourced tool to cross-check findings.",
+      "unsuccessfulMethod": "Treat one static-analysis engine and one dependency-alert source as complete security coverage.",
+      "successfulMethod": "Add Semgrep and Snyk as informational, non-blocking workflows uploading SARIF results to GitHub Code Scanning alongside CodeQL, without introducing a new required check.",
+      "preventionControl": ".github/workflows/semgrep.yml and .github/workflows/snyk.yml run on push, pull request, and a weekly schedule; the Snyk workflow degrades gracefully when SNYK_TOKEN is not configured."
     }
   ]
 }

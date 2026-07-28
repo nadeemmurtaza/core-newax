@@ -24,6 +24,14 @@ jobs:
     name: Verify engineering learning record
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Automated dependency-update pull requests carry no engineering decision
+    # for this record to capture: no root cause, no plan, no AI output, no
+    # architecture change. Dependabot's own generated body cannot satisfy the
+    # human-authored governance template, and it shouldn't need to — actual
+    # correctness (format, lint, typecheck, test, build, lockfile
+    # supply-chain policy) is still fully enforced by the separate
+    # Continuous Integration workflow.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
 
     steps:
       - name: Check out candidate pull request
@@ -65,4 +73,108 @@ jobs:
             node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-root-cause-governance.mjs"
           else
             echo "Root-cause governance activates after its controls reach the protected base."
+          fi
+
+      - name: Detect planning mistakes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-planning.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-planning.mjs"
+          elif test -f candidate/tooling/verify-pr-planning.mjs; then
+            echo "Bootstrap fallback: planning controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-planning.mjs
+          else
+            echo "Planning mistake detection activates after its controls reach the protected base."
+          fi
+
+      - name: Detect communication mistakes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-communication.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-communication.mjs"
+          elif test -f candidate/tooling/verify-pr-communication.mjs; then
+            echo "Bootstrap fallback: communication controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-communication.mjs
+          else
+            echo "Communication mistake detection activates after its controls reach the protected base."
+          fi
+
+      - name: Detect tool and AI mistakes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-ai-quality.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-ai-quality.mjs"
+          elif test -f candidate/tooling/verify-pr-ai-quality.mjs; then
+            echo "Bootstrap fallback: AI quality controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-ai-quality.mjs
+          else
+            echo "Tool and AI mistake detection activates after its controls reach the protected base."
+          fi
+
+      - name: Verify prevention controls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-prevention.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-prevention.mjs"
+          elif test -f candidate/tooling/verify-pr-prevention.mjs; then
+            echo "Bootstrap fallback: prevention controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-prevention.mjs
+          else
+            echo "Prevention Engine activates after its controls reach the protected base."
+          fi
+
+      - name: Verify confidence scores
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-confidence.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-confidence.mjs"
+          elif test -f candidate/tooling/verify-pr-confidence.mjs; then
+            echo "Bootstrap fallback: confidence controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-confidence.mjs
+          else
+            echo "Confidence Scoring activates after its controls reach the protected base."
+          fi
+
+      - name: Verify engineering knowledge graph
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-knowledge-graph.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-knowledge-graph.mjs"
+          elif test -f candidate/tooling/verify-pr-knowledge-graph.mjs; then
+            echo "Bootstrap fallback: knowledge graph controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-knowledge-graph.mjs
+          else
+            echo "Engineering Knowledge Graph activates after its controls reach the protected base."
+          fi
+
+      - name: Detect recurring engineering mistakes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-recurrence.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-recurrence.mjs"
+          elif test -f candidate/tooling/verify-pr-recurrence.mjs; then
+            echo "Bootstrap fallback: recurrence controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-recurrence.mjs
+          else
+            echo "Recurrence Detection activates after its controls reach the protected base."
+          fi
+
+      - name: Verify executive dashboard records
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if test -f "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-executive-dashboard.mjs"; then
+            node "$NEWAX_GOVERNANCE_ROOT/tooling/verify-pr-executive-dashboard.mjs"
+          elif test -f candidate/tooling/verify-pr-executive-dashboard.mjs; then
+            echo "Bootstrap fallback: executive dashboard controls are running from the candidate branch."
+            node candidate/tooling/verify-pr-executive-dashboard.mjs
+          else
+            echo "Executive Dashboard activates after its controls reach the protected base."
           fi

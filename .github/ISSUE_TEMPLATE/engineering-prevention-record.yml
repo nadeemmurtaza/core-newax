@@ -1,0 +1,182 @@
+name: Engineering prevention record
+description: Record a verified resolved mistake and the prevention controls it must create or update.
+title: '[Engineering prevention] '
+labels:
+  - engineering-learning
+body:
+  - type: input
+    id: event_id
+    attributes:
+      label: Event ID
+      description: Use a stable ID such as PREV-EVENT-0042.
+    validations:
+      required: true
+  - type: input
+    id: root_cause_id
+    attributes:
+      label: Root cause ID
+      description: Use the stable catalog root-cause ID.
+    validations:
+      required: true
+  - type: input
+    id: ledger_entry
+    attributes:
+      label: Ledger entry
+      description: Use the linked EL-XXXX entry.
+    validations:
+      required: true
+  - type: input
+    id: category
+    attributes:
+      label: Category
+      description: Use the catalog category for the root cause.
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - Closed
+        - Resolved
+    validations:
+      required: true
+  - type: dropdown
+    id: root_cause_status
+    attributes:
+      label: Root-cause status
+      options:
+        - Confirmed
+        - Machine-supported
+    validations:
+      required: true
+  - type: dropdown
+    id: resolution_status
+    attributes:
+      label: Resolution status
+      options:
+        - Verified
+        - Resolved
+    validations:
+      required: true
+  - type: input
+    id: resolved_at
+    attributes:
+      label: Resolved at
+      description: ISO 8601 timestamp.
+    validations:
+      required: true
+  - type: input
+    id: fix_commit
+    attributes:
+      label: Fix commit
+      description: Exact forty-character commit SHA.
+    validations:
+      required: true
+  - type: input
+    id: reviewer
+    attributes:
+      label: Reviewer
+      description: Identity of the reviewer who confirmed the resolution.
+    validations:
+      required: true
+  - type: input
+    id: reviewed_at
+    attributes:
+      label: Reviewed at
+      description: ISO 8601 review timestamp.
+    validations:
+      required: true
+  - type: textarea
+    id: verification_references
+    attributes:
+      label: Verification references
+      description: Comma-separated exact workflow, job, step, test, or review references.
+    validations:
+      required: true
+  - type: textarea
+    id: regression_references
+    attributes:
+      label: Regression references
+      description: Comma-separated regression test and successful run references.
+    validations:
+      required: true
+  - type: textarea
+    id: prevention_control
+    attributes:
+      label: Prevention control
+      description: State the durable control that must prevent recurrence.
+    validations:
+      required: true
+  - type: textarea
+    id: successful_method
+    attributes:
+      label: Successful method
+      description: Record the evidence-backed method that succeeded.
+    validations:
+      required: true
+  - type: textarea
+    id: unsuccessful_method
+    attributes:
+      label: Unsuccessful method
+      description: Record the method that must not be repeated.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence_references
+    attributes:
+      label: Evidence references
+      description: Comma-separated durable source references.
+    validations:
+      required: true
+  - type: input
+    id: ci_control_owner
+    attributes:
+      label: CI control owner
+      description: Optional until the generated CI control is ready for enforcement.
+  - type: input
+    id: ci_control_reviewer
+    attributes:
+      label: CI control reviewer
+      description: Required together with the other CI implementation fields for enforcement.
+  - type: input
+    id: ci_implementation_reference
+    attributes:
+      label: CI implementation reference
+      description: Reviewed repository path or implementation record.
+  - type: textarea
+    id: ci_verification_references
+    attributes:
+      label: CI verification references
+      description: Comma-separated successful verification references.
+  - type: input
+    id: static_control_owner
+    attributes:
+      label: Static-analysis control owner
+      description: Optional until the generated static-analysis control is ready for enforcement.
+  - type: input
+    id: static_control_reviewer
+    attributes:
+      label: Static-analysis control reviewer
+      description: Required together with the other static-analysis implementation fields for enforcement.
+  - type: input
+    id: static_implementation_reference
+    attributes:
+      label: Static-analysis implementation reference
+      description: Reviewed repository path or implementation record.
+  - type: textarea
+    id: static_verification_references
+    attributes:
+      label: Static-analysis verification references
+      description: Comma-separated successful verification references.
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Evidence confirmation
+      options:
+        - label: I verified the root cause, exact fix commit, reviewer, timestamps, and regression evidence.
+          required: true
+        - label: I did not treat issue closure or prose alone as proof of resolution.
+          required: true
+        - label: I did not place arbitrary executable code inside a declarative control record.
+          required: true

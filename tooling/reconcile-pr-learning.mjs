@@ -11,6 +11,10 @@ import {
   parseMetadata,
   parsePullRequestField,
 } from './engineering-learning-core.mjs';
+import {
+  evaluateLearningRequirement,
+  validateLearningRecord,
+} from './learning-outcome-rule-engine.mjs';
 
 function fail(messages) {
   console.error('Engineering learning reconciliation failed:');
@@ -198,7 +202,6 @@ if (pullRequest === undefined) {
 
 const body = pullRequest.body ?? '';
 const errors = [];
-const learningOutcome = parsePullRequestField(body, '- Learning outcome:');
 const ledgerEntriesValue = parsePullRequestField(body, '- Ledger entries:');
 const ledgerEntries = parseLedgerEntries(ledgerEntriesValue);
 const learningIssuesValue = parsePullRequestField(body, '- Learning issues:');
@@ -212,8 +215,10 @@ const externalEventsReconciled = parsePullRequestField(
   '- External and tool events reconciled:',
 );
 
-if (!['existing', 'new', 'none'].includes(learningOutcome ?? '')) {
-  errors.push('Learning outcome must be `new`, `existing`, or `none`.');
+if (parsePullRequestField(body, '- Learning outcome:') !== null) {
+  errors.push(
+    'Remove the manual `Learning outcome` field. The trusted rule engine calculates the outcome.',
+  );
 }
 if (failureHistoryReconciled !== 'yes') {
   errors.push('Failure history must be reconciled before review.');
@@ -241,13 +246,25 @@ const capturedWorkflowRunIds = new Set(
     .map((metadata) => Number(metadata['workflow-run-id']))
     .filter(Number.isSafeInteger),
 );
-const hasFailureEvidence = failedRuns.length > 0 || linkedIssues.length > 0;
-
-if (learningOutcome === 'none' && hasFailureEvidence) {
-  errors.push(
-    `Learning outcome cannot be none: found ${failedRuns.length} failed workflow run(s) and ${linkedIssues.length} linked learning issue(s).`,
-  );
-}
+const catalog = loadCatalog();
+const learningRequirement = evaluateLearningRequirement({
+  changedFiles,
+  failedWorkflowRuns: failedRuns,
+  linkedLearningIssues: linkedIssues,
+});
+const learningRecord = validateLearningRecord({
+  requirement: learningRequirement,
+  ledgerEntries,
+  ledgerEntriesValue,
+  learningIssueNumbers,
+  learningIssuesValue,
+  rootCauseStatus,
+  rootCauseEvidence,
+  resolutionEvidence,
+  changedFiles,
+  catalog,
+});
+errors.push(...learningRecord.errors);
 
 for (const run of failedRuns) {
   if (!capturedWorkflowRunIds.has(run.id)) {
@@ -265,69 +282,6 @@ for (const listedIssueNumber of listedIssueNumbers) {
   }
 }
 
-if (learningOutcome === 'none') {
-  if (ledgerEntriesValue !== 'not-required') {
-    errors.push('A `none` outcome requires `not-required` as the ledger entries.');
-  }
-  if (learningIssuesValue !== 'not-required') {
-    errors.push('A `none` outcome requires `not-required` as the learning issues.');
-  }
-  if (rootCauseStatus !== 'not-required') {
-    errors.push('A `none` outcome requires `not-required` as the root-cause status.');
-  }
-}
-
-if (learningOutcome === 'new' || learningOutcome === 'existing') {
-  if (ledgerEntries.length === 0) {
-    errors.push('A learning outcome requires at least one ledger entry such as EL-0019.');
-  }
-  if (learningIssueNumbers.length === 0) {
-    errors.push('A learning outcome requires at least one linked engineering-learning issue.');
-  }
-  if (!['confirmed', 'machine-supported'].includes(rootCauseStatus ?? '')) {
-    errors.push('Root-cause status must be `confirmed` or `machine-supported`.');
-  }
-  if (
-    rootCauseEvidence === null ||
-    rootCauseEvidence === 'pending' ||
-    rootCauseEvidence.length < 8
-  ) {
-    errors.push('Root-cause evidence must identify concrete machine or review evidence.');
-  }
-  if (
-    resolutionEvidence === null ||
-    resolutionEvidence === 'pending' ||
-    resolutionEvidence.length < 8
-  ) {
-    errors.push('Resolution evidence must identify a fix and successful verification.');
-  }
-}
-
-if (learningOutcome === 'new') {
-  for (const ledgerEntry of ledgerEntries) {
-    const ledgerChanged = changedFiles.some((file) => {
-      return (
-        file.filename === 'docs/verification/engineering-learning-ledger.md' ||
-        file.filename.includes(`docs/verification/engineering-learning-ledger/${ledgerEntry}`)
-      );
-    });
-    if (!ledgerChanged) {
-      errors.push(`New learning ${ledgerEntry} is not present in the pull-request diff.`);
-    }
-  }
-}
-
-if (learningOutcome === 'existing') {
-  const catalog = loadCatalog();
-  for (const ledgerEntry of ledgerEntries) {
-    const known = catalog.rootCauses.some((rootCause) => rootCause.ledgerEntry === ledgerEntry);
-    if (!known) {
-      errors.push(`Existing ledger entry ${ledgerEntry} is absent from the learning catalog.`);
-    }
-  }
-}
-
-const catalog = loadCatalog();
 for (const learningIssueNumber of learningIssueNumbers) {
   const issue = linkedIssues.find((candidate) => candidate.number === learningIssueNumber);
   if (issue === undefined) {
@@ -371,7 +325,10 @@ if (errors.length > 0) {
 console.log(
   JSON.stringify({
     pullRequest: pullRequest.number,
-    learningOutcome,
+    learningOutcome: learningRequirement.learningOutcome,
+    learningOutcomeRulesVersion: learningRequirement.rulesVersion,
+    learningOutcomeReasons: learningRequirement.reasons,
+    ledgerClassifications: learningRecord.classifications,
     failedRuns: failedRuns.map((run) => ({
       id: run.id,
       name: run.name,

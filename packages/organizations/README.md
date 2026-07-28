@@ -4,18 +4,19 @@
 
 Draft reusable foundation module.
 
-Version: `0.1.0`
+Version: `0.2.0`
 
 ## Purpose
 
-The Organizations module maintains the shared identity and hierarchy of companies, institutions, branches, campuses, departments, subsidiaries, and other organization units used across NEWAX business infrastructure.
+The Organizations module maintains legal and operating entities inside a Tenant, including companies, institutions, branches, campuses, departments, schools, hospitals, subsidiaries, and business units.
 
-It provides the organization boundary that future LMS, CRM, Legal, Healthcare, Finance, HR, Real Estate, Hospitality, Connected Infrastructure, and other domains reference through stable `organization_id` values.
+Tenant provides the customer ownership and data-isolation boundary. Organizations provide the legal and operating boundary that future LMS, CRM, Legal, Healthcare, Finance, HR, Real Estate, Hospitality, Connected Infrastructure, and other domains reference through stable `organization_id` values.
 
 ## Owned concepts and data
 
 The module owns:
 
+- Required Tenant ownership.
 - Organization identity.
 - Parent-child organization hierarchy.
 - Organization lifecycle status.
@@ -63,11 +64,13 @@ The service layer validates permissions, required text fields, parent existence,
 It requires:
 
 - A trusted actor user identifier.
-- A trusted organization identifier.
+- A trusted Tenant identifier.
+- A trusted Organization identifier.
 - `organizations.view` in the effective permission set.
 
 The operation returns only:
 
+- Tenant identifier.
 - Organization identifier.
 - Legal name.
 - Display name.
@@ -116,6 +119,7 @@ The reusable package has no dependency on LMS or another business domain.
 
 The NestJS application adapter depends on:
 
+- The Tenants foundation module.
 - The API database module.
 - Trusted Request Context for server-derived actor, organization, and permission values.
 - The HTTP Security Boundary for HTTPS, authentication, selected-membership validation, and permission guards.

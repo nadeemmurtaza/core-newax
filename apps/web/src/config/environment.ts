@@ -1,11 +1,13 @@
 const DEFAULT_HOSTNAME = '0.0.0.0';
 const DEFAULT_PORT = 3001;
 const DEFAULT_SEARCH_INDEXING_ENABLED = false;
+const DEFAULT_API_INTERNAL_ORIGIN = 'http://127.0.0.1:3000';
 
 export interface WebEnvironment {
   readonly HOSTNAME: string;
   readonly PORT: number;
   readonly SEARCH_INDEXING_ENABLED: boolean;
+  readonly API_INTERNAL_ORIGIN: string;
 }
 
 export interface WebEnvironmentSource {
@@ -13,6 +15,7 @@ export interface WebEnvironmentSource {
   readonly HOSTNAME?: string;
   readonly PORT?: string;
   readonly SEARCH_INDEXING_ENABLED?: string;
+  readonly API_INTERNAL_ORIGIN?: string;
 }
 
 function parseHostname(value: string | undefined): string {
@@ -49,6 +52,32 @@ function parsePort(value: string | undefined): number {
   return port;
 }
 
+function parseApiInternalOrigin(value: string | undefined): string {
+  const source = value === undefined ? DEFAULT_API_INTERNAL_ORIGIN : value.trim();
+  if (source.length === 0) {
+    throw new Error('API_INTERNAL_ORIGIN must not be empty.');
+  }
+  let url: URL;
+  try {
+    url = new URL(source);
+  } catch {
+    throw new Error('API_INTERNAL_ORIGIN must be an absolute HTTP or HTTPS URL.');
+  }
+  if (
+    (url.protocol !== 'http:' && url.protocol !== 'https:') ||
+    url.username.length > 0 ||
+    url.password.length > 0 ||
+    url.search.length > 0 ||
+    url.hash.length > 0
+  ) {
+    throw new Error(
+      'API_INTERNAL_ORIGIN must be an absolute HTTP or HTTPS origin without credentials, query, or fragment.',
+    );
+  }
+  url.pathname = url.pathname.replace(/\/+$/u, '');
+  return url.toString().replace(/\/$/u, '');
+}
+
 function parseSearchIndexingEnabled(value: string | undefined): boolean {
   if (value === undefined) {
     return DEFAULT_SEARCH_INDEXING_ENABLED;
@@ -72,5 +101,6 @@ export function readWebEnvironment(source: WebEnvironmentSource = process.env): 
     HOSTNAME: parseHostname(source.HOSTNAME),
     PORT: parsePort(source.PORT),
     SEARCH_INDEXING_ENABLED: parseSearchIndexingEnabled(source.SEARCH_INDEXING_ENABLED),
+    API_INTERNAL_ORIGIN: parseApiInternalOrigin(source.API_INTERNAL_ORIGIN),
   };
 }

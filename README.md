@@ -17,6 +17,7 @@ The repository contains:
 - A working TypeScript monorepo
 - A NestJS API application
 - A Next.js web application
+- An internal People Intake data-entry and verification workspace
 - PostgreSQL and Prisma database infrastructure
 - Strict environment validation
 - Automated tests and production builds

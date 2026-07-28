@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 - 2026-07-12
+
+- Require every Organization to belong to one Tenant.
+- Scope create, read, list, update, archive, parent validation, and cycle checks by trusted `tenantId`.
+- Include Tenant identity in organization records, events, and the bounded current-organization profile.
+- Prevent cross-Tenant hierarchy through database-backed composite constraints.
+
 All notable changes to the NEWAX Organizations module are documented here.
 
 ## Unreleased

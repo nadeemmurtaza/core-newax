@@ -1,3 +1,4 @@
+export type { PersonRelationshipRepository } from './database/person-relationship-repository';
 export type { PeopleRepository } from './database/people-repository';
 export type {
   PersonEvent,
@@ -27,3 +28,30 @@ export type {
   UpdatePersonInput,
   UpdatePersonRecordInput,
 } from './types/person';
+
+export type {
+  PersonRelationshipEvent,
+  PersonRelationshipEventName,
+  PersonRelationshipEventPublisher,
+} from './events/person-relationship-event';
+export { PersonRelationshipService } from './services/person-relationship.service';
+export type {
+  CreatePersonRelationshipInput,
+  CreatePersonRelationshipRecordInput,
+  CreatePersonRelationshipResult,
+  EndPersonRelationshipInput,
+  FamilyPersonIdentifierProjection,
+  FamilyPersonNode,
+  FamilyTreeGraph,
+  FamilyTreeQuery,
+  FamilyTreeRelationship,
+  PersonRelationshipRecord,
+  PersonRelationshipRequestContext,
+  PersonRelationshipStatus,
+  PersonWithIdentifiersRecord,
+  RevokePersonRelationshipVerificationInput,
+  UpdatePersonRelationshipInput,
+  UpdatePersonRelationshipRecordInput,
+  UpdatePersonRelationshipResult,
+  VerifyPersonRelationshipInput,
+} from './types/person-relationship';
