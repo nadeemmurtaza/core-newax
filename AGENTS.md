@@ -49,7 +49,13 @@ This is `core-newax`, a pnpm/Turborepo monorepo (NestJS, Next.js, Prisma) with a
   passing state. If a test is failing, fix the underlying issue. Do not bypass a failing
   or required check with `--no-verify`, an admin-merge override, or similar, to land real
   feature/fix work — a pull request only merges once its own tests and checks are
-  genuinely green. (This does not apply to pre-existing, already-tracked infrastructure
-  flakiness unrelated to the change, or to this repo's documented self-referential
-  governance-bookkeeping lag pattern, where an admin-bypass merge is an accepted,
-  separately-documented exception once "Verify monorepo" and CodeQL are green.)
+  genuinely green. The one narrow, named exception: the `Verify engineering learning
+record` job's own pull-request-bookkeeping validation step (not a real CI failure, and
+  not one of the job's other steps that evaluate evidence about the change itself) can
+  fail purely because fixing it requires editing the pull request body, which reruns the
+  job and can trip the same bookkeeping check again — see
+  `tooling/workflow-failure-capture.mjs`'s self-referential-bookkeeping classification and
+  `docs/verification/engineering-learning-ledger/EL-0033-governance-bookkeeping-self-captured.md`.
+  When that is the job's only failing step, an admin-bypass merge is acceptable once
+  "Verify monorepo" and CodeQL are green. This exception never covers a failing test, a
+  real CI job, an unresolved review finding, or any other step of the governance job.
