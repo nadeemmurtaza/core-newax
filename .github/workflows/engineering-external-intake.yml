@@ -1,0 +1,127 @@
+name: Engineering External Intake
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_type:
+        description: Observable failure source
+        required: true
+        type: choice
+        options:
+          - local-verification
+          - development-server
+          - runtime-exception
+          - deployment
+          - build-tool
+          - package-manager
+          - database
+          - browser-console
+          - api-log
+          - security-scanner
+          - performance-regression
+          - external-tool
+          - planning
+          - communication
+          - manual
+      environment:
+        description: Environment where the failure occurred
+        required: true
+        type: choice
+        options:
+          - local
+          - development
+          - test
+          - preview
+          - staging
+          - production
+          - ci
+          - unknown
+      severity:
+        description: Observed severity
+        required: true
+        type: choice
+        options:
+          - info
+          - warning
+          - error
+          - critical
+      summary:
+        description: Exact symptom or failure
+        required: true
+        type: string
+      operation:
+        description: Command, route, deployment, scan, or operation
+        required: false
+        type: string
+      service:
+        description: Service or application name
+        required: false
+        type: string
+      component:
+        description: Component or subsystem
+        required: false
+        type: string
+      release:
+        description: Release or deployment identifier
+        required: false
+        type: string
+      trace_id:
+        description: Trace or correlation identifier
+        required: false
+        type: string
+      source_id:
+        description: Stable provider occurrence identifier
+        required: false
+        type: string
+      pr_number:
+        description: Related pull request number when applicable
+        required: false
+        type: string
+      commit_sha:
+        description: Full related commit SHA when applicable
+        required: false
+        type: string
+      details:
+        description: Bounded diagnostic details
+        required: false
+        type: string
+      evidence:
+        description: Comma-separated evidence URLs without credentials
+        required: false
+        type: string
+      unsuccessful_method:
+        description: Method that failed
+        required: false
+        type: string
+      successful_method:
+        description: Method that resolved the problem, when known
+        required: false
+        type: string
+      prevention_control:
+        description: Control that should prevent recurrence
+        required: false
+        type: string
+  repository_dispatch:
+    types:
+      - engineering_mistake
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  capture-external-event:
+    name: Capture external engineering event
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out default branch controls
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Create or update learning intake
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tooling/record-engineering-event.mjs

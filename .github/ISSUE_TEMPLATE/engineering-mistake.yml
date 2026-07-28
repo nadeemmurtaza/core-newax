@@ -1,0 +1,83 @@
+name: Engineering mistake or failed method
+description: Record a planning, communication, tool, local-command, or other non-CI engineering mistake.
+title: '[Engineering learning] '
+labels:
+  - engineering-learning
+  - learning-candidate
+body:
+  - type: dropdown
+    id: source_type
+    attributes:
+      label: Source type
+      options:
+        - Local command
+        - External tool
+        - Planning or decision quality
+        - Communication or polling
+        - Manual observation
+    validations:
+      required: true
+  - type: input
+    id: pull_request
+    attributes:
+      label: Related pull request
+      description: Enter the pull request number when applicable.
+      placeholder: '#49'
+  - type: input
+    id: commit
+    attributes:
+      label: Related commit
+      description: Enter the exact commit SHA when applicable.
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Exact symptom or mistake
+      description: State what happened without guessing at the cause.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Include logs, screenshots, tool results, links, or reproducible observations.
+    validations:
+      required: true
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root-cause candidate
+      description: Separate the immediate failure from the deeper cause. Mark unconfirmed claims clearly.
+    validations:
+      required: true
+  - type: textarea
+    id: unsuccessful_method
+    attributes:
+      label: Unsuccessful method
+      description: Record the method that failed or created waste.
+    validations:
+      required: true
+  - type: textarea
+    id: successful_method
+    attributes:
+      label: Successful method
+      description: Record the evidence-backed resolution, or state Pending.
+    validations:
+      required: true
+  - type: textarea
+    id: prevention_control
+    attributes:
+      label: Prevention control
+      description: State what will prevent the same failure from recurring.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I distinguished the symptom from the root cause.
+          required: true
+        - label: I included evidence rather than unsupported certainty.
+          required: true
+        - label: I checked the existing ledger for the same root cause.
+          required: true

@@ -53,6 +53,9 @@ minio-data/
 storage-data/
 uploads/
 
+# Local engineering learning queue
+.newax/
+
 # Temporary files
 tmp/
 temp/

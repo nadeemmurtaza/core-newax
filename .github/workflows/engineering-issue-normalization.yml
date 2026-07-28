@@ -1,0 +1,33 @@
+name: Engineering Issue Normalization
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: engineering-issue-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  normalize-learning-issue:
+    name: Normalize engineering learning issue
+    if: startsWith(github.event.issue.title, '[Engineering learning]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out default branch controls
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Normalize machine-readable evidence
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tooling/normalize-engineering-issue.mjs

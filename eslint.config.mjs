@@ -20,6 +20,8 @@ const config = [
       '**/*.min.js',
       '**/next-env.d.ts',
     ],
+  },
+  {
     linterOptions: {
       reportUnusedDisableDirectives: 'error',
     },

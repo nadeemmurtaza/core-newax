@@ -10,25 +10,62 @@
     "pnpm": "11.11.0"
   },
   "scripts": {
-    "build": "pnpm -r --if-present run build",
+    "build": "turbo run build",
     "clean": "pnpm -r --if-present run clean",
     "database-registry:generate": "node tooling/database-registry/generate.mjs --mode snapshot --output docs/generated/database-registry --write",
     "database-registry:test": "node --test tooling/database-registry/generate.test.mjs",
     "dev": "pnpm -r --parallel --if-present run dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "knip": "knip",
+    "learning:ai-quality": "node tooling/analyze-ai-tool-mistakes.mjs",
+    "learning:analyze": "node tooling/analyze-root-cause.mjs",
+    "learning:communication": "node tooling/analyze-communication.mjs",
+    "learning:confidence": "node tooling/analyze-confidence.mjs",
+    "learning:executive-dashboard": "node tooling/analyze-executive-dashboard.mjs",
+    "learning:flush": "node tooling/flush-engineering-events.mjs",
+    "learning:graph": "node tooling/analyze-error-graph.mjs",
+    "learning:ingest": "node tooling/ingest-engineering-event.mjs",
+    "learning:knowledge-graph": "node tooling/analyze-knowledge-graph.mjs",
+    "learning:planning": "node tooling/analyze-planning.mjs",
+    "learning:prevention": "node tooling/analyze-prevention.mjs",
+    "learning:receive": "node tooling/engineering-event-receiver.mjs",
+    "learning:record": "node tooling/record-engineering-event.mjs",
+    "learning:recurrence": "node tooling/analyze-recurrence.mjs",
+    "learning:run": "node tooling/run-engineering-command.mjs --",
+    "learning:verify-explanation": "node tooling/analyze-explanation.mjs",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "test": "pnpm -r --if-present run test",
-    "typecheck": "pnpm -r --if-present run typecheck"
+    "operation:validate": "node tooling/validate-operation-intent.mjs",
+    "prepare": "husky",
+    "test": "pnpm test:learning && turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "test:learning": "node --test tooling/ai-quality-dataset.test.mjs tooling/ai-tool-governance.test.mjs tooling/ai-tool-history-github.test.mjs tooling/ai-tool-history-parser.test.mjs tooling/ai-tool-mistake-detector.test.mjs tooling/ai-tool-self-audit.test.mjs tooling/communication-governance.test.mjs tooling/communication-history-github.test.mjs tooling/communication-history-parser.test.mjs tooling/communication-mistake-detector.test.mjs tooling/communication-retroactive-scope.test.mjs tooling/confidence-finding-adapters.test.mjs tooling/confidence-governance.test.mjs tooling/confidence-record.test.mjs tooling/confidence-scoring.test.mjs tooling/engineering-event-upgrade.test.mjs tooling/engineering-explanation-integration.test.mjs tooling/engineering-issue-error-graph.test.mjs tooling/engineering-learning-core.test.mjs tooling/error-relationship-graph.test.mjs tooling/executive-dashboard-governance.test.mjs tooling/executive-dashboard-history-github.test.mjs tooling/executive-dashboard-history-parser.test.mjs tooling/executive-dashboard-record.test.mjs tooling/executive-dashboard-renderer.test.mjs tooling/executive-dashboard.test.mjs tooling/explanation-evidence-github.test.mjs tooling/explanation-verification.test.mjs tooling/external-failure-intake.test.mjs tooling/knowledge-graph-github.test.mjs tooling/knowledge-graph-governance.test.mjs tooling/knowledge-graph-record.test.mjs tooling/knowledge-graph-renderer.test.mjs tooling/knowledge-graph-traversal.test.mjs tooling/knowledge-graph.test.mjs tooling/learning-outcome-rule-engine.test.mjs tooling/planning-history-github.test.mjs tooling/planning-mistake-analysis.test.mjs tooling/planning-mistake-detector.test.mjs tooling/planning-governance.test.mjs tooling/pr-governance-learning-outcome.test.mjs tooling/prevention-control-renderer.test.mjs tooling/prevention-engine.test.mjs tooling/prevention-governance.test.mjs tooling/prevention-history-github.test.mjs tooling/prevention-history-parser.test.mjs tooling/recurrence-detector.test.mjs tooling/recurrence-governance.test.mjs tooling/recurrence-history-github.test.mjs tooling/recurrence-history-parser.test.mjs tooling/recurrence-record.test.mjs tooling/recurrence-renderer.test.mjs tooling/recurrence-self-audit.test.mjs tooling/root-cause-engine.test.mjs tooling/workflow-failure-capture.test.mjs tooling/workflow-failure-intake-controls.test.mjs",
+    "typecheck": "turbo run typecheck",
+    "verify": "node tooling/run-engineering-command.mjs -- pnpm verify:raw",
+    "verify:raw": "pnpm format:check && pnpm verify:workflow-intake && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "verify:workflow-intake": "node tooling/workflow-failure-intake-controls.mjs"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.1",
+    "@commitlint/config-conventional": "21.2.0",
     "@eslint/js": "9.39.4",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.10",
     "globals": "17.7.0",
-    "prettier": "3.9.0",
+    "husky": "9.1.7",
+    "knip": "6.29.0",
+    "lint-staged": "17.2.0",
+    "prettier": "3.9.6",
+    "turbo": "2.10.7",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.63.0"
+    "typescript-eslint": "8.65.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css,scss}": "prettier --write"
   }
 }
