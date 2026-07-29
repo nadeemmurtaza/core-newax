@@ -568,7 +568,7 @@ describe('LeadHarvesterSyncService', () => {
       const { service } = buildService();
       await expect(
         service.syncInstitutionUpserted(context(), payload(overrides)),
-      ).rejects.toMatchObject({ code: 'LEAD_HARVESTER_SYNC_INVALID_PAYLOAD' });
+      ).rejects.toMatchObject({ code: 'LEAD_HARVESTER_SYNC_INVALID_INPUT' });
     },
   );
 

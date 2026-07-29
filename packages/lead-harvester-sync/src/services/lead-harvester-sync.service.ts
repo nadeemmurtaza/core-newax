@@ -331,7 +331,7 @@ export class LeadHarvesterSyncService {
     const occurredAt = new Date(payload.occurredAt);
     if (Number.isNaN(occurredAt.getTime())) {
       throw new LeadHarvesterSyncModuleError(
-        'LEAD_HARVESTER_SYNC_INVALID_PAYLOAD',
+        'LEAD_HARVESTER_SYNC_INVALID_INPUT',
         'occurredAt must be a valid ISO8601 timestamp.',
       );
     }
@@ -341,19 +341,19 @@ export class LeadHarvesterSyncService {
   private requirePayloadShape(payload: LeadHarvesterInstitutionUpsertedPayload): void {
     if (payload.schemaVersion !== 1) {
       throw new LeadHarvesterSyncModuleError(
-        'LEAD_HARVESTER_SYNC_INVALID_PAYLOAD',
+        'LEAD_HARVESTER_SYNC_INVALID_INPUT',
         `Unsupported schemaVersion: ${String(payload.schemaVersion)}.`,
       );
     }
     if (payload.eventType !== 'institution.upserted') {
       throw new LeadHarvesterSyncModuleError(
-        'LEAD_HARVESTER_SYNC_INVALID_PAYLOAD',
+        'LEAD_HARVESTER_SYNC_INVALID_INPUT',
         `Unsupported eventType: ${payload.eventType}.`,
       );
     }
     if (payload.institution.id.trim().length === 0) {
       throw new LeadHarvesterSyncModuleError(
-        'LEAD_HARVESTER_SYNC_INVALID_PAYLOAD',
+        'LEAD_HARVESTER_SYNC_INVALID_INPUT',
         'institution.id must not be blank.',
       );
     }

@@ -15,6 +15,7 @@ import { ExternalReferencesModule } from './external-references/external-referen
 import { FilesModule } from './files/files.module';
 import { HealthController } from './health/health.controller';
 import { HttpSecurityModule } from './http-security/http-security.module';
+import { LeadHarvesterSyncModule } from './integrations/lead-harvester/lead-harvester-sync.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { ObjectsModule } from './objects/objects.module';
 import { OrganizationsModule } from './organizations/organizations.module';
@@ -50,6 +51,7 @@ import { UsersModule } from './users/users.module';
     RequestContextModule,
     HttpSecurityModule,
     AccountAccessModule,
+    LeadHarvesterSyncModule,
   ],
   controllers: [HealthController, AuthenticationHttpController, OAuthHttpController],
   providers: [],
