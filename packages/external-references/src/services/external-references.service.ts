@@ -12,10 +12,12 @@ import {
 } from '../permissions/external-reference-permissions';
 import type {
   ExternalReferenceRecord,
+  FindByExternalKeyInput,
   OrganizationExternalReferenceListQuery,
   OrganizationExternalReferencePage,
   OrganizationExternalReferenceRequestContext,
   RegisterOrganizationExternalReferenceInput,
+  TenantExternalReferenceRequestContext,
 } from '../types/external-reference';
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -65,6 +67,7 @@ export class ExternalReferencesService {
         255,
         MAX_EXTERNAL_KEY_UTF8_BYTES,
       ),
+      metadata: input.metadata ?? null,
     });
 
     if (result.status === 'organization_unavailable') {
@@ -150,6 +153,88 @@ export class ExternalReferencesService {
         ? null
         : this.requireUuid(result.nextCursor, 'nextCursor', 'EXTERNAL_REFERENCE_INTEGRITY_FAILURE');
     return Object.freeze({ items: Object.freeze(items), nextCursor });
+  }
+
+  async findCurrentOrganizationExternalReferenceByKey(
+    context: OrganizationExternalReferenceRequestContext,
+    input: FindByExternalKeyInput,
+  ): Promise<ExternalReferenceRecord | null> {
+    const trusted = this.requireOrganizationContext(context, EXTERNAL_REFERENCE_PERMISSIONS.view);
+    const result = await this.repository.findOrganizationExternalReferenceByKey({
+      tenantId: trusted.tenantId,
+      organizationId: trusted.organizationId,
+      externalSystem: this.requireCode(input.externalSystem, 'externalSystem', 128),
+      externalKey: this.requireOpaqueIdentifier(
+        input.externalKey,
+        'externalKey',
+        255,
+        MAX_EXTERNAL_KEY_UTF8_BYTES,
+      ),
+    });
+
+    if (result.status === 'organization_unavailable') {
+      throw new ExternalReferenceModuleError(
+        'EXTERNAL_REFERENCE_ORGANIZATION_UNAVAILABLE',
+        'The organization is unavailable.',
+      );
+    }
+    if (result.status === 'not_found') {
+      return null;
+    }
+    return this.requireExternalReferenceBoundary(result.externalReference, trusted);
+  }
+
+  // For resolving "does this external entity already map to SOME organization
+  // in our tenant" before an organizationId is known (e.g. a brand-new
+  // institution arriving from an external system for the first time).
+  async findTenantExternalReferenceByKey(
+    context: TenantExternalReferenceRequestContext,
+    input: FindByExternalKeyInput,
+  ): Promise<ExternalReferenceRecord | null> {
+    const trusted = this.requireTenantContext(context, EXTERNAL_REFERENCE_PERMISSIONS.view);
+    const result = await this.repository.findTenantExternalReferenceByKey({
+      tenantId: trusted.tenantId,
+      externalSystem: this.requireCode(input.externalSystem, 'externalSystem', 128),
+      externalKey: this.requireOpaqueIdentifier(
+        input.externalKey,
+        'externalKey',
+        255,
+        MAX_EXTERNAL_KEY_UTF8_BYTES,
+      ),
+    });
+
+    if (result.status === 'not_found') {
+      return null;
+    }
+    const record = result.externalReference;
+    if (record.tenantId !== trusted.tenantId) {
+      throw new ExternalReferenceModuleError(
+        'EXTERNAL_REFERENCE_INTEGRITY_FAILURE',
+        'The external reference repository returned a record outside the trusted tenant.',
+      );
+    }
+    return this.requireExternalReferenceBoundary(record, {
+      tenantId: record.tenantId,
+      organizationId: record.organizationId,
+    });
+  }
+
+  private requireTenantContext(
+    context: TenantExternalReferenceRequestContext,
+    permission: ExternalReferencePermission,
+  ): {
+    readonly actorUserId: string;
+    readonly tenantId: string;
+  } {
+    const actorUserId = this.requireUuid(context.actorUserId, 'context.actorUserId');
+    const tenantId = this.requireUuid(context.tenantId, 'context.tenantId');
+    if (!context.permissionCodes.has(permission)) {
+      throw new ExternalReferenceModuleError(
+        'EXTERNAL_REFERENCE_FORBIDDEN',
+        `The operation requires ${permission}.`,
+      );
+    }
+    return { actorUserId, tenantId };
   }
 
   private requireOrganizationContext(
@@ -239,6 +324,7 @@ export class ExternalReferencesService {
         MAX_EXTERNAL_KEY_UTF8_BYTES,
         'EXTERNAL_REFERENCE_INTEGRITY_FAILURE',
       ),
+      metadata: record.metadata,
       createdAt,
       updatedAt,
     });

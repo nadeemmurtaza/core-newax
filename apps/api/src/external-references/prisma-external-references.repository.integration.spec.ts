@@ -88,6 +88,7 @@ describeWithDatabase('PrismaExternalReferencesRepository PostgreSQL integration'
       entityId: `Student-${String(RUN_ID)}`,
       externalSystem: 'integration.sis',
       externalKey: sharedExternalKey,
+      metadata: null,
     } as const;
 
     const concurrent = await Promise.all([
@@ -109,7 +110,7 @@ describeWithDatabase('PrismaExternalReferencesRepository PostgreSQL integration'
       externalSystem: 'integration.sis',
       externalKey: sharedExternalKey,
     });
-    expect(created.externalReference).not.toHaveProperty('metadata');
+    expect(created.externalReference.metadata).toBeNull();
 
     const separatelyScoped = await repository.registerOrganizationExternalReference({
       ...registrationInput,
