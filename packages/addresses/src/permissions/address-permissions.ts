@@ -1,5 +1,6 @@
 export const ADDRESS_PERMISSIONS = {
   create: 'addresses.create',
+  update: 'addresses.update',
   view: 'addresses.view',
 } as const;
 

@@ -11,6 +11,7 @@ import type {
   OrganizationAddressRecord,
   OrganizationAddressRequestContext,
   OrganizationAddressType,
+  UpdateOrganizationAddressInput,
 } from '../types/address';
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -90,6 +91,82 @@ export class AddressesService {
       addressId: address.addressId,
       addressType: address.addressType,
       isPrimary: address.isPrimary,
+      occurredAt: new Date(),
+    });
+    return address;
+  }
+
+  async updateCurrentOrganizationAddress(
+    context: OrganizationAddressRequestContext,
+    input: UpdateOrganizationAddressInput,
+  ): Promise<OrganizationAddressRecord> {
+    const trusted = this.requireContext(context, ADDRESS_PERMISSIONS.update);
+    const organizationAddressId = this.requireUuid(
+      input.organizationAddressId,
+      'organizationAddressId',
+    );
+    const addressType = this.requireAddressType(input.addressType);
+    const isPrimary = this.requireBoolean(input.isPrimary, 'isPrimary');
+    const line1 = this.requireText(input.line1, 'line1', 255);
+    const line2 = this.requireOptionalText(input.line2, 'line2', 255);
+    const city = this.requireText(input.city, 'city', 128);
+    const stateRegion = this.requireOptionalText(input.stateRegion, 'stateRegion', 128);
+    const postalCode = this.requireOptionalPostalCode(input.postalCode);
+    const countryCode = this.requireCountryCode(input.countryCode);
+    const canonicalKey = this.createCanonicalKey({
+      line1,
+      line2,
+      city,
+      stateRegion,
+      postalCode,
+      countryCode,
+    });
+
+    const result = await this.repository.updateOrganizationAddress({
+      tenantId: trusted.tenantId,
+      organizationId: trusted.organizationId,
+      organizationAddressId,
+      addressType,
+      isPrimary,
+      line1,
+      line2,
+      city,
+      stateRegion,
+      postalCode,
+      countryCode,
+      canonicalKey,
+    });
+
+    if (result.status === 'organization_unavailable') {
+      throw new AddressModuleError(
+        'ADDRESS_ORGANIZATION_UNAVAILABLE',
+        'The organization is unavailable.',
+      );
+    }
+    if (result.status === 'address_unavailable') {
+      throw new AddressModuleError(
+        'ADDRESS_NOT_FOUND',
+        'The address is not available for the current organization.',
+      );
+    }
+    if (result.status === 'conflict') {
+      throw new AddressModuleError(
+        'ADDRESS_CONFLICT',
+        'The updated organization address already exists.',
+      );
+    }
+
+    const address = this.requireRecordBoundary(result.address, trusted);
+    await this.eventPublisher.publish({
+      name: 'address.updated',
+      actorUserId: trusted.actorUserId,
+      tenantId: address.tenantId,
+      organizationId: address.organizationId,
+      organizationAddressId: address.id,
+      addressId: address.addressId,
+      addressType: address.addressType,
+      isPrimary: address.isPrimary,
+      relinked: result.relinked,
       occurredAt: new Date(),
     });
     return address;

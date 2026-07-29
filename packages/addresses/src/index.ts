@@ -1,5 +1,9 @@
 export type { AddressRepository } from './database/address-repository';
-export type { AddressEvent, AddressEventPublisher } from './events/address-event';
+export type {
+  AddressEvent,
+  AddressEventPublisher,
+  OrganizationAddressUpdatedEvent,
+} from './events/address-event';
 export { AddressModuleError, type AddressErrorCode } from './errors/address-module-error';
 export { ADDRESS_PERMISSIONS, type AddressPermission } from './permissions/address-permissions';
 export { AddressesService } from './services/addresses.service';
@@ -14,4 +18,7 @@ export type {
   OrganizationAddressRecord,
   OrganizationAddressRequestContext,
   OrganizationAddressType,
+  UpdateOrganizationAddressInput,
+  UpdateOrganizationAddressRecordInput,
+  UpdateOrganizationAddressResult,
 } from './types/address';

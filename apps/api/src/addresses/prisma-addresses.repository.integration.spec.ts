@@ -236,4 +236,93 @@ describeWithDatabase('PrismaAddressesRepository PostgreSQL integration', () => {
       }),
     ).resolves.toEqual({ status: 'cursor_invalid' });
   });
+
+  it('updates in place for an unchanged value and relinks without mutating the shared address for a changed one', async () => {
+    const tenant = await prisma.coreTenant.create({
+      data: { name: organizationName('Update Tenant') },
+    });
+    tenantIds.push(tenant.id);
+    const organization = await prisma.coreOrganization.create({
+      data: {
+        tenantId: tenant.id,
+        legalName: organizationName('Update Organization'),
+        displayName: organizationName('Update Org'),
+        organizationType: 'company',
+      },
+    });
+    organizationIds.push(organization.id);
+
+    const created = await repository.createOrganizationAddress(
+      addressInput(tenant.id, organization.id, 'Update Original'),
+    );
+    if (created.status !== 'created') {
+      throw new Error('Expected the address to be created.');
+    }
+    addressIds.push(created.address.addressId);
+
+    const metadataOnly = await repository.updateOrganizationAddress({
+      ...addressInput(tenant.id, organization.id, 'Update Original'),
+      organizationAddressId: created.address.id,
+      addressType: 'billing',
+    });
+    expect(metadataOnly).toMatchObject({ status: 'updated', relinked: false });
+    if (metadataOnly.status !== 'updated') {
+      throw new Error('Expected the metadata-only update to succeed.');
+    }
+    expect(metadataOnly.address.id).toBe(created.address.id);
+    expect(metadataOnly.address.addressId).toBe(created.address.addressId);
+    expect(metadataOnly.address.addressType).toBe('billing');
+
+    const relinked = await repository.updateOrganizationAddress({
+      ...addressInput(tenant.id, organization.id, 'Update Changed'),
+      organizationAddressId: created.address.id,
+      addressType: 'billing',
+    });
+    expect(relinked).toMatchObject({ status: 'updated', relinked: true });
+    if (relinked.status !== 'updated') {
+      throw new Error('Expected the relink update to succeed.');
+    }
+    addressIds.push(relinked.address.addressId);
+    expect(relinked.address.id).not.toBe(created.address.id);
+    expect(relinked.address.addressId).not.toBe(created.address.addressId);
+    expect(relinked.address.line1).toBe('Office Update Changed, NEWAX Tower');
+
+    const retiredLink = await prisma.coreOrganizationAddress.findUniqueOrThrow({
+      where: { id: created.address.id },
+    });
+    expect(retiredLink.status).toBe('removed');
+
+    const originalAddress = await prisma.coreAddress.findUniqueOrThrow({
+      where: { id: created.address.addressId },
+    });
+    expect(originalAddress.line1).toBe('Office Update Original, NEWAX Tower');
+
+    const conflictTarget = await repository.createOrganizationAddress(
+      addressInput(tenant.id, organization.id, 'Update Conflict Target', {
+        addressType: 'billing',
+        isPrimary: false,
+      }),
+    );
+    if (conflictTarget.status !== 'created') {
+      throw new Error('Expected the conflict-target address to be created.');
+    }
+    addressIds.push(conflictTarget.address.addressId);
+
+    await expect(
+      repository.updateOrganizationAddress({
+        ...addressInput(tenant.id, organization.id, 'Update Conflict Target', {
+          addressType: 'billing',
+          isPrimary: false,
+        }),
+        organizationAddressId: relinked.address.id,
+      }),
+    ).resolves.toEqual({ status: 'conflict' });
+
+    await expect(
+      repository.updateOrganizationAddress({
+        ...addressInput(tenant.id, organization.id, 'Update Missing'),
+        organizationAddressId: '00000000-0000-4000-8000-000000000099',
+      }),
+    ).resolves.toEqual({ status: 'address_unavailable' });
+  });
 });
