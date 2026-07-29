@@ -296,6 +296,37 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@types/node@26.1.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
+  packages/lead-harvester-sync:
+    dependencies:
+      '@newax/addresses':
+        specifier: workspace:*
+        version: link:../addresses
+      '@newax/contacts':
+        specifier: workspace:*
+        version: link:../contacts
+      '@newax/external-references':
+        specifier: workspace:*
+        version: link:../external-references
+      '@newax/memberships':
+        specifier: workspace:*
+        version: link:../memberships
+      '@newax/organizations':
+        specifier: workspace:*
+        version: link:../organizations
+      '@newax/people':
+        specifier: workspace:*
+        version: link:../people
+    devDependencies:
+      '@types/node':
+        specifier: 26.1.1
+        version: 26.1.1
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@26.1.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
+
   packages/memberships:
     devDependencies:
       '@types/node':
