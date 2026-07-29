@@ -8,15 +8,23 @@ import type {
   ContactsRequestContext,
   CreateOrganizationContactRecordInput,
   CreateOrganizationContactResult,
+  CreatePersonContactRecordInput,
+  CreatePersonContactResult,
   ListOrganizationContactsRecordInput,
   ListOrganizationContactsResult,
   OrganizationContactRecord,
+  PersonContactRecord,
+  UpdateOrganizationContactRecordInput,
+  UpdateOrganizationContactResult,
 } from '../src/types/contact';
 
 const USER_ID = '00000000-0000-4000-8000-000000000001';
 const ORGANIZATION_ID = '00000000-0000-4000-8000-000000000002';
 const CONTACT_ID = '00000000-0000-4000-8000-000000000003';
 const CONTACT_METHOD_ID = '00000000-0000-4000-8000-000000000004';
+const PERSON_ID = '00000000-0000-4000-8000-000000000005';
+const PERSON_CONTACT_ID = '00000000-0000-4000-8000-000000000006';
+const PERSON_CONTACT_METHOD_ID = '00000000-0000-4000-8000-000000000007';
 const NOW = new Date('2026-07-12T00:00:00.000Z');
 
 function record(overrides: Partial<OrganizationContactRecord> = {}): OrganizationContactRecord {
@@ -39,14 +47,45 @@ function record(overrides: Partial<OrganizationContactRecord> = {}): Organizatio
   };
 }
 
+function personRecord(overrides: Partial<PersonContactRecord> = {}): PersonContactRecord {
+  return {
+    id: PERSON_CONTACT_ID,
+    personId: PERSON_ID,
+    contactMethodId: PERSON_CONTACT_METHOD_ID,
+    contactType: 'email',
+    contactValue: 'hello@newax.co',
+    normalizedValue: 'hello@newax.co',
+    isVerified: false,
+    verifiedAt: null,
+    label: null,
+    isPrimary: false,
+    status: 'active',
+    validFrom: null,
+    validUntil: null,
+    createdAt: NOW,
+    ...overrides,
+  };
+}
+
 class FakeContactsRepository implements ContactsRepository {
   createInput: CreateOrganizationContactRecordInput | null = null;
+  updateInput: UpdateOrganizationContactRecordInput | null = null;
   listInput: ListOrganizationContactsRecordInput | null = null;
+  createPersonInput: CreatePersonContactRecordInput | null = null;
   createResult: CreateOrganizationContactResult = { status: 'created', contact: record() };
+  updateResult: UpdateOrganizationContactResult = {
+    status: 'updated',
+    contact: record(),
+    relinked: false,
+  };
   listResult: ListOrganizationContactsResult = {
     status: 'available',
     items: [record()],
     nextCursor: null,
+  };
+  createPersonResult: CreatePersonContactResult = {
+    status: 'created',
+    contact: personRecord(),
   };
 
   async createOrganizationContact(
@@ -56,11 +95,25 @@ class FakeContactsRepository implements ContactsRepository {
     return this.createResult;
   }
 
+  async updateOrganizationContact(
+    input: UpdateOrganizationContactRecordInput,
+  ): Promise<UpdateOrganizationContactResult> {
+    this.updateInput = input;
+    return this.updateResult;
+  }
+
   async listOrganizationContacts(
     input: ListOrganizationContactsRecordInput,
   ): Promise<ListOrganizationContactsResult> {
     this.listInput = input;
     return this.listResult;
+  }
+
+  async createPersonContact(
+    input: CreatePersonContactRecordInput,
+  ): Promise<CreatePersonContactResult> {
+    this.createPersonInput = input;
+    return this.createPersonResult;
   }
 }
 
@@ -342,5 +395,295 @@ describe('ContactsService organization contact foundation', () => {
     await expect(
       service.listCurrentOrganizationContacts(context(CONTACT_PERMISSIONS.view), { limit }),
     ).rejects.toMatchObject({ code: 'CONTACT_INVALID_INPUT' });
+  });
+});
+
+describe('ContactsService whatsapp and telegram contact types', () => {
+  it('normalizes a whatsapp value the same way as phone', async () => {
+    const repository = new FakeContactsRepository();
+    repository.createResult = {
+      status: 'created',
+      contact: record({
+        contactType: 'whatsapp',
+        contactValue: '+923709861100',
+        normalizedValue: '+923709861100',
+      }),
+    };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await service.addCurrentOrganizationContact(context(CONTACT_PERMISSIONS.create), {
+      contactType: 'whatsapp',
+      contactValue: '+92 (370) 986-1100',
+    });
+
+    expect(repository.createInput).toMatchObject({
+      contactType: 'whatsapp',
+      contactValue: '+923709861100',
+      normalizedValue: '+923709861100',
+    });
+  });
+
+  it('normalizes a telegram handle by stripping the leading @ and lowercasing it', async () => {
+    const repository = new FakeContactsRepository();
+    repository.createResult = {
+      status: 'created',
+      contact: record({
+        contactType: 'telegram',
+        contactValue: 'newax_sales',
+        normalizedValue: 'newax_sales',
+      }),
+    };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await service.addCurrentOrganizationContact(context(CONTACT_PERMISSIONS.create), {
+      contactType: 'telegram',
+      contactValue: '@NEWAX_Sales',
+    });
+
+    expect(repository.createInput).toMatchObject({
+      contactType: 'telegram',
+      contactValue: 'newax_sales',
+      normalizedValue: 'newax_sales',
+    });
+  });
+
+  it.each([
+    { contactType: 'whatsapp' as const, contactValue: '03709861100' },
+    { contactType: 'telegram' as const, contactValue: 'ab' },
+    { contactType: 'telegram' as const, contactValue: '1notaletterstart' },
+  ])('rejects invalid whatsapp and telegram values', async (input) => {
+    const service = new ContactsService(
+      new FakeContactsRepository(),
+      new RecordingContactEventPublisher(),
+    );
+
+    await expect(
+      service.addCurrentOrganizationContact(context(CONTACT_PERMISSIONS.create), input),
+    ).rejects.toMatchObject({ code: 'CONTACT_INVALID_INPUT' });
+  });
+});
+
+describe('ContactsService updateCurrentOrganizationContact', () => {
+  it('requires explicit update permission', async () => {
+    const service = new ContactsService(
+      new FakeContactsRepository(),
+      new RecordingContactEventPublisher(),
+    );
+
+    await expect(
+      service.updateCurrentOrganizationContact(context(), {
+        contactId: CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_FORBIDDEN' });
+  });
+
+  it('passes normalized fields through to the repository', async () => {
+    const repository = new FakeContactsRepository();
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await service.updateCurrentOrganizationContact(context(CONTACT_PERMISSIONS.update), {
+      contactId: CONTACT_ID,
+      contactType: 'email',
+      contactValue: ' New@NEWAX.co ',
+      label: ' Sales ',
+      isPrimary: true,
+    });
+
+    expect(repository.updateInput).toEqual({
+      organizationId: ORGANIZATION_ID,
+      contactId: CONTACT_ID,
+      contactType: 'email',
+      contactValue: 'new@newax.co',
+      normalizedValue: 'new@newax.co',
+      label: 'Sales',
+      isPrimary: true,
+      validFrom: null,
+      validUntil: null,
+    });
+  });
+
+  it('publishes an update event carrying the relink flag', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updateResult = {
+      status: 'updated',
+      contact: record({
+        id: '00000000-0000-4000-8000-000000000099',
+        contactType: 'phone',
+        contactValue: '+923001234567',
+        normalizedValue: '+923001234567',
+      }),
+      relinked: true,
+    };
+    const publisher = new RecordingContactEventPublisher();
+    const service = new ContactsService(repository, publisher);
+
+    const contact = await service.updateCurrentOrganizationContact(
+      context(CONTACT_PERMISSIONS.update),
+      {
+        contactId: CONTACT_ID,
+        contactType: 'phone',
+        contactValue: '+923001234567',
+      },
+    );
+
+    expect(contact.id).toBe('00000000-0000-4000-8000-000000000099');
+    expect(publisher.events).toEqual([
+      {
+        name: 'contact.updated',
+        actorUserId: USER_ID,
+        organizationId: ORGANIZATION_ID,
+        contactId: '00000000-0000-4000-8000-000000000099',
+        contactMethodId: CONTACT_METHOD_ID,
+        contactType: 'phone',
+        relinked: true,
+        occurredAt: expect.any(Date),
+      },
+    ]);
+  });
+
+  it('maps a missing contact to a not-found error', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updateResult = { status: 'contact_unavailable' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.updateCurrentOrganizationContact(context(CONTACT_PERMISSIONS.update), {
+        contactId: CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_NOT_FOUND' });
+  });
+
+  it('maps a relink collision to a conflict', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updateResult = { status: 'conflict' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.updateCurrentOrganizationContact(context(CONTACT_PERMISSIONS.update), {
+        contactId: CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_CONFLICT' });
+  });
+
+  it('fails closed when the current organization is unavailable', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updateResult = { status: 'organization_unavailable' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.updateCurrentOrganizationContact(context(CONTACT_PERMISSIONS.update), {
+        contactId: CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_ORGANIZATION_UNAVAILABLE' });
+  });
+});
+
+describe('ContactsService addCurrentPersonContact', () => {
+  it('requires explicit create permission', async () => {
+    const service = new ContactsService(
+      new FakeContactsRepository(),
+      new RecordingContactEventPublisher(),
+    );
+
+    await expect(
+      service.addCurrentPersonContact(context(), {
+        personId: PERSON_ID,
+        contactType: 'email',
+        contactValue: 'hello@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_FORBIDDEN' });
+  });
+
+  it('normalizes input and publishes an identifier-only event', async () => {
+    const repository = new FakeContactsRepository();
+    repository.createPersonResult = {
+      status: 'created',
+      contact: personRecord({
+        contactType: 'whatsapp',
+        contactValue: '+923709861100',
+        normalizedValue: '+923709861100',
+      }),
+    };
+    const publisher = new RecordingContactEventPublisher();
+    const service = new ContactsService(repository, publisher);
+
+    const contact = await service.addCurrentPersonContact(context(CONTACT_PERMISSIONS.create), {
+      personId: PERSON_ID,
+      contactType: 'whatsapp',
+      contactValue: '+92 (370) 986-1100',
+    });
+
+    expect(repository.createPersonInput).toMatchObject({
+      personId: PERSON_ID,
+      contactType: 'whatsapp',
+      contactValue: '+923709861100',
+      normalizedValue: '+923709861100',
+    });
+    expect(contact.personId).toBe(PERSON_ID);
+    expect(Object.isFrozen(contact)).toBe(true);
+    expect(publisher.events).toEqual([
+      {
+        name: 'person_contact.created',
+        actorUserId: USER_ID,
+        personId: PERSON_ID,
+        contactId: PERSON_CONTACT_ID,
+        contactMethodId: PERSON_CONTACT_METHOD_ID,
+        contactType: 'whatsapp',
+        occurredAt: expect.any(Date),
+      },
+    ]);
+  });
+
+  it('maps duplicate assignments to a conflict', async () => {
+    const repository = new FakeContactsRepository();
+    repository.createPersonResult = { status: 'conflict' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.addCurrentPersonContact(context(CONTACT_PERMISSIONS.create), {
+        personId: PERSON_ID,
+        contactType: 'email',
+        contactValue: 'hello@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_CONFLICT' });
+  });
+
+  it('fails closed when the person is unavailable', async () => {
+    const repository = new FakeContactsRepository();
+    repository.createPersonResult = { status: 'person_unavailable' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.addCurrentPersonContact(context(CONTACT_PERMISSIONS.create), {
+        personId: PERSON_ID,
+        contactType: 'email',
+        contactValue: 'hello@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_PERSON_UNAVAILABLE' });
+  });
+
+  it('rejects a repository result from another person', async () => {
+    const repository = new FakeContactsRepository();
+    repository.createPersonResult = {
+      status: 'created',
+      contact: personRecord({ personId: '00000000-0000-4000-8000-000000000099' }),
+    };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.addCurrentPersonContact(context(CONTACT_PERMISSIONS.create), {
+        personId: PERSON_ID,
+        contactType: 'email',
+        contactValue: 'hello@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_INTEGRITY_FAILURE' });
   });
 });

@@ -16,7 +16,7 @@ import {
 
 interface OrganizationContactResource {
   readonly id: string;
-  readonly type: 'email' | 'phone';
+  readonly type: 'email' | 'phone' | 'whatsapp' | 'telegram';
   readonly value: string;
   readonly label: string | null;
   readonly is_primary: boolean;
