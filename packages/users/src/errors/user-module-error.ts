@@ -13,7 +13,8 @@ export type UserErrorCode =
   | 'USER_ORGANIZATION_UNAVAILABLE'
   | 'USER_PERSON_NOT_FOUND'
   | 'USER_PERSON_UNAVAILABLE'
-  | 'USER_PLATFORM_CONTEXT_REQUIRED';
+  | 'USER_PLATFORM_CONTEXT_REQUIRED'
+  | 'USER_ACCOUNT_NOT_PERSON_BACKED';
 
 export class UserModuleError extends Error {
   readonly code: UserErrorCode;

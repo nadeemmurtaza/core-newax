@@ -1,18 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type {
-  AddUserIdentityRecordInput,
-  AddUserIdentityResult,
-  AuthenticationUserRecord,
-  CreateUserRecordInput,
-  CreateUserResult,
-  RemoveUserIdentityResult,
-  UserIdentityRecord,
-  UserIdentityType,
-  UserListQuery,
-  UserPage,
-  UserRecord,
-  UserStatus,
-  UsersRepository,
+import {
+  UserModuleError,
+  type AddUserIdentityRecordInput,
+  type AddUserIdentityResult,
+  type AuthenticationUserRecord,
+  type CreateUserRecordInput,
+  type CreateUserResult,
+  type RemoveUserIdentityResult,
+  type UserIdentityRecord,
+  type UserIdentityType,
+  type UserListQuery,
+  type UserPage,
+  type UserRecord,
+  type UserStatus,
+  type UsersRepository,
 } from '@newax/users';
 
 import type { Prisma } from '../generated/prisma/client';
@@ -20,7 +21,11 @@ import { PrismaService } from '../database/prisma.service';
 
 interface UserDatabaseRecord {
   readonly id: string;
-  readonly personId: string;
+  // Nullable at the database level because a CoreUser may instead be backed by
+  // a CoreServiceAccount (see ADR 0035) -- @newax/users only supports
+  // person-backed accounts, so mapUser()/requirePersonBackedUser() below
+  // narrow this to a non-null string or throw.
+  readonly personId: string | null;
   readonly status: string;
   readonly lastLoginAt: Date | null;
   readonly lockedUntil: Date | null;
@@ -191,7 +196,7 @@ export class PrismaUsersRepository implements UsersRepository {
 
     return {
       userId: record.user.id,
-      personId: record.user.personId,
+      personId: this.requirePersonBackedUser(record.user.personId),
       userStatus: this.mapUserStatus(record.user.status),
       lockedUntil: record.user.lockedUntil,
       identityId: record.id,
@@ -388,9 +393,27 @@ export class PrismaUsersRepository implements UsersRepository {
 
   private mapUser(record: UserDatabaseRecord): UserRecord {
     return {
-      ...record,
+      id: record.id,
+      personId: this.requirePersonBackedUser(record.personId),
       status: this.mapUserStatus(record.status),
+      lastLoginAt: record.lastLoginAt,
+      lockedUntil: record.lockedUntil,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     };
+  }
+
+  // @newax/users only supports person-backed accounts; a service-account-backed
+  // CoreUser (see ADR 0035) reaching this repository's read paths would be a
+  // caller bug (looking up a machine identity through the human-user API).
+  private requirePersonBackedUser(personId: string | null): string {
+    if (personId === null) {
+      throw new UserModuleError(
+        'USER_ACCOUNT_NOT_PERSON_BACKED',
+        'This user account is a service-account identity, not a person-backed user.',
+      );
+    }
+    return personId;
   }
 
   private mapIdentity(record: UserIdentityDatabaseRecord): UserIdentityRecord {

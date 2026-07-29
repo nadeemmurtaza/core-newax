@@ -15,7 +15,11 @@ import { PrismaService } from '../database/prisma.service';
 
 interface MembershipDatabaseRecord {
   readonly id: string;
-  readonly personId: string;
+  // Nullable at the database level because a CoreMembership may instead be
+  // backed by a CoreServiceAccount (see ADR 0035) -- @newax/memberships only
+  // supports person-backed memberships, so mapMembership() below narrows this
+  // to a non-null string or throws.
+  readonly personId: string | null;
   readonly organizationId: string;
   readonly membershipType: string;
   readonly referenceNumber: string | null;
@@ -161,8 +165,19 @@ export class PrismaMembershipsRepository implements MembershipsRepository {
   private mapMembership(record: MembershipDatabaseRecord): MembershipRecord {
     return {
       ...record,
+      personId: this.requirePersonBackedMembership(record.personId),
       status: this.mapStatus(record.status),
     };
+  }
+
+  // @newax/memberships only supports person-backed memberships; a
+  // service-account-backed CoreMembership (see ADR 0035) reaching this
+  // repository's read paths would be a caller bug.
+  private requirePersonBackedMembership(personId: string | null): string {
+    if (personId === null) {
+      throw new Error('This membership is a service-account identity, not a person-backed one.');
+    }
+    return personId;
   }
 
   private mapStatus(status: string): MembershipStatus {
