@@ -107,3 +107,33 @@ export interface FindTenantExternalReferenceByKeyRecordInput {
 export type FindTenantExternalReferenceByKeyResult =
   | { readonly status: 'found'; readonly externalReference: ExternalReferenceRecord }
   | { readonly status: 'not_found' };
+
+// Repoints an existing mapping's entityId (and optionally its metadata) at a
+// new underlying record. This is NOT a "relink instead of mutate" violation:
+// unlike CoreAddress/CoreContactMethod, a CoreExternalReference row is not a
+// shared/deduped canonical value referenced by multiple owners -- it is
+// already a private 1:1 mapping scoped to one tenant/organization/external
+// key, so updating it in place is safe. This exists because relink-not-mutate
+// updates on the underlying entity (e.g. a contact method whose value
+// changed) mint a new row id, and the external reference that named the old
+// id must follow it.
+export interface UpdateOrganizationExternalReferenceEntityInput {
+  readonly externalSystem: string;
+  readonly externalKey: string;
+  readonly entityId: string;
+  readonly metadata?: Record<string, unknown> | null;
+}
+
+export interface UpdateOrganizationExternalReferenceEntityRecordInput {
+  readonly tenantId: string;
+  readonly organizationId: string;
+  readonly externalSystem: string;
+  readonly externalKey: string;
+  readonly entityId: string;
+  readonly metadata?: Record<string, unknown> | null;
+}
+
+export type UpdateOrganizationExternalReferenceEntityResult =
+  | { readonly status: 'updated'; readonly externalReference: ExternalReferenceRecord }
+  | { readonly status: 'not_found' }
+  | { readonly status: 'organization_unavailable' };

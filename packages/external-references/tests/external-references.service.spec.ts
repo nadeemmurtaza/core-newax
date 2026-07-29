@@ -20,6 +20,8 @@ import type {
   RegisterOrganizationExternalReferenceRecordInput,
   RegisterOrganizationExternalReferenceResult,
   TenantExternalReferenceRequestContext,
+  UpdateOrganizationExternalReferenceEntityRecordInput,
+  UpdateOrganizationExternalReferenceEntityResult,
 } from '../src/types/external-reference';
 
 const ACTOR_ID = '00000000-0000-4000-8000-000000000001';
@@ -98,6 +100,11 @@ class FakeExternalReferenceRepository implements ExternalReferenceRepository {
     status: 'found',
     externalReference: record(),
   };
+  updateEntityInput: UpdateOrganizationExternalReferenceEntityRecordInput | null = null;
+  updateEntityResult: UpdateOrganizationExternalReferenceEntityResult = {
+    status: 'updated',
+    externalReference: record(),
+  };
 
   async registerOrganizationExternalReference(
     registerInput: RegisterOrganizationExternalReferenceRecordInput,
@@ -125,6 +132,13 @@ class FakeExternalReferenceRepository implements ExternalReferenceRepository {
   ): Promise<FindTenantExternalReferenceByKeyResult> {
     this.findByTenantKeyInput = findByTenantKeyInput;
     return this.findByTenantKeyResult;
+  }
+
+  async updateOrganizationExternalReferenceEntity(
+    updateEntityInput: UpdateOrganizationExternalReferenceEntityRecordInput,
+  ): Promise<UpdateOrganizationExternalReferenceEntityResult> {
+    this.updateEntityInput = updateEntityInput;
+    return this.updateEntityResult;
   }
 }
 
@@ -517,6 +531,85 @@ describe('ExternalReferencesService governance foundation', () => {
         }),
       ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_FORBIDDEN' });
       expect(repository.findByTenantKeyInput).toBeNull();
+    });
+  });
+
+  describe('updateCurrentOrganizationExternalReferenceEntity', () => {
+    it('repoints entityId and passes metadata through to the repository', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      const result = await service.updateCurrentOrganizationExternalReferenceEntity(
+        context(EXTERNAL_REFERENCE_PERMISSIONS.register),
+        {
+          externalSystem: 'legacy.sis',
+          externalKey: 'Student/External Key 42',
+          entityId: 'Student-Relinked-99',
+          metadata: { relinkedFrom: 'Student-42' },
+        },
+      );
+
+      expect(repository.updateEntityInput).toEqual({
+        tenantId: TENANT_ID,
+        organizationId: ORGANIZATION_ID,
+        externalSystem: 'legacy.sis',
+        externalKey: 'Student/External Key 42',
+        entityId: 'Student-Relinked-99',
+        metadata: { relinkedFrom: 'Student-42' },
+      });
+      expect(result.id).toBe(EXTERNAL_REFERENCE_ID);
+    });
+
+    it('maps a missing mapping to a not-found error', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.updateEntityResult = { status: 'not_found' };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.updateCurrentOrganizationExternalReferenceEntity(
+          context(EXTERNAL_REFERENCE_PERMISSIONS.register),
+          { externalSystem: 'legacy.sis', externalKey: 'missing', entityId: 'Student-1' },
+        ),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_NOT_FOUND' });
+    });
+
+    it('fails closed when the organization is unavailable', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.updateEntityResult = { status: 'organization_unavailable' };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.updateCurrentOrganizationExternalReferenceEntity(
+          context(EXTERNAL_REFERENCE_PERMISSIONS.register),
+          { externalSystem: 'legacy.sis', externalKey: 'x', entityId: 'Student-1' },
+        ),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_ORGANIZATION_UNAVAILABLE' });
+    });
+
+    it('requires the register permission', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.updateCurrentOrganizationExternalReferenceEntity(context(), {
+          externalSystem: 'legacy.sis',
+          externalKey: 'x',
+          entityId: 'Student-1',
+        }),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_FORBIDDEN' });
+      expect(repository.updateEntityInput).toBeNull();
     });
   });
 });

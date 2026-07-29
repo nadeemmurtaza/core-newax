@@ -198,4 +198,74 @@ describeWithDatabase('PrismaExternalReferencesRepository PostgreSQL integration'
       }),
     ).rejects.toThrow();
   });
+
+  it('repoints an external reference entityId and metadata in place', async () => {
+    const tenant = await prisma.coreTenant.create({ data: { name: name('Repoint Tenant') } });
+    tenantIds.push(tenant.id);
+    const organization = await prisma.coreOrganization.create({
+      data: {
+        tenantId: tenant.id,
+        legalName: name('Repoint Organization'),
+        displayName: name('Repoint Org'),
+        organizationType: 'company',
+      },
+    });
+    organizationIds.push(organization.id);
+
+    const actor = await prisma.coreUser.create({
+      data: {
+        person: {
+          create: { firstName: 'Repoint', lastName: name('Registrar') },
+        },
+        status: 'active',
+      },
+      include: { person: true },
+    });
+    userIds.push(actor.id);
+    if (actor.personId !== null) {
+      personIds.push(actor.personId);
+    }
+
+    const registered = await repository.registerOrganizationExternalReference({
+      actorUserId: actor.id,
+      tenantId: tenant.id,
+      organizationId: organization.id,
+      domainCode: 'marketing_leads',
+      entityType: 'organization_contact_method',
+      entityId: `Contact-${String(RUN_ID)}`,
+      externalSystem: 'lead_harvester',
+      externalKey: externalKey('repoint'),
+      metadata: { note: 'original' },
+    });
+    if (registered.status !== 'created') {
+      throw new Error('Expected the external reference to be created.');
+    }
+    externalReferenceIds.push(registered.externalReference.id);
+
+    const repointed = await repository.updateOrganizationExternalReferenceEntity({
+      tenantId: tenant.id,
+      organizationId: organization.id,
+      externalSystem: 'lead_harvester',
+      externalKey: externalKey('repoint'),
+      entityId: `Contact-Relinked-${String(RUN_ID)}`,
+      metadata: { note: 'relinked' },
+    });
+    expect(repointed.status).toBe('updated');
+    if (repointed.status !== 'updated') {
+      throw new Error('Expected the repoint to succeed.');
+    }
+    expect(repointed.externalReference.id).toBe(registered.externalReference.id);
+    expect(repointed.externalReference.entityId).toBe(`Contact-Relinked-${String(RUN_ID)}`);
+    expect(repointed.externalReference.metadata).toEqual({ note: 'relinked' });
+
+    await expect(
+      repository.updateOrganizationExternalReferenceEntity({
+        tenantId: tenant.id,
+        organizationId: organization.id,
+        externalSystem: 'lead_harvester',
+        externalKey: externalKey('missing-repoint'),
+        entityId: `Contact-Missing-${String(RUN_ID)}`,
+      }),
+    ).resolves.toEqual({ status: 'not_found' });
+  });
 });

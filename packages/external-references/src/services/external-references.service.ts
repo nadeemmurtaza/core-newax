@@ -18,6 +18,7 @@ import type {
   OrganizationExternalReferenceRequestContext,
   RegisterOrganizationExternalReferenceInput,
   TenantExternalReferenceRequestContext,
+  UpdateOrganizationExternalReferenceEntityInput,
 } from '../types/external-reference';
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -217,6 +218,49 @@ export class ExternalReferencesService {
       tenantId: record.tenantId,
       organizationId: record.organizationId,
     });
+  }
+
+  async updateCurrentOrganizationExternalReferenceEntity(
+    context: OrganizationExternalReferenceRequestContext,
+    input: UpdateOrganizationExternalReferenceEntityInput,
+  ): Promise<ExternalReferenceRecord> {
+    const trusted = this.requireOrganizationContext(
+      context,
+      EXTERNAL_REFERENCE_PERMISSIONS.register,
+    );
+    const result = await this.repository.updateOrganizationExternalReferenceEntity({
+      tenantId: trusted.tenantId,
+      organizationId: trusted.organizationId,
+      externalSystem: this.requireCode(input.externalSystem, 'externalSystem', 128),
+      externalKey: this.requireOpaqueIdentifier(
+        input.externalKey,
+        'externalKey',
+        255,
+        MAX_EXTERNAL_KEY_UTF8_BYTES,
+      ),
+      entityId: this.requireOpaqueIdentifier(
+        input.entityId,
+        'entityId',
+        128,
+        MAX_ENTITY_ID_UTF8_BYTES,
+      ),
+      metadata: input.metadata ?? null,
+    });
+
+    if (result.status === 'organization_unavailable') {
+      throw new ExternalReferenceModuleError(
+        'EXTERNAL_REFERENCE_ORGANIZATION_UNAVAILABLE',
+        'The organization is unavailable.',
+      );
+    }
+    if (result.status === 'not_found') {
+      throw new ExternalReferenceModuleError(
+        'EXTERNAL_REFERENCE_NOT_FOUND',
+        'The external reference is not registered for this organization.',
+      );
+    }
+
+    return this.requireExternalReferenceBoundary(result.externalReference, trusted);
   }
 
   private requireTenantContext(

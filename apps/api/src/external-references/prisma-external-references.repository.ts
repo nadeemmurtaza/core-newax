@@ -12,6 +12,8 @@ import type {
   ListOrganizationExternalReferencesResult,
   RegisterOrganizationExternalReferenceRecordInput,
   RegisterOrganizationExternalReferenceResult,
+  UpdateOrganizationExternalReferenceEntityRecordInput,
+  UpdateOrganizationExternalReferenceEntityResult,
 } from '@newax/external-references';
 
 import { PrismaService } from '../database/prisma.service';
@@ -237,5 +239,58 @@ export class PrismaExternalReferencesRepository implements ExternalReferenceRepo
       return { status: 'not_found' } as const;
     }
     return { status: 'found', externalReference: this.mapExternalReference(record) } as const;
+  }
+
+  async updateOrganizationExternalReferenceEntity(
+    input: UpdateOrganizationExternalReferenceEntityRecordInput,
+  ): Promise<UpdateOrganizationExternalReferenceEntityResult> {
+    return this.prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
+      const organization = await transaction.coreOrganization.findFirst({
+        where: {
+          id: input.organizationId,
+          tenantId: input.tenantId,
+          status: 'active',
+          deletedAt: null,
+          tenant: { is: { status: 'active', deletedAt: null } },
+        },
+        select: { id: true },
+      });
+      if (organization === null) {
+        return { status: 'organization_unavailable' } as const;
+      }
+
+      const existing = await transaction.coreExternalReference.findFirst({
+        where: {
+          tenantId: input.tenantId,
+          organizationId: input.organizationId,
+          externalSystem: input.externalSystem,
+          externalKey: input.externalKey,
+        },
+        select: { id: true },
+      });
+      if (existing === null) {
+        return { status: 'not_found' } as const;
+      }
+
+      const updated = await transaction.coreExternalReference.update({
+        where: { id: existing.id },
+        data: {
+          entityId: input.entityId,
+          ...(input.metadata === undefined
+            ? {}
+            : {
+                metadata:
+                  input.metadata === null
+                    ? Prisma.JsonNull
+                    : (input.metadata as Prisma.InputJsonValue),
+              }),
+        },
+      });
+
+      return {
+        status: 'updated',
+        externalReference: this.mapExternalReference(updated),
+      } as const;
+    });
   }
 }
