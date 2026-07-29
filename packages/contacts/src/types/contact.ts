@@ -212,3 +212,47 @@ export type CreatePersonContactResult =
   | {
       readonly status: 'person_unavailable';
     };
+
+// Full-replacement update, mirroring UpdateOrganizationContactInput: the
+// caller supplies the complete desired contact state. When contactValue/
+// contactType resolve to a different canonical CoreContactMethod than the
+// one contactId currently links to, this relinks and retires the old join
+// row rather than mutating the shared contact method's value in place.
+export interface UpdatePersonContactInput {
+  readonly personId: string;
+  readonly contactId: string;
+  readonly contactType: ContactType;
+  readonly contactValue: string;
+  readonly label?: string | null;
+  readonly isPrimary?: boolean;
+  readonly validFrom?: Date | null;
+  readonly validUntil?: Date | null;
+}
+
+export interface UpdatePersonContactRecordInput {
+  readonly personId: string;
+  readonly contactId: string;
+  readonly contactType: ContactType;
+  readonly contactValue: string;
+  readonly normalizedValue: string;
+  readonly label: string | null;
+  readonly isPrimary: boolean;
+  readonly validFrom: Date | null;
+  readonly validUntil: Date | null;
+}
+
+export type UpdatePersonContactResult =
+  | {
+      readonly status: 'updated';
+      readonly contact: PersonContactRecord;
+      readonly relinked: boolean;
+    }
+  | {
+      readonly status: 'conflict';
+    }
+  | {
+      readonly status: 'person_unavailable';
+    }
+  | {
+      readonly status: 'contact_unavailable';
+    };

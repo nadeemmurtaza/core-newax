@@ -9,13 +9,15 @@ export class LoggingContactEventPublisher implements ContactEventPublisher {
     this.logger.log({
       event: event.name,
       actorUserId: event.actorUserId,
-      ...(event.name === 'person_contact.created'
+      ...(event.name === 'person_contact.created' || event.name === 'person_contact.updated'
         ? { personId: event.personId }
         : { organizationId: event.organizationId }),
       contactId: event.contactId,
       contactMethodId: event.contactMethodId,
       contactType: event.contactType,
-      ...(event.name === 'contact.updated' ? { relinked: event.relinked } : {}),
+      ...(event.name === 'contact.updated' || event.name === 'person_contact.updated'
+        ? { relinked: event.relinked }
+        : {}),
       occurredAt: event.occurredAt.toISOString(),
     });
   }

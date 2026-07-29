@@ -16,6 +16,8 @@ import type {
   PersonContactRecord,
   UpdateOrganizationContactRecordInput,
   UpdateOrganizationContactResult,
+  UpdatePersonContactRecordInput,
+  UpdatePersonContactResult,
 } from '../src/types/contact';
 
 const USER_ID = '00000000-0000-4000-8000-000000000001';
@@ -72,6 +74,7 @@ class FakeContactsRepository implements ContactsRepository {
   updateInput: UpdateOrganizationContactRecordInput | null = null;
   listInput: ListOrganizationContactsRecordInput | null = null;
   createPersonInput: CreatePersonContactRecordInput | null = null;
+  updatePersonInput: UpdatePersonContactRecordInput | null = null;
   createResult: CreateOrganizationContactResult = { status: 'created', contact: record() };
   updateResult: UpdateOrganizationContactResult = {
     status: 'updated',
@@ -86,6 +89,11 @@ class FakeContactsRepository implements ContactsRepository {
   createPersonResult: CreatePersonContactResult = {
     status: 'created',
     contact: personRecord(),
+  };
+  updatePersonResult: UpdatePersonContactResult = {
+    status: 'updated',
+    contact: personRecord(),
+    relinked: false,
   };
 
   async createOrganizationContact(
@@ -114,6 +122,13 @@ class FakeContactsRepository implements ContactsRepository {
   ): Promise<CreatePersonContactResult> {
     this.createPersonInput = input;
     return this.createPersonResult;
+  }
+
+  async updatePersonContact(
+    input: UpdatePersonContactRecordInput,
+  ): Promise<UpdatePersonContactResult> {
+    this.updatePersonInput = input;
+    return this.updatePersonResult;
   }
 }
 
@@ -685,5 +700,131 @@ describe('ContactsService addCurrentPersonContact', () => {
         contactValue: 'hello@newax.co',
       }),
     ).rejects.toMatchObject({ code: 'CONTACT_INTEGRITY_FAILURE' });
+  });
+});
+
+describe('ContactsService updateCurrentPersonContact', () => {
+  it('requires explicit update permission', async () => {
+    const service = new ContactsService(
+      new FakeContactsRepository(),
+      new RecordingContactEventPublisher(),
+    );
+
+    await expect(
+      service.updateCurrentPersonContact(context(), {
+        personId: PERSON_ID,
+        contactId: PERSON_CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_FORBIDDEN' });
+  });
+
+  it('passes normalized fields through to the repository', async () => {
+    const repository = new FakeContactsRepository();
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await service.updateCurrentPersonContact(context(CONTACT_PERMISSIONS.update), {
+      personId: PERSON_ID,
+      contactId: PERSON_CONTACT_ID,
+      contactType: 'email',
+      contactValue: ' New@NEWAX.co ',
+      label: ' Sales ',
+      isPrimary: true,
+    });
+
+    expect(repository.updatePersonInput).toEqual({
+      personId: PERSON_ID,
+      contactId: PERSON_CONTACT_ID,
+      contactType: 'email',
+      contactValue: 'new@newax.co',
+      normalizedValue: 'new@newax.co',
+      label: 'Sales',
+      isPrimary: true,
+      validFrom: null,
+      validUntil: null,
+    });
+  });
+
+  it('publishes an update event carrying the relink flag', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updatePersonResult = {
+      status: 'updated',
+      contact: personRecord({
+        id: '00000000-0000-4000-8000-000000000099',
+        contactType: 'phone',
+        contactValue: '+923001234567',
+        normalizedValue: '+923001234567',
+      }),
+      relinked: true,
+    };
+    const publisher = new RecordingContactEventPublisher();
+    const service = new ContactsService(repository, publisher);
+
+    const contact = await service.updateCurrentPersonContact(context(CONTACT_PERMISSIONS.update), {
+      personId: PERSON_ID,
+      contactId: PERSON_CONTACT_ID,
+      contactType: 'phone',
+      contactValue: '+923001234567',
+    });
+
+    expect(contact.id).toBe('00000000-0000-4000-8000-000000000099');
+    expect(publisher.events).toEqual([
+      {
+        name: 'person_contact.updated',
+        actorUserId: USER_ID,
+        personId: PERSON_ID,
+        contactId: '00000000-0000-4000-8000-000000000099',
+        contactMethodId: PERSON_CONTACT_METHOD_ID,
+        contactType: 'phone',
+        relinked: true,
+        occurredAt: expect.any(Date),
+      },
+    ]);
+  });
+
+  it('maps a missing contact to a not-found error', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updatePersonResult = { status: 'contact_unavailable' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.updateCurrentPersonContact(context(CONTACT_PERMISSIONS.update), {
+        personId: PERSON_ID,
+        contactId: PERSON_CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_NOT_FOUND' });
+  });
+
+  it('maps a relink collision to a conflict', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updatePersonResult = { status: 'conflict' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.updateCurrentPersonContact(context(CONTACT_PERMISSIONS.update), {
+        personId: PERSON_ID,
+        contactId: PERSON_CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_CONFLICT' });
+  });
+
+  it('fails closed when the person is unavailable', async () => {
+    const repository = new FakeContactsRepository();
+    repository.updatePersonResult = { status: 'person_unavailable' };
+    const service = new ContactsService(repository, new RecordingContactEventPublisher());
+
+    await expect(
+      service.updateCurrentPersonContact(context(CONTACT_PERMISSIONS.update), {
+        personId: PERSON_ID,
+        contactId: PERSON_CONTACT_ID,
+        contactType: 'email',
+        contactValue: 'new@newax.co',
+      }),
+    ).rejects.toMatchObject({ code: 'CONTACT_PERSON_UNAVAILABLE' });
   });
 });

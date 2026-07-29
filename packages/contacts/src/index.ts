@@ -5,6 +5,7 @@ export type {
   ContactEventPublisher,
   ContactUpdatedEvent,
   PersonContactCreatedEvent,
+  PersonContactUpdatedEvent,
 } from './events/contact-event';
 export { ContactsModuleError, type ContactsErrorCode } from './errors/contacts-module-error';
 export { CONTACT_PERMISSIONS, type ContactPermission } from './permissions/contact-permissions';
@@ -30,4 +31,7 @@ export type {
   UpdateOrganizationContactInput,
   UpdateOrganizationContactRecordInput,
   UpdateOrganizationContactResult,
+  UpdatePersonContactInput,
+  UpdatePersonContactRecordInput,
+  UpdatePersonContactResult,
 } from './types/contact';

@@ -13,6 +13,8 @@ import type {
   PersonContactRecord,
   UpdateOrganizationContactRecordInput,
   UpdateOrganizationContactResult,
+  UpdatePersonContactRecordInput,
+  UpdatePersonContactResult,
 } from '@newax/contacts';
 
 import { PrismaService } from '../database/prisma.service';
@@ -367,6 +369,140 @@ export class PrismaContactsRepository implements ContactsRepository {
         });
 
         return { status: 'created', contact: this.mapPersonRecord(record) };
+      },
+    );
+  }
+
+  async updatePersonContact(
+    input: UpdatePersonContactRecordInput,
+  ): Promise<UpdatePersonContactResult> {
+    const lockKey = `contact-method|${input.contactType}|${input.normalizedValue}`;
+
+    return this.prisma.$transaction(
+      async (transaction: Prisma.TransactionClient): Promise<UpdatePersonContactResult> => {
+        await transaction.$executeRaw`
+          SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
+        `;
+
+        const person = await transaction.corePerson.findFirst({
+          where: {
+            id: input.personId,
+            status: 'active',
+            deletedAt: null,
+          },
+          select: { id: true },
+        });
+        if (person === null) {
+          return { status: 'person_unavailable' };
+        }
+
+        const existing = await transaction.corePersonContactMethod.findFirst({
+          where: {
+            id: input.contactId,
+            personId: input.personId,
+            status: 'active',
+          },
+          select: { id: true, contactMethodId: true },
+        });
+        if (existing === null) {
+          return { status: 'contact_unavailable' };
+        }
+
+        let contactMethod = await transaction.coreContactMethod.findFirst({
+          where: {
+            contactType: input.contactType,
+            normalizedValue: input.normalizedValue,
+          },
+        });
+        if (contactMethod === null) {
+          contactMethod = await transaction.coreContactMethod.create({
+            data: {
+              contactType: input.contactType,
+              contactValue: input.contactValue,
+              normalizedValue: input.normalizedValue,
+            },
+          });
+        }
+
+        if (contactMethod.id === existing.contactMethodId) {
+          // Same canonical value/type as before: label/isPrimary/validity
+          // live on this person's own join row, not on the shared contact
+          // method, so an in-place update here is safe.
+          if (input.isPrimary) {
+            await transaction.$executeRaw`
+              UPDATE core_person_contact_methods AS person_contact
+              SET is_primary = FALSE
+              FROM core_contact_methods AS contact_method
+              WHERE person_contact.contact_method_id = contact_method.id
+                AND person_contact.person_id = ${input.personId}::uuid
+                AND person_contact.status = 'active'
+                AND person_contact.is_primary = TRUE
+                AND person_contact.id != ${existing.id}::uuid
+                AND contact_method.contact_type = ${input.contactType}
+            `;
+          }
+
+          const updated = await transaction.corePersonContactMethod.update({
+            where: { id: existing.id },
+            data: {
+              label: input.label,
+              isPrimary: input.isPrimary,
+              validFrom: input.validFrom,
+              validUntil: input.validUntil,
+            },
+            include: { contactMethod: true },
+          });
+
+          return { status: 'updated', contact: this.mapPersonRecord(updated), relinked: false };
+        }
+
+        // Different canonical value/type: never mutate the shared contact
+        // method's own value -- other people or organizations may reference
+        // the same row. Retire the old join row and relink to the
+        // found-or-created canonical contact method instead.
+        const conflict = await transaction.corePersonContactMethod.findFirst({
+          where: {
+            personId: input.personId,
+            contactMethodId: contactMethod.id,
+          },
+          select: { id: true },
+        });
+        if (conflict !== null) {
+          return { status: 'conflict' };
+        }
+
+        if (input.isPrimary) {
+          await transaction.$executeRaw`
+            UPDATE core_person_contact_methods AS person_contact
+            SET is_primary = FALSE
+            FROM core_contact_methods AS contact_method
+            WHERE person_contact.contact_method_id = contact_method.id
+              AND person_contact.person_id = ${input.personId}::uuid
+              AND person_contact.status = 'active'
+              AND person_contact.is_primary = TRUE
+              AND contact_method.contact_type = ${input.contactType}
+          `;
+        }
+
+        await transaction.corePersonContactMethod.update({
+          where: { id: existing.id },
+          data: { status: 'removed' },
+        });
+
+        const created = await transaction.corePersonContactMethod.create({
+          data: {
+            personId: input.personId,
+            contactMethodId: contactMethod.id,
+            label: input.label,
+            isPrimary: input.isPrimary,
+            status: 'active',
+            validFrom: input.validFrom,
+            validUntil: input.validUntil,
+          },
+          include: { contactMethod: true },
+        });
+
+        return { status: 'updated', contact: this.mapPersonRecord(created), relinked: true };
       },
     );
   }

@@ -7,6 +7,8 @@ import type {
   ListOrganizationContactsResult,
   UpdateOrganizationContactRecordInput,
   UpdateOrganizationContactResult,
+  UpdatePersonContactRecordInput,
+  UpdatePersonContactResult,
 } from '../types/contact';
 
 export interface ContactsRepository {
@@ -20,4 +22,5 @@ export interface ContactsRepository {
     input: ListOrganizationContactsRecordInput,
   ): Promise<ListOrganizationContactsResult>;
   createPersonContact(input: CreatePersonContactRecordInput): Promise<CreatePersonContactResult>;
+  updatePersonContact(input: UpdatePersonContactRecordInput): Promise<UpdatePersonContactResult>;
 }

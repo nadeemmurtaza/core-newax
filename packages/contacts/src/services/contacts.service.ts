@@ -14,6 +14,7 @@ import type {
   PersonContact,
   PersonContactRecord,
   UpdateOrganizationContactInput,
+  UpdatePersonContactInput,
 } from '../types/contact';
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -203,6 +204,71 @@ export class ContactsService {
       contactId: contact.id,
       contactMethodId: contact.contactMethodId,
       contactType: contact.contactType,
+      occurredAt: new Date(),
+    });
+
+    return contact;
+  }
+
+  async updateCurrentPersonContact(
+    context: ContactsRequestContext,
+    input: UpdatePersonContactInput,
+  ): Promise<PersonContact> {
+    const trusted = this.requireContext(context, CONTACT_PERMISSIONS.update);
+    const personId = this.requireUuid(input.personId, 'personId', 'CONTACT_INVALID_INPUT');
+    const contactId = this.requireUuid(input.contactId, 'contactId', 'CONTACT_INVALID_INPUT');
+    const contactType = this.normalizeContactType(input.contactType);
+    const normalized = this.normalizeContactValue(contactType, input.contactValue);
+    const validFrom = this.normalizeDate(input.validFrom, 'validFrom');
+    const validUntil = this.normalizeDate(input.validUntil, 'validUntil');
+    this.validateDateRange(validFrom, validUntil);
+
+    const result = await this.repository.updatePersonContact({
+      personId,
+      contactId,
+      contactType,
+      contactValue: normalized.contactValue,
+      normalizedValue: normalized.normalizedValue,
+      label: this.normalizeNullableText(input.label, 'label', MAX_LABEL_LENGTH),
+      isPrimary: this.normalizeBoolean(input.isPrimary, 'isPrimary', false),
+      validFrom,
+      validUntil,
+    });
+
+    if (result.status === 'person_unavailable') {
+      throw new ContactsModuleError(
+        'CONTACT_PERSON_UNAVAILABLE',
+        'The person is unavailable for contact operations.',
+      );
+    }
+
+    if (result.status === 'contact_unavailable') {
+      throw new ContactsModuleError(
+        'CONTACT_NOT_FOUND',
+        'The contact is not available for the person.',
+      );
+    }
+
+    if (result.status === 'conflict') {
+      throw new ContactsModuleError(
+        'CONTACT_CONFLICT',
+        'The updated contact value is already assigned to the person.',
+        { contactType },
+      );
+    }
+
+    const contact = this.toPublicPersonContact(
+      this.requirePersonRecord(result.contact, personId, contactType),
+    );
+
+    await this.eventPublisher.publish({
+      name: 'person_contact.updated',
+      actorUserId: trusted.actorUserId,
+      personId: contact.personId,
+      contactId: contact.id,
+      contactMethodId: contact.contactMethodId,
+      contactType: contact.contactType,
+      relinked: result.relinked,
       occurredAt: new Date(),
     });
 

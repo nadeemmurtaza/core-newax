@@ -16,6 +16,7 @@ const UPDATE_NEW_EMAIL = `contacts-update-new-${Date.now()}@newax.test`;
 const UPDATE_CONFLICT_EMAIL = `contacts-update-conflict-${Date.now()}@newax.test`;
 const PERSON_EMAIL = `contacts-person-${Date.now()}@newax.test`;
 const PERSON_DUPLICATE_EMAIL = `contacts-person-dup-${Date.now()}@newax.test`;
+const PERSON_UPDATE_EMAIL = `contacts-person-update-${Date.now()}@newax.test`;
 
 function organizationName(suffix: string): string {
   return `Contacts Integration ${suffix} ${Date.now()}`;
@@ -37,6 +38,9 @@ describeWithDatabase('PrismaContactsRepository PostgreSQL integration', () => {
     UPDATE_CONFLICT_EMAIL,
     PERSON_EMAIL,
     PERSON_DUPLICATE_EMAIL,
+    PERSON_UPDATE_EMAIL,
+    '+923001234567',
+    '+923001234999',
   ];
 
   beforeAll(async () => {
@@ -445,5 +449,81 @@ describeWithDatabase('PrismaContactsRepository PostgreSQL integration', () => {
         validUntil: null,
       }),
     ).resolves.toEqual({ status: 'person_unavailable' });
+  });
+
+  it('relinks a person contact to a new value without mutating the shared contact method', async () => {
+    const person = await prisma.corePerson.create({
+      data: { firstName: 'Contacts', lastName: organizationName('Update Person') },
+    });
+    personIds.push(person.id);
+
+    const created = await repository.createPersonContact({
+      personId: person.id,
+      contactType: 'email',
+      contactValue: PERSON_UPDATE_EMAIL,
+      normalizedValue: PERSON_UPDATE_EMAIL,
+      label: 'Original',
+      isPrimary: true,
+      validFrom: null,
+      validUntil: null,
+    });
+    if (created.status !== 'created') {
+      throw new Error('Expected the person contact to be created.');
+    }
+
+    const relinked = await repository.updatePersonContact({
+      personId: person.id,
+      contactId: created.contact.id,
+      contactType: 'whatsapp',
+      contactValue: '+923001234999',
+      normalizedValue: '+923001234999',
+      label: 'Original',
+      isPrimary: true,
+      validFrom: null,
+      validUntil: null,
+    });
+    expect(relinked).toMatchObject({ status: 'updated', relinked: true });
+    if (relinked.status !== 'updated') {
+      throw new Error('Expected the relink update to succeed.');
+    }
+    expect(relinked.contact.id).not.toBe(created.contact.id);
+
+    const retiredLink = await prisma.corePersonContactMethod.findUniqueOrThrow({
+      where: { id: created.contact.id },
+    });
+    expect(retiredLink.status).toBe('removed');
+
+    const originalContactMethod = await prisma.coreContactMethod.findUniqueOrThrow({
+      where: { id: created.contact.contactMethodId },
+    });
+    expect(originalContactMethod.normalizedValue).toBe(PERSON_UPDATE_EMAIL);
+
+    await expect(
+      repository.updatePersonContact({
+        personId: '00000000-0000-4000-8000-000000000099',
+        contactId: relinked.contact.id,
+        contactType: 'whatsapp',
+        contactValue: '+923001234999',
+        normalizedValue: '+923001234999',
+        label: 'Original',
+        isPrimary: true,
+        validFrom: null,
+        validUntil: null,
+      }),
+    ).resolves.toEqual({ status: 'person_unavailable' });
+
+    await expect(
+      repository.updatePersonContact({
+        personId: person.id,
+        contactId: '00000000-0000-4000-8000-000000000099',
+        contactType: 'whatsapp',
+        contactValue: '+923001234999',
+        normalizedValue: '+923001234999',
+        label: 'Original',
+        isPrimary: true,
+        validFrom: null,
+        validUntil: null,
+      }),
+    ).resolves.toEqual({ status: 'contact_unavailable' });
   });
 });
