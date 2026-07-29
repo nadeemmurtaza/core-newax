@@ -60,7 +60,10 @@ export class PrismaExternalReferencesRepository implements ExternalReferenceRepo
           id: input.actorUserId,
           status: 'active',
           deletedAt: null,
-          person: { is: { status: 'active', deletedAt: null } },
+          OR: [
+            { person: { is: { status: 'active', deletedAt: null } } },
+            { serviceAccount: { is: { status: 'active', deletedAt: null } } },
+          ],
         },
         select: { id: true },
       });

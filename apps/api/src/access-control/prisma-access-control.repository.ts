@@ -92,7 +92,7 @@ export class PrismaAccessControlRepository implements AccessControlRepository {
 
     return this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient): Promise<AssignMembershipRoleResult> => {
-        await transaction.$queryRaw`
+        await transaction.$executeRaw`
           SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
         `;
 
@@ -339,7 +339,7 @@ export class PrismaAccessControlRepository implements AccessControlRepository {
   ): Promise<PermissionRegistrationResult> {
     return this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient): Promise<PermissionRegistrationResult> => {
-        await transaction.$queryRaw`
+        await transaction.$executeRaw`
           SELECT pg_advisory_xact_lock(hashtextextended(${input.code}, 0))
         `;
         const existing = await transaction.corePermission.findUnique({
@@ -421,7 +421,7 @@ export class PrismaAccessControlRepository implements AccessControlRepository {
 
     return this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient): Promise<CreateRoleResult> => {
-        await transaction.$queryRaw`
+        await transaction.$executeRaw`
           SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
         `;
         const existing = await transaction.coreRole.findFirst({

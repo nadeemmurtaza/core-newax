@@ -16,8 +16,11 @@
  * to have been run at least once so ../src/generated/prisma/client exists.
  */
 
+// This script is deliberately CommonJS (see header above).
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { PrismaClient } = require('../src/generated/prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 // Named for the data's owner (NEWAX's own market-intelligence dataset), not the
 // ingestion tool -- externalSystem/domainCode on each CoreExternalReference already
@@ -33,27 +36,68 @@ const SERVICE_ACCOUNT_DESCRIPTION =
 const ROLE_CODE = 'lead-harvester-integration';
 const ROLE_NAME = 'Lead Harvester Integration';
 
-// NOTE: 'contacts.person_contacts.create' matches the permission code the
-// packages/contacts extension is expected to register for addCurrentPersonContact.
-// If that extension lands under a different code, update this list to match before
-// running the script (or re-run it after updating — it is idempotent and additive).
+// packages/contacts reuses the same contacts.create/contacts.update/contacts.view
+// codes for both organization and person contacts (addCurrentPersonContact /
+// updateCurrentPersonContact) -- there is no separate person_contacts.* code.
 const REQUIRED_PERMISSIONS = [
-  { code: 'organizations.create', moduleCode: 'organizations', resource: 'organizations', action: 'create' },
-  { code: 'organizations.update', moduleCode: 'organizations', resource: 'organizations', action: 'update' },
-  { code: 'organizations.view', moduleCode: 'organizations', resource: 'organizations', action: 'view' },
+  {
+    code: 'organizations.create',
+    moduleCode: 'organizations',
+    resource: 'organizations',
+    action: 'create',
+  },
+  {
+    code: 'organizations.update',
+    moduleCode: 'organizations',
+    resource: 'organizations',
+    action: 'update',
+  },
+  {
+    code: 'organizations.view',
+    moduleCode: 'organizations',
+    resource: 'organizations',
+    action: 'view',
+  },
   { code: 'addresses.create', moduleCode: 'addresses', resource: 'addresses', action: 'create' },
   { code: 'addresses.update', moduleCode: 'addresses', resource: 'addresses', action: 'update' },
   { code: 'addresses.view', moduleCode: 'addresses', resource: 'addresses', action: 'view' },
   { code: 'contacts.create', moduleCode: 'contacts', resource: 'contacts', action: 'create' },
   { code: 'contacts.update', moduleCode: 'contacts', resource: 'contacts', action: 'update' },
   { code: 'contacts.view', moduleCode: 'contacts', resource: 'contacts', action: 'view' },
-  { code: 'contacts.person_contacts.create', moduleCode: 'contacts', resource: 'person_contacts', action: 'create' },
   { code: 'people.create', moduleCode: 'people', resource: 'people', action: 'create' },
+  { code: 'people.update', moduleCode: 'people', resource: 'people', action: 'update' },
   { code: 'people.view', moduleCode: 'people', resource: 'people', action: 'view' },
-  { code: 'memberships.create', moduleCode: 'memberships', resource: 'memberships', action: 'create' },
+  {
+    code: 'memberships.create',
+    moduleCode: 'memberships',
+    resource: 'memberships',
+    action: 'create',
+  },
+  {
+    code: 'memberships.update',
+    moduleCode: 'memberships',
+    resource: 'memberships',
+    action: 'update',
+  },
   { code: 'memberships.view', moduleCode: 'memberships', resource: 'memberships', action: 'view' },
-  { code: 'external_references.register', moduleCode: 'external_references', resource: 'external_references', action: 'register' },
-  { code: 'external_references.view', moduleCode: 'external_references', resource: 'external_references', action: 'view' },
+  {
+    code: 'external_references.register',
+    moduleCode: 'external_references',
+    resource: 'external_references',
+    action: 'register',
+  },
+  {
+    code: 'external_references.view',
+    moduleCode: 'external_references',
+    resource: 'external_references',
+    action: 'view',
+  },
+  {
+    code: 'lead_harvester_sync.ingest',
+    moduleCode: 'lead_harvester_sync',
+    resource: 'lead_harvester_sync',
+    action: 'ingest',
+  },
 ];
 
 async function main() {
@@ -75,7 +119,7 @@ async function main() {
       const systemOrganization = await findOrCreateSystemOrganization(tx, tenant.id);
       const { serviceAccount, user } = await findOrCreateServiceAccount(tx, tenant.id);
       const permissions = await findOrCreatePermissions(tx);
-      const role = await findOrCreateRole(tx);
+      const role = await findOrCreateRole(tx, systemOrganization.id);
       await findOrCreateRolePermissions(tx, role.id, permissions);
       const membership = await findOrCreateMembership(tx, serviceAccount.id, systemOrganization.id);
       await findOrCreateMembershipRole(tx, membership.id, role.id);
@@ -179,23 +223,32 @@ async function findOrCreatePermissions(tx) {
   return permissions;
 }
 
-async function findOrCreateRole(tx) {
+// PermissionEvaluator.evaluateMembershipPermissions only resolves grants
+// through roles where roleType === 'organization' and role.organizationId
+// matches the membership's own organizationId (packages/access-control's
+// Prisma repository query is scoped that way) -- a global roleType: 'system'
+// role with organizationId: null is never evaluated by any real code path.
+// So this role must live on the same umbrella system organization the
+// service account's own membership anchors to, exactly like any other
+// organization-scoped role.
+async function findOrCreateRole(tx, systemOrganizationId) {
   const existing = await tx.coreRole.findFirst({
-    where: { organizationId: null, code: ROLE_CODE },
+    where: { organizationId: systemOrganizationId, code: ROLE_CODE },
   });
   if (existing) {
     return existing;
   }
   return tx.coreRole.create({
     data: {
-      organizationId: null,
+      organizationId: systemOrganizationId,
       code: ROLE_CODE,
       name: ROLE_NAME,
       description:
-        'System role granting the Lead Harvester webhook integration exactly the ' +
+        'Role granting the Lead Harvester webhook integration exactly the ' +
         'permissions it needs to sync institutions, addresses, contacts, and people. ' +
-        'Not assignable to human memberships through the normal role UI.',
-      roleType: 'system',
+        "Assigned only to the integration's own service-account membership, not " +
+        'assignable to human memberships through the normal role UI.',
+      roleType: 'organization',
       status: 'active',
     },
   });

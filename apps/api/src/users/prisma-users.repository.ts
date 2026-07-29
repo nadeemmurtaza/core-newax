@@ -385,7 +385,7 @@ export class PrismaUsersRepository implements UsersRepository {
     lockKeys: readonly string[],
   ): Promise<void> {
     for (const lockKey of lockKeys) {
-      await transaction.$queryRaw`
+      await transaction.$executeRaw`
         SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
       `;
     }

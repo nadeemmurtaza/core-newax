@@ -40,7 +40,7 @@ export class PrismaMembershipsRepository implements MembershipsRepository {
 
     return this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient): Promise<CreateMembershipResult> => {
-        await transaction.$queryRaw`
+        await transaction.$executeRaw`
           SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
         `;
 
