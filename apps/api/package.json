@@ -10,8 +10,9 @@
     "pnpm": "11.11.0"
   },
   "scripts": {
+    "bootstrap:lead-harvester-sync": "node scripts/bootstrap-lead-harvester-sync.js",
     "build": "nest build",
-    "build:foundation": "pnpm --filter @newax/tenants build && pnpm --filter @newax/organizations build && pnpm --filter @newax/people build && pnpm --filter @newax/people-intake build && pnpm --filter @newax/contacts build && pnpm --filter @newax/addresses build && pnpm --filter @newax/objects build && pnpm --filter @newax/files build && pnpm --filter @newax/audit build && pnpm --filter @newax/external-references build && pnpm --filter @newax/memberships build && pnpm --filter @newax/access-control build && pnpm --filter @newax/users build && pnpm --filter @newax/auth build && pnpm --filter @newax/request-context build && pnpm --filter @newax/http-security build",
+    "build:foundation": "pnpm --filter @newax/tenants build && pnpm --filter @newax/organizations build && pnpm --filter @newax/people build && pnpm --filter @newax/people-intake build && pnpm --filter @newax/contacts build && pnpm --filter @newax/addresses build && pnpm --filter @newax/objects build && pnpm --filter @newax/files build && pnpm --filter @newax/audit build && pnpm --filter @newax/external-references build && pnpm --filter @newax/memberships build && pnpm --filter @newax/access-control build && pnpm --filter @newax/users build && pnpm --filter @newax/auth build && pnpm --filter @newax/request-context build && pnpm --filter @newax/http-security build && pnpm --filter @newax/lead-harvester-sync build",
     "db:format": "prisma format",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -46,6 +47,7 @@
     "@newax/external-references": "workspace:*",
     "@newax/files": "workspace:*",
     "@newax/http-security": "workspace:*",
+    "@newax/lead-harvester-sync": "workspace:*",
     "@newax/memberships": "workspace:*",
     "@newax/objects": "workspace:*",
     "@newax/organizations": "workspace:*",

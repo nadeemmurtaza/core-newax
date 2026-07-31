@@ -4,14 +4,20 @@ import { Inject, Injectable } from '@nestjs/common';
 import type {
   ExternalReferenceRecord,
   ExternalReferenceRepository,
+  FindOrganizationExternalReferenceByKeyRecordInput,
+  FindOrganizationExternalReferenceByKeyResult,
+  FindTenantExternalReferenceByKeyRecordInput,
+  FindTenantExternalReferenceByKeyResult,
   ListOrganizationExternalReferencesRecordInput,
   ListOrganizationExternalReferencesResult,
   RegisterOrganizationExternalReferenceRecordInput,
   RegisterOrganizationExternalReferenceResult,
+  UpdateOrganizationExternalReferenceEntityRecordInput,
+  UpdateOrganizationExternalReferenceEntityResult,
 } from '@newax/external-references';
 
 import { PrismaService } from '../database/prisma.service';
-import type { Prisma } from '../generated/prisma/client';
+import { Prisma } from '../generated/prisma/client';
 
 interface ExternalReferenceDatabaseRecord {
   readonly id: string;
@@ -22,6 +28,7 @@ interface ExternalReferenceDatabaseRecord {
   readonly entityId: string;
   readonly externalSystem: string;
   readonly externalKey: string;
+  readonly metadata: Prisma.JsonValue | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -53,7 +60,10 @@ export class PrismaExternalReferencesRepository implements ExternalReferenceRepo
           id: input.actorUserId,
           status: 'active',
           deletedAt: null,
-          person: { is: { status: 'active', deletedAt: null } },
+          OR: [
+            { person: { is: { status: 'active', deletedAt: null } } },
+            { serviceAccount: { is: { status: 'active', deletedAt: null } } },
+          ],
         },
         select: { id: true },
       });
@@ -96,6 +106,8 @@ export class PrismaExternalReferencesRepository implements ExternalReferenceRepo
           entityId: input.entityId,
           externalSystem: input.externalSystem,
           externalKey: input.externalKey,
+          metadata:
+            input.metadata === null ? Prisma.JsonNull : (input.metadata as Prisma.InputJsonValue),
         },
       });
 
@@ -172,8 +184,116 @@ export class PrismaExternalReferencesRepository implements ExternalReferenceRepo
       entityId: record.entityId,
       externalSystem: record.externalSystem,
       externalKey: record.externalKey,
+      metadata: this.asMetadataRecord(record.metadata),
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     };
+  }
+
+  private asMetadataRecord(value: Prisma.JsonValue | null): Record<string, unknown> | null {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+      return null;
+    }
+    return value as Record<string, unknown>;
+  }
+
+  async findOrganizationExternalReferenceByKey(
+    input: FindOrganizationExternalReferenceByKeyRecordInput,
+  ): Promise<FindOrganizationExternalReferenceByKeyResult> {
+    const organization = await this.prisma.coreOrganization.findFirst({
+      where: {
+        id: input.organizationId,
+        tenantId: input.tenantId,
+        status: 'active',
+        deletedAt: null,
+        tenant: { is: { status: 'active', deletedAt: null } },
+      },
+      select: { id: true },
+    });
+    if (organization === null) {
+      return { status: 'organization_unavailable' } as const;
+    }
+
+    const record = await this.prisma.coreExternalReference.findFirst({
+      where: {
+        tenantId: input.tenantId,
+        organizationId: input.organizationId,
+        externalSystem: input.externalSystem,
+        externalKey: input.externalKey,
+      },
+    });
+    if (record === null) {
+      return { status: 'not_found' } as const;
+    }
+    return { status: 'found', externalReference: this.mapExternalReference(record) } as const;
+  }
+
+  async findTenantExternalReferenceByKey(
+    input: FindTenantExternalReferenceByKeyRecordInput,
+  ): Promise<FindTenantExternalReferenceByKeyResult> {
+    const record = await this.prisma.coreExternalReference.findFirst({
+      where: {
+        tenantId: input.tenantId,
+        externalSystem: input.externalSystem,
+        externalKey: input.externalKey,
+      },
+    });
+    if (record === null) {
+      return { status: 'not_found' } as const;
+    }
+    return { status: 'found', externalReference: this.mapExternalReference(record) } as const;
+  }
+
+  async updateOrganizationExternalReferenceEntity(
+    input: UpdateOrganizationExternalReferenceEntityRecordInput,
+  ): Promise<UpdateOrganizationExternalReferenceEntityResult> {
+    return this.prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
+      const organization = await transaction.coreOrganization.findFirst({
+        where: {
+          id: input.organizationId,
+          tenantId: input.tenantId,
+          status: 'active',
+          deletedAt: null,
+          tenant: { is: { status: 'active', deletedAt: null } },
+        },
+        select: { id: true },
+      });
+      if (organization === null) {
+        return { status: 'organization_unavailable' } as const;
+      }
+
+      const existing = await transaction.coreExternalReference.findFirst({
+        where: {
+          tenantId: input.tenantId,
+          organizationId: input.organizationId,
+          externalSystem: input.externalSystem,
+          externalKey: input.externalKey,
+        },
+        select: { id: true },
+      });
+      if (existing === null) {
+        return { status: 'not_found' } as const;
+      }
+
+      const updated = await transaction.coreExternalReference.update({
+        where: { id: existing.id },
+        data: {
+          entityId: input.entityId,
+          ...(input.metadata === undefined
+            ? {}
+            : {
+                metadata:
+                  input.metadata === null
+                    ? Prisma.JsonNull
+                    : (input.metadata as Prisma.InputJsonValue),
+              }),
+        },
+      });
+
+      return {
+        status: 'updated',
+        externalReference: this.mapExternalReference(updated),
+      } as const;
+    });
   }
 }

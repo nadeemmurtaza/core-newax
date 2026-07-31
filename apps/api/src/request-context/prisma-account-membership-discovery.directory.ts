@@ -12,7 +12,12 @@ import type { Prisma } from '../generated/prisma/client';
 
 interface AccountMembershipDatabaseRecord {
   readonly id: string;
-  readonly personId: string;
+  // Nullable at the database level (a CoreMembership may instead be
+  // service-account-backed, see ADR 0035), but this query always filters by
+  // a specific personId, so every row returned here is guaranteed
+  // person-backed -- mapRecord() below still narrows explicitly rather than
+  // asserting, since asserting would hide a real bug if that ever changed.
+  readonly personId: string | null;
   readonly organizationId: string;
   readonly membershipType: string;
   readonly status: string;
@@ -86,6 +91,12 @@ export class PrismaAccountMembershipDiscoveryDirectory implements AccountMembers
   }
 
   private mapRecord(record: AccountMembershipDatabaseRecord): AccountMembershipCandidate {
+    if (record.personId === null) {
+      throw new Error(
+        'A membership returned for an account-membership lookup was service-account-backed, ' +
+          'not person-backed; this query should only ever match the requested personId.',
+      );
+    }
     return {
       membershipId: record.id,
       personId: record.personId,

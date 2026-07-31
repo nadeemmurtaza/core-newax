@@ -11,6 +11,8 @@ import type {
   ListOrganizationAddressesResult,
   OrganizationAddressRecord,
   OrganizationAddressRequestContext,
+  UpdateOrganizationAddressRecordInput,
+  UpdateOrganizationAddressResult,
 } from '../src/types/address';
 
 const TENANT_ID = '00000000-0000-4000-8000-000000000001';
@@ -53,12 +55,18 @@ class FakeAddressRepository implements AddressRepository {
     status: 'created',
     address: record(),
   };
+  updateResult: UpdateOrganizationAddressResult = {
+    status: 'updated',
+    address: record(),
+    relinked: false,
+  };
   listResult: ListOrganizationAddressesResult = {
     status: 'available',
     items: [record()],
     nextCursor: null,
   };
   createInput: CreateOrganizationAddressRecordInput | null = null;
+  updateInput: UpdateOrganizationAddressRecordInput | null = null;
   listInput: ListOrganizationAddressesRecordInput | null = null;
 
   async createOrganizationAddress(
@@ -66,6 +74,13 @@ class FakeAddressRepository implements AddressRepository {
   ): Promise<CreateOrganizationAddressResult> {
     this.createInput = input;
     return this.createResult;
+  }
+
+  async updateOrganizationAddress(
+    input: UpdateOrganizationAddressRecordInput,
+  ): Promise<UpdateOrganizationAddressResult> {
+    this.updateInput = input;
+    return this.updateResult;
   }
 
   async listOrganizationAddresses(
@@ -251,5 +266,133 @@ describe('AddressesService', () => {
         {},
       ),
     ).rejects.toMatchObject({ code: 'ADDRESS_INVALID_INPUT' });
+  });
+});
+
+describe('AddressesService updateCurrentOrganizationAddress', () => {
+  it('requires explicit update permission', async () => {
+    const test = fixture();
+
+    await expect(
+      test.service.updateCurrentOrganizationAddress(context(), {
+        organizationAddressId: LINK_ID,
+        addressType: 'office',
+        isPrimary: false,
+        line1: 'Office 9',
+        city: 'Islamabad',
+        countryCode: 'PK',
+      }),
+    ).rejects.toMatchObject({ code: 'ADDRESS_FORBIDDEN' });
+  });
+
+  it('normalizes fields and passes a canonical key through to the repository', async () => {
+    const test = fixture();
+
+    await test.service.updateCurrentOrganizationAddress(context(ADDRESS_PERMISSIONS.update), {
+      organizationAddressId: LINK_ID,
+      addressType: 'billing',
+      isPrimary: true,
+      line1: '  Office 9,   NEWAX Tower  ',
+      city: '  Islamabad ',
+      countryCode: ' pk ',
+    });
+
+    expect(test.repository.updateInput).toMatchObject({
+      tenantId: TENANT_ID,
+      organizationId: ORGANIZATION_ID,
+      organizationAddressId: LINK_ID,
+      addressType: 'billing',
+      isPrimary: true,
+      line1: 'Office 9, NEWAX Tower',
+      city: 'Islamabad',
+      countryCode: 'PK',
+    });
+    expect(test.repository.updateInput?.canonicalKey).toMatch(/^[0-9a-f]{64}$/u);
+  });
+
+  it('publishes an update event carrying the relink flag without exposing address text', async () => {
+    const test = fixture();
+    test.repository.updateResult = {
+      status: 'updated',
+      address: record({ id: '00000000-0000-4000-8000-000000000099' }),
+      relinked: true,
+    };
+
+    const address = await test.service.updateCurrentOrganizationAddress(
+      context(ADDRESS_PERMISSIONS.update),
+      {
+        organizationAddressId: LINK_ID,
+        addressType: 'office',
+        isPrimary: true,
+        line1: 'New Office',
+        city: 'Islamabad',
+        countryCode: 'PK',
+      },
+    );
+
+    expect(address.id).toBe('00000000-0000-4000-8000-000000000099');
+    expect(test.publisher.events).toEqual([
+      {
+        name: 'address.updated',
+        actorUserId: USER_ID,
+        tenantId: TENANT_ID,
+        organizationId: ORGANIZATION_ID,
+        organizationAddressId: '00000000-0000-4000-8000-000000000099',
+        addressId: ADDRESS_ID,
+        addressType: 'office',
+        isPrimary: true,
+        relinked: true,
+        occurredAt: expect.any(Date),
+      },
+    ]);
+    expect(JSON.stringify(test.publisher.events)).not.toContain('New Office');
+  });
+
+  it('maps a missing address link to a not-found error', async () => {
+    const test = fixture();
+    test.repository.updateResult = { status: 'address_unavailable' };
+
+    await expect(
+      test.service.updateCurrentOrganizationAddress(context(ADDRESS_PERMISSIONS.update), {
+        organizationAddressId: LINK_ID,
+        addressType: 'office',
+        isPrimary: false,
+        line1: 'Office 9',
+        city: 'Islamabad',
+        countryCode: 'PK',
+      }),
+    ).rejects.toMatchObject({ code: 'ADDRESS_NOT_FOUND' });
+  });
+
+  it('maps a relink collision to a conflict', async () => {
+    const test = fixture();
+    test.repository.updateResult = { status: 'conflict' };
+
+    await expect(
+      test.service.updateCurrentOrganizationAddress(context(ADDRESS_PERMISSIONS.update), {
+        organizationAddressId: LINK_ID,
+        addressType: 'office',
+        isPrimary: false,
+        line1: 'Office 9',
+        city: 'Islamabad',
+        countryCode: 'PK',
+      }),
+    ).rejects.toMatchObject({ code: 'ADDRESS_CONFLICT' });
+  });
+
+  it('fails closed when the current organization is unavailable', async () => {
+    const test = fixture();
+    test.repository.updateResult = { status: 'organization_unavailable' };
+
+    await expect(
+      test.service.updateCurrentOrganizationAddress(context(ADDRESS_PERMISSIONS.update), {
+        organizationAddressId: LINK_ID,
+        addressType: 'office',
+        isPrimary: false,
+        line1: 'Office 9',
+        city: 'Islamabad',
+        countryCode: 'PK',
+      }),
+    ).rejects.toMatchObject({ code: 'ADDRESS_ORGANIZATION_UNAVAILABLE' });
   });
 });

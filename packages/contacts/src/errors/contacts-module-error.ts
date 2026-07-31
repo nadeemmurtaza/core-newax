@@ -3,7 +3,9 @@ export type ContactsErrorCode =
   | 'CONTACT_FORBIDDEN'
   | 'CONTACT_INTEGRITY_FAILURE'
   | 'CONTACT_INVALID_INPUT'
-  | 'CONTACT_ORGANIZATION_UNAVAILABLE';
+  | 'CONTACT_NOT_FOUND'
+  | 'CONTACT_ORGANIZATION_UNAVAILABLE'
+  | 'CONTACT_PERSON_UNAVAILABLE';
 
 export class ContactsModuleError extends Error {
   readonly code: ContactsErrorCode;

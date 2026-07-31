@@ -12,7 +12,13 @@ export interface TrustedSessionRecord {
 
 export interface TrustedMembershipRecord {
   readonly id: string;
-  readonly personId: string;
+  // Nullable at the database level because a CoreMembership may instead be
+  // service-account-backed (see ADR 0035). The human-authentication flow in
+  // TrustedRequestContextService.resolveOrganizationContext() rejects such a
+  // membership before use: it requires personId to equal the authenticated
+  // session's (non-null) personId, which a service-account membership never
+  // does.
+  readonly personId: string | null;
   readonly tenantId: string;
   readonly tenantStatus: TrustedTenantStatus;
   readonly organizationId: string;

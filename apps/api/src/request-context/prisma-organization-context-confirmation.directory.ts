@@ -11,7 +11,11 @@ import { PrismaService } from '../database/prisma.service';
 
 interface OrganizationContextDatabaseRecord {
   readonly id: string;
-  readonly personId: string;
+  // Nullable at the database level (a CoreMembership may instead be
+  // service-account-backed, see ADR 0035), but this query's `person: { is: {
+  // ... } }` filter already excludes rows with no person relation --
+  // mapRecord() below still narrows explicitly rather than asserting.
+  readonly personId: string | null;
   readonly organizationId: string;
   readonly membershipType: string;
   readonly status: string;
@@ -76,6 +80,12 @@ export class PrismaOrganizationContextConfirmationDirectory implements Organizat
   private mapRecord(
     record: OrganizationContextDatabaseRecord,
   ): OrganizationContextConfirmationRecord {
+    if (record.personId === null) {
+      throw new Error(
+        'An organization-context membership lookup returned a service-account-backed ' +
+          'membership, not a person-backed one; this query should exclude those.',
+      );
+    }
     return {
       membershipId: record.id,
       personId: record.personId,

@@ -358,7 +358,7 @@ export class PrismaAuthenticationRepository implements AuthenticationRepository 
   }
 
   private async acquireLock(transaction: Prisma.TransactionClient, lockKey: string): Promise<void> {
-    await transaction.$queryRaw`
+    await transaction.$executeRaw`
       SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
     `;
   }

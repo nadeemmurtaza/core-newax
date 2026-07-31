@@ -86,7 +86,7 @@ export class PrismaPeopleRepository implements PeopleRepository {
 
     return this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient): Promise<CreatePersonIdentifierResult> => {
-        await transaction.$queryRaw`
+        await transaction.$executeRaw`
           SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
         `;
 

@@ -4,6 +4,7 @@ export type AddressErrorCode =
   | 'ADDRESS_FORBIDDEN'
   | 'ADDRESS_INTEGRITY_FAILURE'
   | 'ADDRESS_INVALID_INPUT'
+  | 'ADDRESS_NOT_FOUND'
   | 'ADDRESS_ORGANIZATION_UNAVAILABLE';
 
 export class AddressModuleError extends Error {

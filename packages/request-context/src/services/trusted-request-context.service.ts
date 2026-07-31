@@ -128,6 +128,13 @@ export class TrustedRequestContextService {
 
   private assertMembershipIntegrity(membership: TrustedMembershipRecord): void {
     this.requireTrustedUuid(membership.id, 'membership.id');
+    // Reached only after resolveOrganizationContext() has already confirmed
+    // membership.personId equals the authenticated session's non-null
+    // personId, so a null here is itself an integrity failure, not an
+    // expected service-account case.
+    if (membership.personId === null) {
+      throw this.integrityFailure('membership.personId must be a valid UUID.');
+    }
     this.requireTrustedUuid(membership.personId, 'membership.personId');
     this.requireTrustedUuid(membership.tenantId, 'membership.tenantId');
     this.requireTrustedUuid(membership.organizationId, 'membership.organizationId');

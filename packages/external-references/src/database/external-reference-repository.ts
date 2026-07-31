@@ -1,8 +1,14 @@
 import type {
+  FindOrganizationExternalReferenceByKeyRecordInput,
+  FindOrganizationExternalReferenceByKeyResult,
+  FindTenantExternalReferenceByKeyRecordInput,
+  FindTenantExternalReferenceByKeyResult,
   ListOrganizationExternalReferencesRecordInput,
   ListOrganizationExternalReferencesResult,
   RegisterOrganizationExternalReferenceRecordInput,
   RegisterOrganizationExternalReferenceResult,
+  UpdateOrganizationExternalReferenceEntityRecordInput,
+  UpdateOrganizationExternalReferenceEntityResult,
 } from '../types/external-reference';
 
 export interface ExternalReferenceRepository {
@@ -12,4 +18,13 @@ export interface ExternalReferenceRepository {
   listOrganizationExternalReferences(
     input: ListOrganizationExternalReferencesRecordInput,
   ): Promise<ListOrganizationExternalReferencesResult>;
+  findOrganizationExternalReferenceByKey(
+    input: FindOrganizationExternalReferenceByKeyRecordInput,
+  ): Promise<FindOrganizationExternalReferenceByKeyResult>;
+  findTenantExternalReferenceByKey(
+    input: FindTenantExternalReferenceByKeyRecordInput,
+  ): Promise<FindTenantExternalReferenceByKeyResult>;
+  updateOrganizationExternalReferenceEntity(
+    input: UpdateOrganizationExternalReferenceEntityRecordInput,
+  ): Promise<UpdateOrganizationExternalReferenceEntityResult>;
 }

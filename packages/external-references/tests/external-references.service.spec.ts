@@ -9,12 +9,19 @@ import { EXTERNAL_REFERENCE_PERMISSIONS } from '../src/permissions/external-refe
 import { ExternalReferencesService } from '../src/services/external-references.service';
 import type {
   ExternalReferenceRecord,
+  FindOrganizationExternalReferenceByKeyRecordInput,
+  FindOrganizationExternalReferenceByKeyResult,
+  FindTenantExternalReferenceByKeyRecordInput,
+  FindTenantExternalReferenceByKeyResult,
   ListOrganizationExternalReferencesRecordInput,
   ListOrganizationExternalReferencesResult,
   OrganizationExternalReferenceRequestContext,
   RegisterOrganizationExternalReferenceInput,
   RegisterOrganizationExternalReferenceRecordInput,
   RegisterOrganizationExternalReferenceResult,
+  TenantExternalReferenceRequestContext,
+  UpdateOrganizationExternalReferenceEntityRecordInput,
+  UpdateOrganizationExternalReferenceEntityResult,
 } from '../src/types/external-reference';
 
 const ACTOR_ID = '00000000-0000-4000-8000-000000000001';
@@ -29,6 +36,14 @@ function context(...permissions: string[]): OrganizationExternalReferenceRequest
     actorUserId: ACTOR_ID,
     tenantId: TENANT_ID,
     organizationId: ORGANIZATION_ID,
+    permissionCodes: new Set(permissions),
+  };
+}
+
+function tenantContext(...permissions: string[]): TenantExternalReferenceRequestContext {
+  return {
+    actorUserId: ACTOR_ID,
+    tenantId: TENANT_ID,
     permissionCodes: new Set(permissions),
   };
 }
@@ -56,6 +71,7 @@ function record(overrides: Partial<ExternalReferenceRecord> = {}): ExternalRefer
     entityId: 'Student-42',
     externalSystem: 'legacy.sis',
     externalKey: 'Student/External Key 42',
+    metadata: null,
     createdAt: new Date('2026-07-14T08:00:00.000Z'),
     updatedAt: new Date('2026-07-14T08:00:00.000Z'),
     ...overrides,
@@ -65,6 +81,8 @@ function record(overrides: Partial<ExternalReferenceRecord> = {}): ExternalRefer
 class FakeExternalReferenceRepository implements ExternalReferenceRepository {
   registerInput: RegisterOrganizationExternalReferenceRecordInput | null = null;
   listInput: ListOrganizationExternalReferencesRecordInput | null = null;
+  findByKeyInput: FindOrganizationExternalReferenceByKeyRecordInput | null = null;
+  findByTenantKeyInput: FindTenantExternalReferenceByKeyRecordInput | null = null;
   registerResult: RegisterOrganizationExternalReferenceResult = {
     status: 'created',
     externalReference: record(),
@@ -73,6 +91,19 @@ class FakeExternalReferenceRepository implements ExternalReferenceRepository {
     status: 'available',
     items: [record()],
     nextCursor: null,
+  };
+  findByKeyResult: FindOrganizationExternalReferenceByKeyResult = {
+    status: 'found',
+    externalReference: record(),
+  };
+  findByTenantKeyResult: FindTenantExternalReferenceByKeyResult = {
+    status: 'found',
+    externalReference: record(),
+  };
+  updateEntityInput: UpdateOrganizationExternalReferenceEntityRecordInput | null = null;
+  updateEntityResult: UpdateOrganizationExternalReferenceEntityResult = {
+    status: 'updated',
+    externalReference: record(),
   };
 
   async registerOrganizationExternalReference(
@@ -87,6 +118,27 @@ class FakeExternalReferenceRepository implements ExternalReferenceRepository {
   ): Promise<ListOrganizationExternalReferencesResult> {
     this.listInput = listInput;
     return this.listResult;
+  }
+
+  async findOrganizationExternalReferenceByKey(
+    findByKeyInput: FindOrganizationExternalReferenceByKeyRecordInput,
+  ): Promise<FindOrganizationExternalReferenceByKeyResult> {
+    this.findByKeyInput = findByKeyInput;
+    return this.findByKeyResult;
+  }
+
+  async findTenantExternalReferenceByKey(
+    findByTenantKeyInput: FindTenantExternalReferenceByKeyRecordInput,
+  ): Promise<FindTenantExternalReferenceByKeyResult> {
+    this.findByTenantKeyInput = findByTenantKeyInput;
+    return this.findByTenantKeyResult;
+  }
+
+  async updateOrganizationExternalReferenceEntity(
+    updateEntityInput: UpdateOrganizationExternalReferenceEntityRecordInput,
+  ): Promise<UpdateOrganizationExternalReferenceEntityResult> {
+    this.updateEntityInput = updateEntityInput;
+    return this.updateEntityResult;
   }
 }
 
@@ -122,6 +174,7 @@ describe('ExternalReferencesService governance foundation', () => {
       entityId: 'Student-42',
       externalSystem: 'legacy.sis',
       externalKey: 'Student/External Key 42',
+      metadata: null,
     });
     expect(externalReference).toEqual(record());
     expect(Object.isFrozen(externalReference)).toBe(true);
@@ -335,5 +388,228 @@ describe('ExternalReferencesService governance foundation', () => {
         context(EXTERNAL_REFERENCE_PERMISSIONS.view),
       ),
     ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_INTEGRITY_FAILURE' });
+  });
+
+  describe('findCurrentOrganizationExternalReferenceByKey', () => {
+    it('returns the mapping scoped to the current organization', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      const result = await service.findCurrentOrganizationExternalReferenceByKey(
+        context(EXTERNAL_REFERENCE_PERMISSIONS.view),
+        { externalSystem: ' LEGACY.SIS ', externalKey: 'Student/External Key 42' },
+      );
+
+      expect(repository.findByKeyInput).toEqual({
+        tenantId: TENANT_ID,
+        organizationId: ORGANIZATION_ID,
+        externalSystem: 'legacy.sis',
+        externalKey: 'Student/External Key 42',
+      });
+      expect(result).toEqual(record());
+    });
+
+    it('returns null when not found', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.findByKeyResult = { status: 'not_found' };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      const result = await service.findCurrentOrganizationExternalReferenceByKey(
+        context(EXTERNAL_REFERENCE_PERMISSIONS.view),
+        { externalSystem: 'legacy.sis', externalKey: 'missing' },
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('maps organization_unavailable', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.findByKeyResult = { status: 'organization_unavailable' };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.findCurrentOrganizationExternalReferenceByKey(
+          context(EXTERNAL_REFERENCE_PERMISSIONS.view),
+          { externalSystem: 'legacy.sis', externalKey: 'x' },
+        ),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_ORGANIZATION_UNAVAILABLE' });
+    });
+
+    it('requires the view permission', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.findCurrentOrganizationExternalReferenceByKey(context(), {
+          externalSystem: 'legacy.sis',
+          externalKey: 'x',
+        }),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_FORBIDDEN' });
+      expect(repository.findByKeyInput).toBeNull();
+    });
+  });
+
+  describe('findTenantExternalReferenceByKey', () => {
+    it('returns the mapping scoped only to the tenant, without requiring an organizationId', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      const result = await service.findTenantExternalReferenceByKey(
+        tenantContext(EXTERNAL_REFERENCE_PERMISSIONS.view),
+        { externalSystem: ' LEGACY.SIS ', externalKey: 'Student/External Key 42' },
+      );
+
+      expect(repository.findByTenantKeyInput).toEqual({
+        tenantId: TENANT_ID,
+        externalSystem: 'legacy.sis',
+        externalKey: 'Student/External Key 42',
+      });
+      expect(result).toEqual(record());
+    });
+
+    it('returns null when not found', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.findByTenantKeyResult = { status: 'not_found' };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      const result = await service.findTenantExternalReferenceByKey(
+        tenantContext(EXTERNAL_REFERENCE_PERMISSIONS.view),
+        { externalSystem: 'legacy.sis', externalKey: 'missing' },
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('rejects a mapping returned for a different tenant', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.findByTenantKeyResult = {
+        status: 'found',
+        externalReference: record({ tenantId: FOREIGN_TENANT_ID }),
+      };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.findTenantExternalReferenceByKey(
+          tenantContext(EXTERNAL_REFERENCE_PERMISSIONS.view),
+          { externalSystem: 'legacy.sis', externalKey: 'x' },
+        ),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_INTEGRITY_FAILURE' });
+    });
+
+    it('requires the view permission', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.findTenantExternalReferenceByKey(tenantContext(), {
+          externalSystem: 'legacy.sis',
+          externalKey: 'x',
+        }),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_FORBIDDEN' });
+      expect(repository.findByTenantKeyInput).toBeNull();
+    });
+  });
+
+  describe('updateCurrentOrganizationExternalReferenceEntity', () => {
+    it('repoints entityId and passes metadata through to the repository', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      const result = await service.updateCurrentOrganizationExternalReferenceEntity(
+        context(EXTERNAL_REFERENCE_PERMISSIONS.register),
+        {
+          externalSystem: 'legacy.sis',
+          externalKey: 'Student/External Key 42',
+          entityId: 'Student-Relinked-99',
+          metadata: { relinkedFrom: 'Student-42' },
+        },
+      );
+
+      expect(repository.updateEntityInput).toEqual({
+        tenantId: TENANT_ID,
+        organizationId: ORGANIZATION_ID,
+        externalSystem: 'legacy.sis',
+        externalKey: 'Student/External Key 42',
+        entityId: 'Student-Relinked-99',
+        metadata: { relinkedFrom: 'Student-42' },
+      });
+      expect(result.id).toBe(EXTERNAL_REFERENCE_ID);
+    });
+
+    it('maps a missing mapping to a not-found error', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.updateEntityResult = { status: 'not_found' };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.updateCurrentOrganizationExternalReferenceEntity(
+          context(EXTERNAL_REFERENCE_PERMISSIONS.register),
+          { externalSystem: 'legacy.sis', externalKey: 'missing', entityId: 'Student-1' },
+        ),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_NOT_FOUND' });
+    });
+
+    it('fails closed when the organization is unavailable', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      repository.updateEntityResult = { status: 'organization_unavailable' };
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.updateCurrentOrganizationExternalReferenceEntity(
+          context(EXTERNAL_REFERENCE_PERMISSIONS.register),
+          { externalSystem: 'legacy.sis', externalKey: 'x', entityId: 'Student-1' },
+        ),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_ORGANIZATION_UNAVAILABLE' });
+    });
+
+    it('requires the register permission', async () => {
+      const repository = new FakeExternalReferenceRepository();
+      const service = new ExternalReferencesService(
+        repository,
+        new RecordingExternalReferenceEventPublisher(),
+      );
+
+      await expect(
+        service.updateCurrentOrganizationExternalReferenceEntity(context(), {
+          externalSystem: 'legacy.sis',
+          externalKey: 'x',
+          entityId: 'Student-1',
+        }),
+      ).rejects.toMatchObject({ code: 'EXTERNAL_REFERENCE_FORBIDDEN' });
+      expect(repository.updateEntityInput).toBeNull();
+    });
   });
 });

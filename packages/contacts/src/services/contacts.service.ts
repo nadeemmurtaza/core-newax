@@ -4,12 +4,17 @@ import { ContactsModuleError } from '../errors/contacts-module-error';
 import { CONTACT_PERMISSIONS, type ContactPermission } from '../permissions/contact-permissions';
 import type {
   AddOrganizationContactInput,
+  AddPersonContactInput,
   ContactsRequestContext,
   ContactType,
   OrganizationContact,
   OrganizationContactListQuery,
   OrganizationContactPage,
   OrganizationContactRecord,
+  PersonContact,
+  PersonContactRecord,
+  UpdateOrganizationContactInput,
+  UpdatePersonContactInput,
 } from '../types/contact';
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -19,6 +24,7 @@ const MAX_LABEL_LENGTH = 64;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/u;
 const E164_PHONE_PATTERN = /^\+[1-9]\d{7,14}$/u;
+const TELEGRAM_HANDLE_PATTERN = /^[a-z][a-z0-9_]{4,31}$/u;
 
 interface NormalizedContactValue {
   readonly contactValue: string;
@@ -79,6 +85,190 @@ export class ContactsService {
       contactId: contact.id,
       contactMethodId: contact.contactMethodId,
       contactType: contact.contactType,
+      occurredAt: new Date(),
+    });
+
+    return contact;
+  }
+
+  async updateCurrentOrganizationContact(
+    context: ContactsRequestContext,
+    input: UpdateOrganizationContactInput,
+  ): Promise<OrganizationContact> {
+    const trusted = this.requireContext(context, CONTACT_PERMISSIONS.update);
+    const contactId = this.requireUuid(input.contactId, 'contactId', 'CONTACT_INVALID_INPUT');
+    const contactType = this.normalizeContactType(input.contactType);
+    const normalized = this.normalizeContactValue(contactType, input.contactValue);
+    const validFrom = this.normalizeDate(input.validFrom, 'validFrom');
+    const validUntil = this.normalizeDate(input.validUntil, 'validUntil');
+    this.validateDateRange(validFrom, validUntil);
+
+    const result = await this.repository.updateOrganizationContact({
+      organizationId: trusted.organizationId,
+      contactId,
+      contactType,
+      contactValue: normalized.contactValue,
+      normalizedValue: normalized.normalizedValue,
+      label: this.normalizeNullableText(input.label, 'label', MAX_LABEL_LENGTH),
+      isPrimary: this.normalizeBoolean(input.isPrimary, 'isPrimary', false),
+      validFrom,
+      validUntil,
+    });
+
+    if (result.status === 'organization_unavailable') {
+      throw new ContactsModuleError(
+        'CONTACT_ORGANIZATION_UNAVAILABLE',
+        'The current organization is unavailable for contact operations.',
+      );
+    }
+
+    if (result.status === 'contact_unavailable') {
+      throw new ContactsModuleError(
+        'CONTACT_NOT_FOUND',
+        'The contact is not available for the current organization.',
+      );
+    }
+
+    if (result.status === 'conflict') {
+      throw new ContactsModuleError(
+        'CONTACT_CONFLICT',
+        'The updated contact value is already assigned to the current organization.',
+        { contactType },
+      );
+    }
+
+    const contact = this.toPublicContact(
+      this.requireRecord(result.contact, trusted.organizationId, contactType),
+    );
+
+    await this.eventPublisher.publish({
+      name: 'contact.updated',
+      actorUserId: trusted.actorUserId,
+      organizationId: trusted.organizationId,
+      contactId: contact.id,
+      contactMethodId: contact.contactMethodId,
+      contactType: contact.contactType,
+      relinked: result.relinked,
+      occurredAt: new Date(),
+    });
+
+    return contact;
+  }
+
+  async addCurrentPersonContact(
+    context: ContactsRequestContext,
+    input: AddPersonContactInput,
+  ): Promise<PersonContact> {
+    const trusted = this.requireContext(context, CONTACT_PERMISSIONS.create);
+    const personId = this.requireUuid(input.personId, 'personId', 'CONTACT_INVALID_INPUT');
+    const contactType = this.normalizeContactType(input.contactType);
+    const normalized = this.normalizeContactValue(contactType, input.contactValue);
+    const validFrom = this.normalizeDate(input.validFrom, 'validFrom');
+    const validUntil = this.normalizeDate(input.validUntil, 'validUntil');
+    this.validateDateRange(validFrom, validUntil);
+
+    const result = await this.repository.createPersonContact({
+      personId,
+      contactType,
+      contactValue: normalized.contactValue,
+      normalizedValue: normalized.normalizedValue,
+      label: this.normalizeNullableText(input.label, 'label', MAX_LABEL_LENGTH),
+      isPrimary: this.normalizeBoolean(input.isPrimary, 'isPrimary', false),
+      validFrom,
+      validUntil,
+    });
+
+    if (result.status === 'person_unavailable') {
+      throw new ContactsModuleError(
+        'CONTACT_PERSON_UNAVAILABLE',
+        'The person is unavailable for contact operations.',
+      );
+    }
+
+    if (result.status === 'conflict') {
+      throw new ContactsModuleError(
+        'CONTACT_CONFLICT',
+        'The contact method is already assigned to the person.',
+        { contactType },
+      );
+    }
+
+    const contact = this.toPublicPersonContact(
+      this.requirePersonRecord(result.contact, personId, contactType),
+    );
+
+    await this.eventPublisher.publish({
+      name: 'person_contact.created',
+      actorUserId: trusted.actorUserId,
+      personId: contact.personId,
+      contactId: contact.id,
+      contactMethodId: contact.contactMethodId,
+      contactType: contact.contactType,
+      occurredAt: new Date(),
+    });
+
+    return contact;
+  }
+
+  async updateCurrentPersonContact(
+    context: ContactsRequestContext,
+    input: UpdatePersonContactInput,
+  ): Promise<PersonContact> {
+    const trusted = this.requireContext(context, CONTACT_PERMISSIONS.update);
+    const personId = this.requireUuid(input.personId, 'personId', 'CONTACT_INVALID_INPUT');
+    const contactId = this.requireUuid(input.contactId, 'contactId', 'CONTACT_INVALID_INPUT');
+    const contactType = this.normalizeContactType(input.contactType);
+    const normalized = this.normalizeContactValue(contactType, input.contactValue);
+    const validFrom = this.normalizeDate(input.validFrom, 'validFrom');
+    const validUntil = this.normalizeDate(input.validUntil, 'validUntil');
+    this.validateDateRange(validFrom, validUntil);
+
+    const result = await this.repository.updatePersonContact({
+      personId,
+      contactId,
+      contactType,
+      contactValue: normalized.contactValue,
+      normalizedValue: normalized.normalizedValue,
+      label: this.normalizeNullableText(input.label, 'label', MAX_LABEL_LENGTH),
+      isPrimary: this.normalizeBoolean(input.isPrimary, 'isPrimary', false),
+      validFrom,
+      validUntil,
+    });
+
+    if (result.status === 'person_unavailable') {
+      throw new ContactsModuleError(
+        'CONTACT_PERSON_UNAVAILABLE',
+        'The person is unavailable for contact operations.',
+      );
+    }
+
+    if (result.status === 'contact_unavailable') {
+      throw new ContactsModuleError(
+        'CONTACT_NOT_FOUND',
+        'The contact is not available for the person.',
+      );
+    }
+
+    if (result.status === 'conflict') {
+      throw new ContactsModuleError(
+        'CONTACT_CONFLICT',
+        'The updated contact value is already assigned to the person.',
+        { contactType },
+      );
+    }
+
+    const contact = this.toPublicPersonContact(
+      this.requirePersonRecord(result.contact, personId, contactType),
+    );
+
+    await this.eventPublisher.publish({
+      name: 'person_contact.updated',
+      actorUserId: trusted.actorUserId,
+      personId: contact.personId,
+      contactId: contact.id,
+      contactMethodId: contact.contactMethodId,
+      contactType: contact.contactType,
+      relinked: result.relinked,
       occurredAt: new Date(),
     });
 
@@ -175,13 +365,15 @@ export class ContactsService {
   }
 
   private normalizeContactType(value: unknown): ContactType {
-    if (value === 'email' || value === 'phone') {
+    if (value === 'email' || value === 'phone' || value === 'whatsapp' || value === 'telegram') {
       return value;
     }
 
-    throw new ContactsModuleError('CONTACT_INVALID_INPUT', 'contactType must be email or phone.', {
-      field: 'contactType',
-    });
+    throw new ContactsModuleError(
+      'CONTACT_INVALID_INPUT',
+      'contactType must be email, phone, whatsapp, or telegram.',
+      { field: 'contactType' },
+    );
   }
 
   private normalizeContactValue(contactType: ContactType, value: unknown): NormalizedContactValue {
@@ -212,11 +404,23 @@ export class ContactsService {
       return { contactValue: normalized, normalizedValue: normalized };
     }
 
-    const normalized = trimmed.replace(/[\s().-]+/gu, '');
-    if (!E164_PHONE_PATTERN.test(normalized)) {
+    if (contactType === 'phone' || contactType === 'whatsapp') {
+      const normalized = trimmed.replace(/[\s().-]+/gu, '');
+      if (!E164_PHONE_PATTERN.test(normalized)) {
+        throw new ContactsModuleError(
+          'CONTACT_INVALID_INPUT',
+          'Phone and WhatsApp contact values must use international E.164 format.',
+          { field: 'contactValue' },
+        );
+      }
+      return { contactValue: normalized, normalizedValue: normalized };
+    }
+
+    const normalized = trimmed.replace(/^@/u, '').toLowerCase();
+    if (!TELEGRAM_HANDLE_PATTERN.test(normalized)) {
       throw new ContactsModuleError(
         'CONTACT_INVALID_INPUT',
-        'Phone contact values must use international E.164 format.',
+        'Telegram contact values must be a 5-32 character handle of letters, numbers, or underscores.',
         { field: 'contactValue' },
       );
     }
@@ -383,6 +587,109 @@ export class ContactsService {
     });
   }
 
+  private requirePersonRecord(
+    record: PersonContactRecord,
+    personId: string,
+    expectedType?: ContactType,
+  ): PersonContactRecord {
+    const id = this.requireUuid(record.id, 'contact.id', 'CONTACT_INTEGRITY_FAILURE');
+    const recordPersonId = this.requireUuid(
+      record.personId,
+      'contact.personId',
+      'CONTACT_INTEGRITY_FAILURE',
+    );
+    const contactMethodId = this.requireUuid(
+      record.contactMethodId,
+      'contact.contactMethodId',
+      'CONTACT_INTEGRITY_FAILURE',
+    );
+
+    if (recordPersonId !== personId) {
+      throw new ContactsModuleError(
+        'CONTACT_INTEGRITY_FAILURE',
+        'The contacts repository returned a record outside the trusted person boundary.',
+      );
+    }
+    if (record.status !== 'active') {
+      throw new ContactsModuleError(
+        'CONTACT_INTEGRITY_FAILURE',
+        'The contacts repository returned an inactive contact record.',
+      );
+    }
+
+    const contactType = this.requireStoredContactType(record.contactType);
+    if (expectedType !== undefined && contactType !== expectedType) {
+      throw new ContactsModuleError(
+        'CONTACT_INTEGRITY_FAILURE',
+        'The contacts repository returned an unexpected contact type.',
+      );
+    }
+    const normalized = this.requireStoredContactValue(
+      contactType,
+      record.contactValue,
+      record.normalizedValue,
+    );
+    if (normalized.normalizedValue !== record.normalizedValue) {
+      throw new ContactsModuleError(
+        'CONTACT_INTEGRITY_FAILURE',
+        'The contacts repository returned inconsistent normalized contact data.',
+      );
+    }
+
+    if (typeof record.isPrimary !== 'boolean') {
+      throw new ContactsModuleError(
+        'CONTACT_INTEGRITY_FAILURE',
+        'The contacts repository returned invalid primary metadata.',
+      );
+    }
+    if (record.isVerified !== false || record.verifiedAt !== null) {
+      throw new ContactsModuleError(
+        'CONTACT_INTEGRITY_FAILURE',
+        'Person contact verification is unavailable until ownership and evidence are defined.',
+      );
+    }
+
+    const validFrom = this.requireOptionalStoredDate(record.validFrom, 'contact.validFrom');
+    const validUntil = this.requireOptionalStoredDate(record.validUntil, 'contact.validUntil');
+    this.validateStoredDateRange(validFrom, validUntil);
+    const createdAt = this.requireStoredDate(record.createdAt, 'contact.createdAt');
+
+    return {
+      id,
+      personId: recordPersonId,
+      contactMethodId,
+      contactType,
+      contactValue: normalized.contactValue,
+      normalizedValue: normalized.normalizedValue,
+      isVerified: false,
+      verifiedAt: null,
+      label: this.requireStoredNullableText(record.label, 'contact.label', MAX_LABEL_LENGTH),
+      isPrimary: record.isPrimary,
+      status: 'active',
+      validFrom,
+      validUntil,
+      createdAt,
+    };
+  }
+
+  private toPublicPersonContact(record: PersonContactRecord): PersonContact {
+    return Object.freeze({
+      id: record.id,
+      personId: record.personId,
+      contactMethodId: record.contactMethodId,
+      contactType: record.contactType,
+      contactValue: record.contactValue,
+      isVerified: record.isVerified,
+      verifiedAt: record.verifiedAt,
+      label: record.label,
+      isPrimary: record.isPrimary,
+      status: 'active',
+      validFrom: record.validFrom,
+      validUntil: record.validUntil,
+      createdAt: record.createdAt,
+    });
+  }
+
   private requireUuid(
     value: unknown,
     field: string,
@@ -399,7 +706,7 @@ export class ContactsService {
   }
 
   private requireStoredContactType(value: unknown): ContactType {
-    if (value === 'email' || value === 'phone') {
+    if (value === 'email' || value === 'phone' || value === 'whatsapp' || value === 'telegram') {
       return value;
     }
     throw new ContactsModuleError(
