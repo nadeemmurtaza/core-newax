@@ -71,7 +71,11 @@ describe('LeadHarvesterWebhookGuard', () => {
     const context = executionContext({
       headers: {
         'x-lead-harvester-timestamp': timestamp,
-        'x-lead-harvester-signature': sign(timestamp, body, 'a-completely-different-secret-32chars'),
+        'x-lead-harvester-signature': sign(
+          timestamp,
+          body,
+          'a-completely-different-secret-32chars',
+        ),
       },
       rawBody: Buffer.from(body),
     });

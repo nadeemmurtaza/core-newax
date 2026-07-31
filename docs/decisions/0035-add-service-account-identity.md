@@ -28,7 +28,7 @@ foreign keys to `CorePerson`. Satisfying them for a machine integration meant cr
 `CorePerson` row with placeholder human-shaped fields (`firstName`/`lastName`) to represent
 "the Lead Harvester sync service" — which is exactly what NEWAX's identity model says not to do:
 a person is a real human, and a machine integration must not be disguised as one. `core_people`
-existing as the *only* path to a `CoreUser`/`CoreMembership` was a gap surfaced by this being the
+existing as the _only_ path to a `CoreUser`/`CoreMembership` was a gap surfaced by this being the
 first machine-to-machine integration NEWAX Core has needed, not a deliberate prior decision.
 
 ## 5. Decision

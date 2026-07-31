@@ -213,15 +213,13 @@ describe('validateEnvironment', () => {
   });
 
   it('rejects an invalid LEAD_HARVESTER_TENANT_ID', () => {
-    expect(() =>
-      validateEnvironment({ LEAD_HARVESTER_TENANT_ID: 'not-a-uuid' }),
-    ).toThrow('LEAD_HARVESTER_TENANT_ID must be a valid UUID.');
+    expect(() => validateEnvironment({ LEAD_HARVESTER_TENANT_ID: 'not-a-uuid' })).toThrow(
+      'LEAD_HARVESTER_TENANT_ID must be a valid UUID.',
+    );
   });
 
   it('rejects a short LEAD_HARVESTER_WEBHOOK_SECRET', () => {
-    expect(() =>
-      validateEnvironment({ LEAD_HARVESTER_WEBHOOK_SECRET: 'too-short' }),
-    ).toThrow(
+    expect(() => validateEnvironment({ LEAD_HARVESTER_WEBHOOK_SECRET: 'too-short' })).toThrow(
       'LEAD_HARVESTER_WEBHOOK_SECRET must contain at least 32 characters.',
     );
   });
