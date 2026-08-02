@@ -290,3 +290,34 @@ It should help NEWAX:
 - Build with confidence
 
 The repository succeeds when NEWAX can build different client systems without rebuilding the same foundations, compromising ownership, or creating infrastructure that only its original author understands.
+
+## Planned Data Ingestion and Normalization Engine
+
+NEWAX Core is planned to provide one governed ingestion engine for data arriving from Harvester, Communicator, website forms, approved imports, partner APIs, enterprise modules, Connected Infrastructure, and future NEWAX systems.
+
+Source systems will send versioned source-native payloads through a standard integration envelope. Core will own durable intake, raw-data preservation, source schemas, adapters, normalization, candidate entities, identity resolution, provenance, field ownership, merge policy, and canonical Registry writes.
+
+The architecture deliberately separates:
+
+```text
+Raw observation
+→ Entity candidate
+→ Canonical entity
+→ Business roles and classifications
+→ Lead, customer, supplier, partner, competitor, or other relationship
+```
+
+An organization or person may exist in the Registry without being a lead. Lead qualification is a separate commercial interpretation and must not act as an admission gate for entity existence.
+
+Harvester will publish two independent automatic streams:
+
+1. Every accepted raw observation after durable local storage.
+2. Every new or materially changed canonical entity after Harvester resolution and validation.
+
+Both streams use durable event identity, payload hashing, retries, provenance, and reconciliation. Core performs final canonical formatting rather than forcing every source to duplicate Registry-specific transformation logic.
+
+Read the complete planned architecture:
+
+- [Data Ingestion and Normalization Engine](docs/architecture/data-ingestion-and-normalization-engine.md)
+
+The open source-specific Lead Harvester integration remains pending work. It should become the first adapter behind the common engine, not the permanent architecture for every future source.
