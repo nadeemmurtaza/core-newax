@@ -529,16 +529,16 @@ FORCE_REPLACE
 
 Examples:
 
-| Field | Typical source authority | Core authority |
-|---|---:|---:|
-| Public website | High | Manual override protected |
-| Observed domain | High | Manual override protected |
-| Legal name | Candidate until verified | Authoritative after verification |
-| Public phone | High | Manual correction protected |
-| Account owner | None | Exclusive |
-| Sales stage | None | Exclusive |
-| Internal notes | None | Exclusive |
-| Contract status | None | Exclusive |
+| Field           | Typical source authority |                   Core authority |
+| --------------- | -----------------------: | -------------------------------: |
+| Public website  |                     High |        Manual override protected |
+| Observed domain |                     High |        Manual override protected |
+| Legal name      | Candidate until verified | Authoritative after verification |
+| Public phone    |                     High |      Manual correction protected |
+| Account owner   |                     None |                        Exclusive |
+| Sales stage     |                     None |                        Exclusive |
+| Internal notes  |                     None |                        Exclusive |
+| Contract status |                     None |                        Exclusive |
 
 Incoming evidence may enrich Core without erasing trusted business context.
 
