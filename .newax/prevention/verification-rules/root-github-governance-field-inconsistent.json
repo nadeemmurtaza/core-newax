@@ -3,7 +3,7 @@
     "definition": {
       "category": "github-tool-operation",
       "kind": "required-evidence",
-      "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+      "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
       "required": [
         "exact-fix-commit",
         "reviewer",
@@ -12,7 +12,7 @@
       ],
       "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
     },
-    "digest": "3e4973f6e2050684db1f7ed1a83ae51c308fb3c829fcd47861e813c977b1dbb7",
+    "digest": "ce4380c9de785cc65e8bcea5174caaeddb6c4d1d791b564de6cb64c95e8d25c9",
     "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-VERIFICATION-RULE",
     "implementationRef": null,
     "owner": null,
@@ -31,10 +31,10 @@
           "assertion": "required-control-pack-matches-resolved-learning-evidence",
           "category": "github-tool-operation",
           "kind": "prevention-pack-current",
-          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "b7e9217dc15b7fddf38f707eed802663a2aa77f9b9b32d4eaa8f8eacbaf18ba4",
+        "digest": "cf9b8cce744a3fa9c4162e00a0a6edc2f78cdb33188711a7c9f1bd7884ed74a6",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CI-CHECK",
         "implementationRef": null,
         "owner": null,
@@ -48,11 +48,11 @@
       {
         "definition": {
           "category": "github-tool-operation",
-          "item": "Confirm this change follows the prevention control for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT: Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
-          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "item": "Confirm this change follows the prevention control for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT: Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
+          "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "d437ccd93c56422f666b2be4456e4c82c50bff87c79ebf866d84a900ba6b3c1c",
+        "digest": "6a9e107fcf632ae4c36fa9ce1aa714fb583178c406ba75d9ea0397b79928c765",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-PR-CHECKLIST",
         "implementationRef": null,
         "owner": null,
@@ -67,10 +67,10 @@
         "definition": {
           "category": "github-tool-operation",
           "item": "Verify evidence that ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT cannot recur through this change.",
-          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "0605696b2ca20d51e92541147b056f694b8e392aaca5749a69bae9361ccbf008",
+        "digest": "9f8b95e893ec28e3f7917330a63b58df385edfe0266f88b4957619ba67d50e1e",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-REVIEW-CHECKLIST",
         "implementationRef": null,
         "owner": null,
@@ -84,13 +84,13 @@
       {
         "definition": {
           "category": "github-tool-operation",
-          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
-          "rule": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
-          "successfulMethod": "Reconstruct the prevention pack from the trusted parser, engine, and renderer; commit all seven required controls; and use the final generated-control commit as the fix anchor.",
-          "unsuccessfulMethod": "Complete issue metadata and rerun governance while the prevention pack's generated source files are still absent."
+          "rule": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
+          "successfulMethod": "Create all outstanding occurrence records, regenerate one complete pack, and move the branch once to one commit containing every target file.",
+          "unsuccessfulMethod": "Update prevention-pack files through sequential contents commits that each trigger protected-base governance."
         },
-        "digest": "7916c4a00e57b5259e14d5c6d27a9b336bac3c93dd2958e111093321e037b151",
+        "digest": "56385a511ed41cd93eb74ae384010340ef05114b1880ead8a9dc3dfb195707fc",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CODING-STANDARD",
         "implementationRef": null,
         "owner": null,
@@ -105,7 +105,7 @@
         "definition": {
           "category": "github-tool-operation",
           "kind": "required-evidence",
-          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
           "required": [
             "exact-fix-commit",
             "reviewer",
@@ -114,7 +114,7 @@
           ],
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "3e4973f6e2050684db1f7ed1a83ae51c308fb3c829fcd47861e813c977b1dbb7",
+        "digest": "ce4380c9de785cc65e8bcea5174caaeddb6c4d1d791b564de6cb64c95e8d25c9",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-VERIFICATION-RULE",
         "implementationRef": null,
         "owner": null,
@@ -130,14 +130,14 @@
           "assertion": "a bounded machine predicate must be approved before enforcement",
           "category": "github-tool-operation",
           "kind": "review-required",
-          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
           "selector": {
             "category": "github-tool-operation",
             "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
           }
         },
-        "digest": "a938fc6e18d3866f6a5e7a763c5ee695a8a7e4bff187b4882adcac1cf5cb5b87",
+        "digest": "1f67657d9e42f1cb6e1832cb29233e47a63e5e37ae9c1390b62a9e2232071e4f",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-STATIC-ANALYSIS-RULE",
         "implementationRef": null,
         "owner": null,
@@ -154,11 +154,11 @@
           "arrange": "Reproduce the smallest evidence-backed precondition for the resolved mistake.",
           "assert": "Prove the original failure cannot recur and the intended behavior remains intact.",
           "category": "github-tool-operation",
-          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "lesson": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
           "title": "Regression for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "f03fe5373501f1d057d96df2e66c2428de86a795fc94992531819d86237a32f8",
+        "digest": "de81e96d5e4271b01c30fe99a6cc89c50bb0de7b9149684f1d873959f7383124",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-TEST-TEMPLATE",
         "implementationRef": null,
         "owner": null,
@@ -170,13 +170,13 @@
         "verificationRefs": []
       }
     ],
-    "digest": "2b727245e3f7dcd27648a46ac116a2a5b8aa852199717f4528646d68feb24dc3",
+    "digest": "31ea473b1d28b49ba3b7e306a1aa9005c28c3737561352c1ced648ce097aa726",
     "id": "PACK-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
     "ledgerEntry": "EL-0023",
     "lesson": {
-      "preventionControl": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
-      "successfulMethod": "Reconstruct the prevention pack from the trusted parser, engine, and renderer; commit all seven required controls; and use the final generated-control commit as the fix anchor.",
-      "unsuccessfulMethod": "Complete issue metadata and rerun governance while the prevention pack's generated source files are still absent."
+      "preventionControl": "Publish generated multi-file governance packs through one atomic Git tree commit after all occurrence records are complete.",
+      "successfulMethod": "Create all outstanding occurrence records, regenerate one complete pack, and move the branch once to one commit containing every target file.",
+      "unsuccessfulMethod": "Update prevention-pack files through sequential contents commits that each trigger protected-base governance."
     },
     "occurrences": [
       {
@@ -271,9 +271,93 @@
         "id": "PREV-EVENT-1744",
         "issueNumber": 1744,
         "resolvedAt": "2026-08-03T21:00:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:e2f887f203342cfd84ab85ee697f5163269789ef",
+          "file:.newax/prevention/pr-checklists/root-github-governance-field-inconsistent.md",
+          "log:30852443628:91815454538:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "e2f887f203342cfd84ab85ee697f5163269789ef",
+        "id": "PREV-EVENT-RUN-30852443628",
+        "issueNumber": 1746,
+        "resolvedAt": "2026-08-03T21:12:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:e2f887f203342cfd84ab85ee697f5163269789ef",
+          "file:.newax/prevention/review-checklists/root-github-governance-field-inconsistent.md",
+          "log:30852519679:91815674675:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "e2f887f203342cfd84ab85ee697f5163269789ef",
+        "id": "PREV-EVENT-RUN-30852519679",
+        "issueNumber": 1748,
+        "resolvedAt": "2026-08-03T21:13:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:e2f887f203342cfd84ab85ee697f5163269789ef",
+          "file:.newax/prevention/coding-standards/root-github-governance-field-inconsistent.md",
+          "log:30852612278:91815996084:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "e2f887f203342cfd84ab85ee697f5163269789ef",
+        "id": "PREV-EVENT-RUN-30852612278",
+        "issueNumber": 1749,
+        "resolvedAt": "2026-08-03T21:14:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:e2f887f203342cfd84ab85ee697f5163269789ef",
+          "file:.newax/prevention/test-templates/root-github-governance-field-inconsistent.md",
+          "log:30852685758:91816256979:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "e2f887f203342cfd84ab85ee697f5163269789ef",
+        "id": "PREV-EVENT-RUN-30852685758",
+        "issueNumber": 1750,
+        "resolvedAt": "2026-08-03T21:15:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:e2f887f203342cfd84ab85ee697f5163269789ef",
+          "file:.newax/prevention/ci/root-github-governance-field-inconsistent.json",
+          "log:30853014031:91817358648:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "e2f887f203342cfd84ab85ee697f5163269789ef",
+        "id": "PREV-EVENT-RUN-30853014031",
+        "issueNumber": 1751,
+        "resolvedAt": "2026-08-03T21:16:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:e2f887f203342cfd84ab85ee697f5163269789ef",
+          "file:.newax/prevention/verification-rules/root-github-governance-field-inconsistent.json",
+          "log:30853088304:91817608127:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "e2f887f203342cfd84ab85ee697f5163269789ef",
+        "id": "PREV-EVENT-RUN-30853088304",
+        "issueNumber": 1752,
+        "resolvedAt": "2026-08-03T21:17:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:e2f887f203342cfd84ab85ee697f5163269789ef",
+          "file:.newax/prevention/static-analysis/root-github-governance-field-inconsistent.json",
+          "log:30853164651:91817853850:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "e2f887f203342cfd84ab85ee697f5163269789ef",
+        "id": "PREV-EVENT-RUN-30853164651",
+        "issueNumber": 1753,
+        "resolvedAt": "2026-08-03T21:18:00Z"
       }
     ],
-    "revision": 7,
+    "revision": 14,
     "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
     "schemaVersion": 1
   },
