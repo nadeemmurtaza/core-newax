@@ -3,26 +3,26 @@ pack-id: PACK-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT
 root-cause-id: ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT
 control-id: PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CODING-STANDARD
 control-type: coding-standard
-revision: 6
+revision: 7
 state: generated
-digest: cf51a9dd0b68c00a429760dd834808abedc5f49fb391ad1791ec699eab7e3084
+digest: 7916c4a00e57b5259e14d5c6d27a9b336bac3c93dd2958e111093321e037b151
 -->
 # Coding Prevention Standard
 
 - Root cause: `ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT`
 - Ledger entry: `EL-0023`
 - State: `generated`
-- Revision: `6`
-- Source occurrences: `PREV-EVENT-1738`, `PREV-EVENT-1739`, `PREV-EVENT-1740`, `PREV-EVENT-1741`, `PREV-EVENT-1742`, `PREV-EVENT-1743`
+- Revision: `7`
+- Source occurrences: `PREV-EVENT-1738`, `PREV-EVENT-1739`, `PREV-EVENT-1740`, `PREV-EVENT-1741`, `PREV-EVENT-1742`, `PREV-EVENT-1743`, `PREV-EVENT-1744`
 
 ## Rule
 
-When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.
+Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.
 
 ## Avoid
 
-Correct only the immediately preceding issue while an additional failed reconciliation run is already outstanding.
+Complete issue metadata and rerun governance while the prevention pack's generated source files are still absent.
 
 ## Required method
 
-Record runs 1029 and 1030 together, give both complete prevention evidence, and link both in PR 1737 before the next run.
+Reconstruct the prevention pack from the trusted parser, engine, and renderer; commit all seven required controls; and use the final generated-control commit as the fix anchor.
