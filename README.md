@@ -290,3 +290,80 @@ It should help NEWAX:
 - Build with confidence
 
 The repository succeeds when NEWAX can build different client systems without rebuilding the same foundations, compromising ownership, or creating infrastructure that only its original author understands.
+
+## Planned Data Ingestion and Normalization Engine
+
+NEWAX Core is planned to provide one governed ingestion engine for data arriving from Harvester, Communicator, website forms, approved imports, partner APIs, enterprise modules, Connected Infrastructure, and future NEWAX systems.
+
+Source systems will send versioned source-native payloads through a standard integration envelope. Core will own durable intake, raw-data preservation, source schemas, adapters, normalization, candidate entities, identity resolution, provenance, field ownership, merge policy, and canonical Registry writes.
+
+The architecture deliberately separates:
+
+```text
+Raw observation
+→ Entity candidate
+→ Canonical entity
+→ Business roles and classifications
+→ Lead, customer, supplier, partner, competitor, or other relationship
+```
+
+An organization or person may exist in the Registry without being a lead. Lead qualification is a separate commercial interpretation and must not act as an admission gate for entity existence.
+
+Harvester may publish two independent automatic streams when its optional Core integration is enabled:
+
+1. Every accepted raw observation after durable local storage.
+2. Every new or materially changed canonical entity after Harvester resolution and validation.
+
+Both streams use durable event identity, payload hashing, retries, provenance, and reconciliation. Core performs final canonical formatting rather than forcing every source to duplicate Registry-specific transformation logic.
+
+Read the complete planned architecture:
+
+- [Data Ingestion and Normalization Engine](docs/architecture/data-ingestion-and-normalization-engine.md)
+
+The open source-specific Lead Harvester integration remains pending work. It should become the first adapter behind the common engine, not the permanent architecture for every future source.
+
+## Standalone Product Ecosystem Boundary
+
+Harvester and Communicator are standalone, resellable applications. Each application owns its database, authentication, tenant isolation, credentials, source schemas, mappings, normalization, synchronization, audit, backup, restore, and product-specific business model.
+
+NEWAX Core is an optional shared infrastructure layer for identity, relationships, provenance, field ownership, governance, source facets, integration routing, and controlled context. It must not be a hidden runtime dependency for either product.
+
+```text
+Harvester only
+Sources → Harvester → leads, dossiers, exports, APIs, or customer systems
+
+Communicator only
+Customer data → Communicator → groups, audiences, campaigns, conversations, and replies
+
+Harvester + Communicator
+Harvester publishing rule → direct adapter → Communicator mapping and normalization
+
+Full NEWAX deployment
+Harvester and Communicator → optional NEWAX Core identity and governance
+```
+
+The products never share private tables or database credentials. They communicate through versioned APIs, signed webhooks, durable events, commands, approved database connectors, files, queues, or object storage.
+
+The same source record may be formatted differently by each application:
+
+```text
+Harvester
+Observation, evidence, resolved lead entity, qualification, score, and dossier
+
+Communicator
+Communication profile, contact channel, group, audience, conversation, and engagement
+
+NEWAX Core
+Existence, canonical identity, relationships, provenance, and governed source facets
+```
+
+Core may store bounded source-owned facets and permanent external references, but it should not duplicate every Harvester dossier or Communicator transcript. Core downtime must create a recoverable integration backlog, not a Harvester or Communicator outage.
+
+Read:
+
+- [Standalone Product Ecosystem and Optional Core Integration](docs/architecture/standalone-product-ecosystem.md)
+- [Standalone Product Ecosystem Roadmap](docs/ROADMAP-STANDALONE-PRODUCT-ECOSYSTEM.md)
+
+### Locked rule
+
+> NEWAX Core strengthens connected products without taking away their independent operation, data ownership, formatting autonomy, or resale capability.
