@@ -45,28 +45,28 @@ These counts describe the current proposed Harvester registry. Core must treat t
 
 A bounded Core projection may contain:
 
-| Field | Core purpose |
-| --- | --- |
-| `tenant_id` | Tenant isolation |
-| `source_product` | Authoritative source identity, normally `HARVESTER` |
-| `source_installation_id` | Product-installation boundary |
-| `source_event_id` | Idempotent replay and provenance |
-| `source_entity_id` | Harvester organization or lead reference |
-| `core_organization_id` | Optional resolved Core organization reference |
-| `taxonomy_version` | Registry version used by Harvester |
-| `keyword_registry_version` | Keyword dataset version used by Harvester |
-| `sector_codes` | Bounded classification references |
-| `domain_codes` | Bounded classification references |
-| `activity_codes` | Bounded classification references |
-| `provider_offering_codes` | Services active in the Harvester assessment |
-| `keyword_profile_ids` | Reference-only profile identifiers |
-| `evidence_summary` | Redacted, bounded source explanation |
-| `confidence_dimensions` | Versioned Harvester confidence values |
-| `opportunity_codes` | Harvester-supported opportunity references |
-| `assessment_version` | Harvester policy version |
-| `assessed_at` | Assessment time |
-| `expires_at` | Optional refresh boundary |
-| `received_at` | Core intake time |
+| Field                      | Core purpose                                        |
+| -------------------------- | --------------------------------------------------- |
+| `tenant_id`                | Tenant isolation                                    |
+| `source_product`           | Authoritative source identity, normally `HARVESTER` |
+| `source_installation_id`   | Product-installation boundary                       |
+| `source_event_id`          | Idempotent replay and provenance                    |
+| `source_entity_id`         | Harvester organization or lead reference            |
+| `core_organization_id`     | Optional resolved Core organization reference       |
+| `taxonomy_version`         | Registry version used by Harvester                  |
+| `keyword_registry_version` | Keyword dataset version used by Harvester           |
+| `sector_codes`             | Bounded classification references                   |
+| `domain_codes`             | Bounded classification references                   |
+| `activity_codes`           | Bounded classification references                   |
+| `provider_offering_codes`  | Services active in the Harvester assessment         |
+| `keyword_profile_ids`      | Reference-only profile identifiers                  |
+| `evidence_summary`         | Redacted, bounded source explanation                |
+| `confidence_dimensions`    | Versioned Harvester confidence values               |
+| `opportunity_codes`        | Harvester-supported opportunity references          |
+| `assessment_version`       | Harvester policy version                            |
+| `assessed_at`              | Assessment time                                     |
+| `expires_at`               | Optional refresh boundary                           |
+| `received_at`              | Core intake time                                    |
 
 The projection may support governance, reporting, provenance, relationship resolution, or controlled context. It does not transfer decision ownership.
 
