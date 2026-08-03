@@ -4,10 +4,10 @@
       "assertion": "required-control-pack-matches-resolved-learning-evidence",
       "category": "github-tool-operation",
       "kind": "prevention-pack-current",
-      "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+      "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
       "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
     },
-    "digest": "0118d45f98a71e7d386263051cee51ab63f3f8aa8d2a7f3a99936456b691de04",
+    "digest": "b7e9217dc15b7fddf38f707eed802663a2aa77f9b9b32d4eaa8f8eacbaf18ba4",
     "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CI-CHECK",
     "implementationRef": null,
     "owner": null,
@@ -26,10 +26,10 @@
           "assertion": "required-control-pack-matches-resolved-learning-evidence",
           "category": "github-tool-operation",
           "kind": "prevention-pack-current",
-          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "0118d45f98a71e7d386263051cee51ab63f3f8aa8d2a7f3a99936456b691de04",
+        "digest": "b7e9217dc15b7fddf38f707eed802663a2aa77f9b9b32d4eaa8f8eacbaf18ba4",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CI-CHECK",
         "implementationRef": null,
         "owner": null,
@@ -43,11 +43,11 @@
       {
         "definition": {
           "category": "github-tool-operation",
-          "item": "Confirm this change follows the prevention control for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT: When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
-          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "item": "Confirm this change follows the prevention control for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT: Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "5dcbbd78a510e50cfd960b3d17bdfee33a24631aec2bc1c877f24986f8c3f097",
+        "digest": "d437ccd93c56422f666b2be4456e4c82c50bff87c79ebf866d84a900ba6b3c1c",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-PR-CHECKLIST",
         "implementationRef": null,
         "owner": null,
@@ -62,10 +62,10 @@
         "definition": {
           "category": "github-tool-operation",
           "item": "Verify evidence that ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT cannot recur through this change.",
-          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "be95eddbba1988f8faf9b779b646d1b089d33d7421df1b589275b979462a35ec",
+        "digest": "0605696b2ca20d51e92541147b056f694b8e392aaca5749a69bae9361ccbf008",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-REVIEW-CHECKLIST",
         "implementationRef": null,
         "owner": null,
@@ -79,13 +79,13 @@
       {
         "definition": {
           "category": "github-tool-operation",
-          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
-          "rule": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
-          "successfulMethod": "Record runs 1029 and 1030 together, give both complete prevention evidence, and link both in PR 1737 before the next run.",
-          "unsuccessfulMethod": "Correct only the immediately preceding issue while an additional failed reconciliation run is already outstanding."
+          "rule": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+          "successfulMethod": "Reconstruct the prevention pack from the trusted parser, engine, and renderer; commit all seven required controls; and use the final generated-control commit as the fix anchor.",
+          "unsuccessfulMethod": "Complete issue metadata and rerun governance while the prevention pack's generated source files are still absent."
         },
-        "digest": "cf51a9dd0b68c00a429760dd834808abedc5f49fb391ad1791ec699eab7e3084",
+        "digest": "7916c4a00e57b5259e14d5c6d27a9b336bac3c93dd2958e111093321e037b151",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CODING-STANDARD",
         "implementationRef": null,
         "owner": null,
@@ -100,7 +100,7 @@
         "definition": {
           "category": "github-tool-operation",
           "kind": "required-evidence",
-          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
           "required": [
             "exact-fix-commit",
             "reviewer",
@@ -109,7 +109,7 @@
           ],
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "8259f251d36333152ce4d1a9b88ff52d21195bdd1e78ca83bf6483a1b5ee39e0",
+        "digest": "3e4973f6e2050684db1f7ed1a83ae51c308fb3c829fcd47861e813c977b1dbb7",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-VERIFICATION-RULE",
         "implementationRef": null,
         "owner": null,
@@ -125,14 +125,14 @@
           "assertion": "a bounded machine predicate must be approved before enforcement",
           "category": "github-tool-operation",
           "kind": "review-required",
-          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
           "selector": {
             "category": "github-tool-operation",
             "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
           }
         },
-        "digest": "ea87c4c92aab6819b0aa2db396d0f9a4c94a3cae7de51f046d33991d6a738d24",
+        "digest": "a938fc6e18d3866f6a5e7a763c5ee695a8a7e4bff187b4882adcac1cf5cb5b87",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-STATIC-ANALYSIS-RULE",
         "implementationRef": null,
         "owner": null,
@@ -149,11 +149,11 @@
           "arrange": "Reproduce the smallest evidence-backed precondition for the resolved mistake.",
           "assert": "Prove the original failure cannot recur and the intended behavior remains intact.",
           "category": "github-tool-operation",
-          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "lesson": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
           "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
           "title": "Regression for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
         },
-        "digest": "c5aca9f33b1266c350642e39d20e3b0a404df570302456f49b8f9a56a7b85bad",
+        "digest": "f03fe5373501f1d057d96df2e66c2428de86a795fc94992531819d86237a32f8",
         "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-TEST-TEMPLATE",
         "implementationRef": null,
         "owner": null,
@@ -165,13 +165,13 @@
         "verificationRefs": []
       }
     ],
-    "digest": "06a57252d514a8cd1842fd36641c3e80c2be925e93d77e7f99ec8a0d24911b30",
+    "digest": "2b727245e3f7dcd27648a46ac116a2a5b8aa852199717f4528646d68feb24dc3",
     "id": "PACK-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
     "ledgerEntry": "EL-0023",
     "lesson": {
-      "preventionControl": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
-      "successfulMethod": "Record runs 1029 and 1030 together, give both complete prevention evidence, and link both in PR 1737 before the next run.",
-      "unsuccessfulMethod": "Correct only the immediately preceding issue while an additional failed reconciliation run is already outstanding."
+      "preventionControl": "Generate and commit every prevention-pack target produced by the trusted prevention renderer whenever governance reports missing generated controls, then link the occurrence before rerunning.",
+      "successfulMethod": "Reconstruct the prevention pack from the trusted parser, engine, and renderer; commit all seven required controls; and use the final generated-control commit as the fix anchor.",
+      "unsuccessfulMethod": "Complete issue metadata and rerun governance while the prevention pack's generated source files are still absent."
     },
     "occurrences": [
       {
@@ -253,9 +253,22 @@
         "id": "PREV-EVENT-1743",
         "issueNumber": 1743,
         "resolvedAt": "2026-08-03T20:48:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:54e1ff9eb36eb2e841314d35b76329ac35ad3fb9",
+          "file:.newax/prevention/ci/root-github-governance-field-inconsistent.json",
+          "file:.newax/prevention/static-analysis/root-github-governance-field-inconsistent.json",
+          "file:.newax/prevention/verification-rules/root-github-governance-field-inconsistent.json",
+          "log:30851898313:91813641351:Verify prevention controls"
+        ],
+        "fixCommit": "54e1ff9eb36eb2e841314d35b76329ac35ad3fb9",
+        "id": "PREV-EVENT-1744",
+        "issueNumber": 1744,
+        "resolvedAt": "2026-08-03T21:00:00Z"
       }
     ],
-    "revision": 6,
+    "revision": 7,
     "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
     "schemaVersion": 1
   },
