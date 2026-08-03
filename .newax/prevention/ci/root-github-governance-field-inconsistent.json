@@ -1,0 +1,263 @@
+{
+  "control": {
+    "definition": {
+      "assertion": "required-control-pack-matches-resolved-learning-evidence",
+      "category": "github-tool-operation",
+      "kind": "prevention-pack-current",
+      "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+      "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
+    },
+    "digest": "0118d45f98a71e7d386263051cee51ab63f3f8aa8d2a7f3a99936456b691de04",
+    "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CI-CHECK",
+    "implementationRef": null,
+    "owner": null,
+    "reviewer": null,
+    "state": "candidate",
+    "supersession": null,
+    "targetPath": ".newax/prevention/ci/root-github-governance-field-inconsistent.json",
+    "type": "ci-check",
+    "verificationRefs": []
+  },
+  "pack": {
+    "category": "github-tool-operation",
+    "controls": [
+      {
+        "definition": {
+          "assertion": "required-control-pack-matches-resolved-learning-evidence",
+          "category": "github-tool-operation",
+          "kind": "prevention-pack-current",
+          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
+        },
+        "digest": "0118d45f98a71e7d386263051cee51ab63f3f8aa8d2a7f3a99936456b691de04",
+        "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CI-CHECK",
+        "implementationRef": null,
+        "owner": null,
+        "reviewer": null,
+        "state": "candidate",
+        "supersession": null,
+        "targetPath": ".newax/prevention/ci/root-github-governance-field-inconsistent.json",
+        "type": "ci-check",
+        "verificationRefs": []
+      },
+      {
+        "definition": {
+          "category": "github-tool-operation",
+          "item": "Confirm this change follows the prevention control for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT: When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
+        },
+        "digest": "5dcbbd78a510e50cfd960b3d17bdfee33a24631aec2bc1c877f24986f8c3f097",
+        "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-PR-CHECKLIST",
+        "implementationRef": null,
+        "owner": null,
+        "reviewer": null,
+        "state": "generated",
+        "supersession": null,
+        "targetPath": ".newax/prevention/pr-checklists/root-github-governance-field-inconsistent.md",
+        "type": "pr-checklist",
+        "verificationRefs": []
+      },
+      {
+        "definition": {
+          "category": "github-tool-operation",
+          "item": "Verify evidence that ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT cannot recur through this change.",
+          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
+        },
+        "digest": "be95eddbba1988f8faf9b779b646d1b089d33d7421df1b589275b979462a35ec",
+        "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-REVIEW-CHECKLIST",
+        "implementationRef": null,
+        "owner": null,
+        "reviewer": null,
+        "state": "generated",
+        "supersession": null,
+        "targetPath": ".newax/prevention/review-checklists/root-github-governance-field-inconsistent.md",
+        "type": "review-checklist",
+        "verificationRefs": []
+      },
+      {
+        "definition": {
+          "category": "github-tool-operation",
+          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
+          "rule": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "successfulMethod": "Record runs 1029 and 1030 together, give both complete prevention evidence, and link both in PR 1737 before the next run.",
+          "unsuccessfulMethod": "Correct only the immediately preceding issue while an additional failed reconciliation run is already outstanding."
+        },
+        "digest": "cf51a9dd0b68c00a429760dd834808abedc5f49fb391ad1791ec699eab7e3084",
+        "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-CODING-STANDARD",
+        "implementationRef": null,
+        "owner": null,
+        "reviewer": null,
+        "state": "generated",
+        "supersession": null,
+        "targetPath": ".newax/prevention/coding-standards/root-github-governance-field-inconsistent.md",
+        "type": "coding-standard",
+        "verificationRefs": []
+      },
+      {
+        "definition": {
+          "category": "github-tool-operation",
+          "kind": "required-evidence",
+          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "required": [
+            "exact-fix-commit",
+            "reviewer",
+            "regression-evidence",
+            "verification-evidence"
+          ],
+          "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
+        },
+        "digest": "8259f251d36333152ce4d1a9b88ff52d21195bdd1e78ca83bf6483a1b5ee39e0",
+        "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-VERIFICATION-RULE",
+        "implementationRef": null,
+        "owner": null,
+        "reviewer": null,
+        "state": "generated",
+        "supersession": null,
+        "targetPath": ".newax/prevention/verification-rules/root-github-governance-field-inconsistent.json",
+        "type": "verification-rule",
+        "verificationRefs": []
+      },
+      {
+        "definition": {
+          "assertion": "a bounded machine predicate must be approved before enforcement",
+          "category": "github-tool-operation",
+          "kind": "review-required",
+          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
+          "selector": {
+            "category": "github-tool-operation",
+            "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
+          }
+        },
+        "digest": "ea87c4c92aab6819b0aa2db396d0f9a4c94a3cae7de51f046d33991d6a738d24",
+        "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-STATIC-ANALYSIS-RULE",
+        "implementationRef": null,
+        "owner": null,
+        "reviewer": null,
+        "state": "candidate",
+        "supersession": null,
+        "targetPath": ".newax/prevention/static-analysis/root-github-governance-field-inconsistent.json",
+        "type": "static-analysis-rule",
+        "verificationRefs": []
+      },
+      {
+        "definition": {
+          "act": "Execute the corrected path.",
+          "arrange": "Reproduce the smallest evidence-backed precondition for the resolved mistake.",
+          "assert": "Prove the original failure cannot recur and the intended behavior remains intact.",
+          "category": "github-tool-operation",
+          "lesson": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+          "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
+          "title": "Regression for ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT"
+        },
+        "digest": "c5aca9f33b1266c350642e39d20e3b0a404df570302456f49b8f9a56a7b85bad",
+        "id": "PREV-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT-TEST-TEMPLATE",
+        "implementationRef": null,
+        "owner": null,
+        "reviewer": null,
+        "state": "generated",
+        "supersession": null,
+        "targetPath": ".newax/prevention/test-templates/root-github-governance-field-inconsistent.md",
+        "type": "test-template",
+        "verificationRefs": []
+      }
+    ],
+    "digest": "06a57252d514a8cd1842fd36641c3e80c2be925e93d77e7f99ec8a0d24911b30",
+    "id": "PACK-ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
+    "ledgerEntry": "EL-0023",
+    "lesson": {
+      "preventionControl": "When several governance runs have already failed, create complete occurrence records for every outstanding failed run before triggering the next reconciliation.",
+      "successfulMethod": "Record runs 1029 and 1030 together, give both complete prevention evidence, and link both in PR 1737 before the next run.",
+      "unsuccessfulMethod": "Correct only the immediately preceding issue while an additional failed reconciliation run is already outstanding."
+    },
+    "occurrences": [
+      {
+        "evidenceRefs": [
+          "commit:8fb43428dc0075177c92bb83eede45f776e4f6e4",
+          "issue:1738",
+          "log:30850366926:91808613435:Verify pull-request governance structure",
+          "run:30850669362:structural-validation-passed",
+          "run:30851271972:reconciliation-and-root-cause-governance-passed"
+        ],
+        "fixCommit": "8fb43428dc0075177c92bb83eede45f776e4f6e4",
+        "id": "PREV-EVENT-1738",
+        "issueNumber": 1738,
+        "resolvedAt": "2026-08-03T20:38:09Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:8fb43428dc0075177c92bb83eede45f776e4f6e4",
+          "issue:1739",
+          "log:30850669362:91809626870:Reconcile workflow failures and learning evidence",
+          "run:30850919595:structural-validation-passed",
+          "run:30851271972:reconciliation-and-root-cause-governance-passed"
+        ],
+        "fixCommit": "8fb43428dc0075177c92bb83eede45f776e4f6e4",
+        "id": "PREV-EVENT-1739",
+        "issueNumber": 1739,
+        "resolvedAt": "2026-08-03T20:38:38Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:8fb43428dc0075177c92bb83eede45f776e4f6e4",
+          "issue:1740",
+          "log:30850919595:91810455458:Reconcile workflow failures and learning evidence",
+          "run:30851271972:reconciliation-and-root-cause-governance-passed",
+          "run:30851271972:reconciliation-status-reconciled"
+        ],
+        "fixCommit": "8fb43428dc0075177c92bb83eede45f776e4f6e4",
+        "id": "PREV-EVENT-1740",
+        "issueNumber": 1740,
+        "resolvedAt": "2026-08-03T20:39:48Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:8fb43428dc0075177c92bb83eede45f776e4f6e4",
+          "issue:1738",
+          "issue:1739",
+          "issue:1740",
+          "issue:1741",
+          "log:30851271972:91811594500:Verify prevention controls",
+          "run:30851271972:reconciliation-and-root-cause-governance-passed"
+        ],
+        "fixCommit": "8fb43428dc0075177c92bb83eede45f776e4f6e4",
+        "id": "PREV-EVENT-1741",
+        "issueNumber": 1741,
+        "resolvedAt": "2026-08-03T20:45:12Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:8fb43428dc0075177c92bb83eede45f776e4f6e4",
+          "issue:1741",
+          "issue:1742",
+          "log:30851526892:91812436636:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "8fb43428dc0075177c92bb83eede45f776e4f6e4",
+        "id": "PREV-EVENT-1742",
+        "issueNumber": 1742,
+        "resolvedAt": "2026-08-03T20:47:00Z"
+      },
+      {
+        "evidenceRefs": [
+          "commit:8fb43428dc0075177c92bb83eede45f776e4f6e4",
+          "issue:1742",
+          "issue:1743",
+          "log:30851708891:91813025100:Reconcile workflow failures and learning evidence",
+          "pr:1737"
+        ],
+        "fixCommit": "8fb43428dc0075177c92bb83eede45f776e4f6e4",
+        "id": "PREV-EVENT-1743",
+        "issueNumber": 1743,
+        "resolvedAt": "2026-08-03T20:48:00Z"
+      }
+    ],
+    "revision": 6,
+    "rootCauseId": "ROOT-GITHUB-GOVERNANCE-FIELD-INCONSISTENT",
+    "schemaVersion": 1
+  },
+  "schemaVersion": 1
+}
