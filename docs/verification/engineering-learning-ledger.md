@@ -395,10 +395,34 @@ framework, error, or workflow.
   Verification Protocol.
 - Recurrence status: Must be checked in every final report.
 
+## EL-0037: Accepted Architecture Direction Without an Implementable Contract
+
+- Date: 2026-08-23
+- Pull request or task: Core integration platform architecture
+- Category: Architecture contract gap
+- Symptom: Every module declares `exposed_events` while no outbox, publisher, or
+  consumer exists; two project domains independently built divergent outbound
+  delivery, one of them addressed to a core receiver that was never built.
+- Root cause: An architectural direction was accepted and its interface declared
+  without building the mechanism or defining the boundary, so project domains
+  each improvised the missing piece and diverged.
+- Unsuccessful method: Accept a direction, declare its interface in a registry,
+  and defer both the mechanism and the boundary indefinitely.
+- Successful method: Pair an accepted direction with the mechanism or an explicit
+  deferral decision, a stated default rather than only a stated non-default, and
+  a contract published as an artefact; adopt a working shipped shape rather than
+  designing a competing one.
+- Prevention control: The project registry, integration class and conformance
+  level model, and onboarding checklist make a project's integration surface
+  declared and reviewable before implementation.
+- Verification evidence: Defined by the NEWAX Engineering Accuracy and
+  Verification Protocol.
+- Recurrence status: Must be checked in every final report.
+
 ## Next Entry
 
 Use the next identifier:
 
 ```text
-EL-0037
+EL-0038
 ```
