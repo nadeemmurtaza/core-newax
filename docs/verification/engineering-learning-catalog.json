@@ -465,6 +465,23 @@
       "unsuccessfulMethod": "Reference third-party actions by human-readable version tag or branch name and trust the publisher never to repoint that reference.",
       "successfulMethod": "Pin every uses: reference across all workflow files to its exact 40-character commit SHA, with a trailing comment noting the human-readable version.",
       "preventionControl": "Semgrep's github-actions-mutable-action-tag rule flags any future unpinned uses: reference in GitHub's Code Scanning UI."
+    },
+    {
+      "id": "ROOT-ARCHITECTURE-DIRECTION-WITHOUT-CONTRACT",
+      "ledgerEntry": "EL-0037",
+      "category": "planning-decision-quality",
+      "confidence": "high",
+      "deterministic": true,
+      "signatures": [
+        "exposed_events declared without publisher",
+        "accepted ADR without mechanism",
+        "project domains diverged",
+        "producer targets missing receiver"
+      ],
+      "rootCause": "An architectural direction was accepted and its interface declared in a registry without building the mechanism the direction requires and without defining the boundary governing its use, so project domains each independently implemented the missing capability and the implementations diverged.",
+      "unsuccessfulMethod": "Accept a direction, declare its interface in a registry, and defer both the mechanism and the boundary indefinitely, expecting project domains to wait rather than to improvise.",
+      "successfulMethod": "Pair an accepted direction with the mechanism or an explicit deferral decision, a stated default rather than only a stated non-default, and a contract published as an artefact; where a project already implemented the missing piece, adopt its working shape and version it deliberately rather than designing a competing one.",
+      "preventionControl": "The project registry with its integration class and conformance level model, gated by the project onboarding checklist, makes a project's integration surface declared and reviewable before implementation rather than improvised during it."
     }
   ]
 }
