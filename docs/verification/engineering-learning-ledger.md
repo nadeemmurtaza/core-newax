@@ -399,7 +399,7 @@ framework, error, or workflow.
 
 - Date: 2026-08-23
 - Pull request or task: Core integration platform architecture
-- Category: Architecture contract gap
+- Category: Planning and decision quality
 - Symptom: Every module declares `exposed_events` while no outbox, publisher, or
   consumer exists; two project domains independently built divergent outbound
   delivery, one of them addressed to a core receiver that was never built.

@@ -2,7 +2,7 @@
 
 ## Category
 
-`architecture-contract-gap`
+`planning-decision-quality`
 
 ## Root-cause ID
 
