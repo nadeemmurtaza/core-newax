@@ -18,10 +18,15 @@ Architecture documentation explains:
 
 ## Architecture Documents
 
-| Document                                                          | Purpose                                                                                                                                            |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Core Architecture](core-architecture.md)                         | Defines the modular-monolith-first approach, architectural layers, module boundaries, dependency direction, and long-term extraction strategy.     |
-| [Central Registry Architecture](central-registry-architecture.md) | Defines the shared People, Organizations, Users, Memberships, Roles, Permissions, Contacts, and Audit foundation used across future NEWAX domains. |
+| Document                                                                      | Purpose                                                                                                                                                       |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Core Architecture](core-architecture.md)                                     | Defines the modular-monolith-first approach, architectural layers, module boundaries, dependency direction, and long-term extraction strategy.                |
+| [Central Registry Architecture](central-registry-architecture.md)             | Defines the shared People, Organizations, Users, Memberships, Roles, Permissions, Contacts, and Audit foundation used across future NEWAX domains.            |
+| [Platform Data Topology](platform-data-topology.md)                           | Defines where project data lives, the database-per-project boundary, the rules that cross it, and the separation of logical boundary from physical placement. |
+| [Core Integration Platform](core-integration-platform.md)                     | Defines integration classes, conformance levels, the onboarding path, and the division between what Core provides and what a project builds.                  |
+| [Core Distribution Architecture](core-distribution-architecture.md)           | Defines how core data reaches project databases and how projects contribute records and telemetry back to the core.                                           |
+| [Growth and Measurement Architecture](growth-and-measurement-architecture.md) | Defines the Growth and Measurement domains, the consent gate, and server-side forwarding to external analytics and advertising destinations.                  |
+| [Core Convergence Map](core-convergence-map.md)                               | Records where project domains duplicate core concepts today and what happens to each duplicate table, in what order.                                          |
 
 Related governance:
 
