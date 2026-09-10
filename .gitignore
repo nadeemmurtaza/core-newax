@@ -4,6 +4,9 @@ scripts/backup.env
 *.env
 !*.env.example
 
+# Claude Code local overrides (holds N8N_API_KEY etc.)
+.claude/settings.local.json
+
 # Backup artifacts
 backups/
 *.dump

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "n8n": {
+      "type": "http",
+      "url": "https://n8n.newax.co/mcp-server/http",
+      "headers": {
+        "Authorization": "Bearer ${N8N_API_KEY}"
+      }
+    }
+  }
+}
