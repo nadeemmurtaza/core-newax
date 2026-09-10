@@ -19,25 +19,67 @@ own the approval gate and the final hand-off.
       │ parallel│
       ▼         ▼
  explorer   architect        stage 1 — recon + design
-  (haiku)    (opus)
       └────┬────┘
            ▼
    APPROVAL / PLAN            stage 2 — you present the plan, user approves
            ▼
-        coder                stage 3 — implement (sonnet)
+        coder                stage 3 — implement
            ▼
-       tester                stage 4 — tests + evidence (sonnet)
+       tester                stage 4 — tests + evidence
            ▼
       ┌────┴────┐ parallel
       ▼         ▼
- security   reviewer         stage 5 — audits (opus / sonnet)
+ security   reviewer         stage 5 — audits
  -auditor
       └────┬────┘
            ▼
-      final-qa               stage 6 — reconcile + verdict (opus)
+      final-qa               stage 6 — reconcile + verdict
            ▼
      FINAL REPORT → user
 ```
+
+Models are **not fixed** — each stage's `.claude/agents/*.md` frontmatter is only
+the default. The conductor picks the model per spawn (the `Agent` tool's `model`
+param), scaling to the change in front of it. See **Model selection** below.
+
+## Model selection (auto-shift)
+
+Pass an explicit `model` to every `Agent` spawn. Start from the stage default,
+then shift by the weight of the actual change. Re-score after the explorer's map
+lands — the first read is from the task text alone.
+
+**Score the change (0–5):**
+
+| Signal | +1 each |
+|---|---|
+| Scope | touches 3+ files / modules, or is cross-cutting |
+| Risk | migration, schema, infra, auth, tenant isolation, or data-destructive |
+| Ambiguity | requirements underspecified, or multiple defensible designs |
+| Novelty | new subsystem vs. following an existing pattern |
+| Blast radius | shared/core code that other features depend on |
+
+**Bands → model per stage:**
+
+| Stage | Light (0–1) | Standard (2–3) — default | Heavy (4–5) |
+|---|---|---|---|
+| explorer | haiku | haiku | haiku → sonnet if the area is large/unfamiliar |
+| architect | sonnet | opus | opus |
+| coder | sonnet | sonnet | opus |
+| tester | sonnet | sonnet | sonnet |
+| security-auditor | sonnet | opus | opus |
+| reviewer | sonnet | sonnet | opus |
+| final-qa | sonnet | opus | opus |
+
+**Rules:**
+
+- Floors: never run `security-auditor` or `final-qa` below sonnet, regardless of
+  score.
+- If `tester` bounces back to `coder`, bump `coder` one tier for the retry.
+- If the security or review pass returns a high-severity finding, run `final-qa`
+  at opus even if the band said sonnet.
+- Name the chosen model for each stage in the plan you present at the approval
+  gate, with the score and the one line of reasoning. The user can override any
+  of them there.
 
 ## Steps
 
@@ -46,8 +88,9 @@ own the approval gate and the final hand-off.
    map when you pass it. If they must be sequential (architect needs the map),
    run `explorer` first, then `architect` with the map.
 2. **Approval gate.** Present the architect's plan to the user with `ExitPlanMode`
-   (or plainly if not in plan mode). List the open decisions explicitly. Do not
-   proceed until the user approves. Fold their answers into the plan.
+   (or plainly if not in plan mode). List the open decisions explicitly, plus the
+   change score and the per-stage model picks. Do not proceed until the user
+   approves. Fold their answers into the plan.
 3. **Code.** Spawn `coder` with the approved plan verbatim. Relay its changelog.
 4. **Test.** Spawn `tester` with the coder's changelog + the architect's test
    strategy. If it reports failures, loop back to `coder` with the specifics
@@ -62,6 +105,8 @@ own the approval gate and the final hand-off.
 ## Rules
 
 - One stage at a time except the two explicit parallel pairs.
+- Every `Agent` spawn carries an explicit `model` — chosen per **Model
+  selection**, never left implicit.
 - Never skip the approval gate for a change that writes files, migrations, or
   touches infra.
 - Subagents don't share memory — pass forward everything the next stage needs.

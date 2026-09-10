@@ -35,6 +35,7 @@ RAG chunks) + n8n storage-service workflows.
 ```bash
 db/migrate.sh status   # show pending
 db/migrate.sh          # apply
+db/migrate.sh verify   # re-check checksums (read-only, exit 1 on drift)
 docker exec -i n8n-postgres psql -U n8n -d n8n -v ON_ERROR_STOP=1 -X -f - < db/tests/smoke.sql
 ```
 

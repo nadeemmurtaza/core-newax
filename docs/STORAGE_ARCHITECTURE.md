@@ -31,7 +31,7 @@
 | `asset_events` | Immutable lifecycle event log (10 event types) | 0001 |
 | `asset_processing_jobs` | Phase-7 pipeline: `queued→validating→scanning→extracting→chunking→embedding→indexing→ready` (`failed`/`cancelled` terminal) | 0004 |
 | `asset_chunks` | Phase-10 RAG: text chunks + `vector(1536)` embeddings, HNSW index, keyed by asset version | 0005 |
-| `schema_migrations` | Applied-migration ledger | migrate.sh |
+| `schema_migrations` | Applied-migration ledger (`db/migrate.sh verify` re-checks recorded checksums against disk, read-only) | migrate.sh |
 | `v_*` (12 views) | Phase-12 observability: bucket usage, growth, duplicates, temp expiry, processing backlog, event activity, one-row overview | 0006 |
 
 ### Key functions

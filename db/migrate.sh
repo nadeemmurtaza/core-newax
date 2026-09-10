@@ -16,6 +16,7 @@
 # Usage:
 #   db/migrate.sh            apply all pending migrations
 #   db/migrate.sh status     show applied / pending, do not change anything
+#   db/migrate.sh verify     re-check on-disk checksums vs recorded, read-only (exit 1 on drift)
 #
 set -euo pipefail
 
@@ -70,6 +71,54 @@ fi
 
 mode="${1:-apply}"
 pending=0
+
+if [[ "$mode" == "verify" ]]; then
+  # Single read-only pull of the ledger. Guard against set -e: a failed psql
+  # in a command substitution must not abort before we can report.
+  if ! db_rows="$(psql_val "SELECT version, checksum FROM storage.schema_migrations ORDER BY version")"; then
+    echo "verify: cannot read storage.schema_migrations" >&2
+    exit 2
+  fi
+
+  # on-disk version -> 1
+  declare -A disk_has=()
+  for f in "${files[@]}"; do
+    b="$(basename "$f")"; disk_has["${b%%_*}"]=1
+  done
+
+  ok=0; drift=0; missing=0; applied=""
+  while IFS='|' read -r version recorded; do
+    [[ -z "$version" ]] && continue
+    applied+=" $version "
+    if [[ -z "${disk_has[$version]:-}" ]]; then
+      echo "MISSING ${version}  recorded in DB, no file on disk"
+      missing=$((missing + 1)); continue
+    fi
+    if [[ "$recorded" == "adopted" ]]; then
+      echo "ok    ${version}  (adopted)"; ok=$((ok + 1)); continue
+    fi
+    path=""
+    for ff in "$MIG_DIR/${version}"_*.sql; do path="$ff"; done
+    disk_sum="$(sha256sum "$path" | cut -d' ' -f1)"
+    if [[ "$recorded" == "$disk_sum" ]]; then
+      echo "ok    ${version}"; ok=$((ok + 1))
+    else
+      echo "DRIFT ${version}  on-disk sha256 != recorded checksum"
+      drift=$((drift + 1))
+    fi
+  done <<< "$db_rows"
+
+  # Informational: disk files not yet applied. Does NOT affect exit code.
+  for f in "${files[@]}"; do
+    b="$(basename "$f")"; v="${b%%_*}"
+    [[ "$applied" == *" $v "* ]] || echo "PEND  ${v}  ${b#*_}"
+  done
+
+  echo "---"
+  echo "${ok} ok, ${drift} drift, ${missing} missing"
+  if (( drift > 0 || missing > 0 )); then exit 1; fi
+  exit 0
+fi
 
 for f in "${files[@]}"; do
   base="$(basename "$f")"

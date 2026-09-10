@@ -1,12 +1,26 @@
 # Storage build status
 
-Updated 2026-09-10.
+Updated 2026-09-11.
+
+## Verified live on this VPS (2026-09-11)
+
+- **Buckets** — all 5 exist (`aws s3 ls` via the RustFS root key).
+- **Versioning** — `Enabled` on `newax-images` `newax-videos` `newax-documents`
+  `newax-backups`; `Disabled` on `newax-temp` (target state). A double PUT on
+  `newax-images` returned two distinct `VersionId`s.
+- **`scripts/rustfs.env`** — created (gitignored, mode 600) with the root
+  credentials from the `rustfs` container and `RUSTFS_ENDPOINT=http://10.0.5.5:9000`.
+- **S3 round-trip** — put / get / list-versions / delete against RustFS all pass.
+- **Migrations** — `0001`–`0007` applied, `db/migrate.sh verify` → `7 ok, 0 drift,
+  0 missing`; `db/tests/smoke.sql` passes.
+
+Still open: the four items under "What needs a decision from you" below.
 
 ## Phase completion
 
 | Phase | Status | Notes |
 |---|---|---|
-| 1 – Storage contract (5 buckets) | ✅ done | Buckets exist; whitelist enforced as DB CHECK. |
+| 1 – Storage contract (5 buckets) | ✅ done | Buckets exist; whitelist enforced as DB CHECK. Versioning confirmed on the 4 permanent buckets, off on `newax-temp`. |
 | 2 – Asset registry (`storage.assets`) | ✅ done | Baseline `0001`. |
 | 3 – Object versions (`storage.asset_versions`) | ✅ done | Baseline `0001`. |
 | 4 – Object-key standard | ✅ done | `0002` — structural + asset-addressable enforcement, `build_object_key()`. See `OBJECT_KEY_STANDARD.md`. |
@@ -38,9 +52,11 @@ Updated 2026-09-10.
    (fits OpenAI `text-embedding-3-small` and many open 1536-dim models). If you'll
    use a different dimension, alter the column + rebuild `asset_chunks_embedding_hnsw`
    (recipe in `0005` header) before any rows exist.
-3. **n8n RustFS credential** — confirm the existing **"S3 account"** credential
-   (`id UOBSnxPxyEhgyZQH`) points at `http://rustfs:9000`, path-style, region
-   `us-east-1`. Then activate the 4 `STORAGE_*` workflows.
+3. **n8n RustFS credential** — the RustFS endpoint + root key are verified working
+   (see the section above). What remains is a UI check: open **n8n → Credentials →
+   "S3 account"** (`id UOBSnxPxyEhgyZQH`) and confirm endpoint `http://rustfs:9000`,
+   Force Path Style = on, region `us-east-1`. Then run each `STORAGE_*` workflow
+   once with a throwaway payload and activate them (`STORAGE_EXPIRE_TEMP` at least).
 4. **Dedicated storage credential** (Phase 9 hardening) — today everything uses
    the RustFS root key. Create a scoped service key for n8n when RustFS policy
    support is in place.
