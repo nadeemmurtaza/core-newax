@@ -1,0 +1,82 @@
+{
+  "name": "STORAGE_SOFT_DELETE",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "22222222-2222-4222-8222-222222222201",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT storage.mark_asset_deleted($1, $2, COALESCE($3,'n8n'), $4, $5) AS deleted;",
+        "options": {
+          "queryReplacement": "={{ [$json.asset_id, $json.tenant_id, $json.source ?? null, $json.actor_id ?? null, $json.reason ?? null] }}"
+        }
+      },
+      "id": "22222222-2222-4222-8222-222222222202",
+      "name": "Soft-delete asset (archives versions + event)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [240, 0],
+      "credentials": {
+        "postgres": { "id": "l0gPR9XCXO2YXsc6", "name": "Postgres account" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "cond-deleted-true",
+              "leftValue": "={{ $json.deleted }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "22222222-2222-4222-8222-222222222203",
+      "name": "Actually changed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "delete",
+        "bucketName": "={{ $('When called by another workflow').item.json.bucket }}",
+        "fileKey": "={{ $('When called by another workflow').item.json.object_key }}"
+      },
+      "id": "22222222-2222-4222-8222-222222222204",
+      "name": "Delete object in RustFS",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [720, -80],
+      "credentials": {
+        "s3": { "id": "UOBSnxPxyEhgyZQH", "name": "S3 account" }
+      },
+      "notes": "Only runs when the caller passes bucket + object_key. Omit them to keep the bytes and only soft-delete the registry row."
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [[{ "node": "Soft-delete asset (archives versions + event)", "type": "main", "index": 0 }]]
+    },
+    "Soft-delete asset (archives versions + event)": {
+      "main": [[{ "node": "Actually changed?", "type": "main", "index": 0 }]]
+    },
+    "Actually changed?": {
+      "main": [[{ "node": "Delete object in RustFS", "type": "main", "index": 0 }], []]
+    }
+  }
+}

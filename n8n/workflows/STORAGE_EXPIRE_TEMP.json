@@ -1,0 +1,77 @@
+{
+  "name": "STORAGE_EXPIRE_TEMP",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 15 }] }
+      },
+      "id": "44444444-4444-4444-8444-444444444401",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT asset_id, tenant_id, bucket, object_key, expires_at FROM storage.find_expired_temp_assets(500);",
+        "options": {}
+      },
+      "id": "44444444-4444-4444-8444-444444444402",
+      "name": "Find expired temp assets",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [240, 0],
+      "credentials": {
+        "postgres": { "id": "l0gPR9XCXO2YXsc6", "name": "Postgres account" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "delete",
+        "bucketName": "={{ $json.bucket }}",
+        "fileKey": "={{ $json.object_key }}"
+      },
+      "id": "44444444-4444-4444-8444-444444444403",
+      "name": "Delete object in RustFS",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [480, 0],
+      "credentials": {
+        "s3": { "id": "UOBSnxPxyEhgyZQH", "name": "S3 account" }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT storage.mark_asset_deleted($1, $2, 'lifecycle', NULL, 'temp-expired') AS deleted;",
+        "options": {
+          "queryReplacement": "={{ [$('Find expired temp assets').item.json.asset_id, $('Find expired temp assets').item.json.tenant_id] }}"
+        }
+      },
+      "id": "44444444-4444-4444-8444-444444444404",
+      "name": "Mark asset deleted",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [720, 0],
+      "credentials": {
+        "postgres": { "id": "l0gPR9XCXO2YXsc6", "name": "Postgres account" }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [[{ "node": "Find expired temp assets", "type": "main", "index": 0 }]]
+    },
+    "Find expired temp assets": {
+      "main": [[{ "node": "Delete object in RustFS", "type": "main", "index": 0 }]]
+    },
+    "Delete object in RustFS": {
+      "main": [[{ "node": "Mark asset deleted", "type": "main", "index": 0 }]]
+    }
+  }
+}

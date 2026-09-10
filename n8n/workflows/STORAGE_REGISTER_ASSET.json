@@ -1,0 +1,37 @@
+{
+  "name": "STORAGE_REGISTER_ASSET",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "11111111-1111-4111-8111-111111111101",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH new_asset AS (\n  INSERT INTO storage.assets (\n    tenant_id, organization_id, bucket, object_key, original_filename, display_name,\n    mime_type, file_extension, file_size_bytes, checksum_sha256, source_type, source_id,\n    storage_status, expires_at, metadata\n  ) VALUES (\n    $1, $2, $3, $4, $5, $6,\n    $7, $8, $9, $10, $11, $12,\n    COALESCE($13, 'active'), $14, COALESCE($15::jsonb, '{}'::jsonb)\n  )\n  RETURNING asset_id, tenant_id, organization_id, bucket, object_key\n), evt AS (\n  INSERT INTO storage.asset_events (asset_id, tenant_id, organization_id, event_type, event_source, actor_id, payload)\n  SELECT asset_id, tenant_id, organization_id, 'asset.created', 'n8n', $16,\n         jsonb_build_object('bucket', bucket, 'object_key', object_key)\n  FROM new_asset\n)\nSELECT asset_id, bucket, object_key FROM new_asset;",
+        "options": {
+          "queryReplacement": "={{ [$json.tenant_id, $json.organization_id ?? null, $json.bucket, $json.object_key, $json.original_filename ?? null, $json.display_name ?? null, $json.mime_type ?? null, $json.file_extension ?? null, $json.file_size_bytes ?? null, $json.checksum_sha256 ?? null, $json.source_type ?? null, $json.source_id ?? null, $json.storage_status ?? null, $json.expires_at ?? null, JSON.stringify($json.metadata ?? {}), $json.actor_id ?? null] }}"
+        }
+      },
+      "id": "11111111-1111-4111-8111-111111111102",
+      "name": "Insert asset + asset.created event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [240, 0],
+      "credentials": {
+        "postgres": { "id": "l0gPR9XCXO2YXsc6", "name": "Postgres account" }
+      }
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [[{ "node": "Insert asset + asset.created event", "type": "main", "index": 0 }]]
+    }
+  }
+}

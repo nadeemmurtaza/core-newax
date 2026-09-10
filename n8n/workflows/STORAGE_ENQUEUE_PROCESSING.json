@@ -1,0 +1,37 @@
+{
+  "name": "STORAGE_ENQUEUE_PROCESSING",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "33333333-3333-4333-8333-333333333301",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT storage.enqueue_processing($1, $2, $3, $4, COALESCE($5, 100), COALESCE($6::jsonb, '{}'::jsonb)) AS processing_job_id;",
+        "options": {
+          "queryReplacement": "={{ [$json.asset_id, $json.tenant_id, $json.pipeline ?? 'generic', $json.asset_version_id ?? null, $json.priority ?? null, JSON.stringify($json.metadata ?? {})] }}"
+        }
+      },
+      "id": "33333333-3333-4333-8333-333333333302",
+      "name": "Enqueue processing job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [240, 0],
+      "credentials": {
+        "postgres": { "id": "l0gPR9XCXO2YXsc6", "name": "Postgres account" }
+      }
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [[{ "node": "Enqueue processing job", "type": "main", "index": 0 }]]
+    }
+  }
+}

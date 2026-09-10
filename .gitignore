@@ -1,0 +1,14 @@
+# Local secrets (copy the *.example files and fill in)
+scripts/rustfs.env
+scripts/backup.env
+*.env
+!*.env.example
+
+# Backup artifacts
+backups/
+*.dump
+*.sql.gz
+
+# OS / editor
+.DS_Store
+*.swp
