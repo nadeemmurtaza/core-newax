@@ -57,6 +57,10 @@
 * `storage.asset_processing_jobs` — forward-only state machine; retry accounting
   on `failed → queued` (bounded by `max_attempts`).
 * `newax-temp` rows must carry `expires_at`.
+* **Immutability (0008)** — `assets.asset_id/tenant_id/created_at/storage_provider`
+  never change; `bucket`/`object_key` freeze once status leaves `pending`/`uploading`.
+  `asset_versions` rows change only `is_current`/`deleted_at` after insert.
+* All `storage.*` functions run with `search_path = pg_catalog, storage`.
 
 ## Buckets
 

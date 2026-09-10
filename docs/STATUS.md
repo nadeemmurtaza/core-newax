@@ -11,10 +11,27 @@ Updated 2026-09-11.
 - **`scripts/rustfs.env`** — created (gitignored, mode 600) with the root
   credentials from the `rustfs` container and `RUSTFS_ENDPOINT=http://10.0.5.5:9000`.
 - **S3 round-trip** — put / get / list-versions / delete against RustFS all pass.
-- **Migrations** — `0001`–`0007` applied, `db/migrate.sh verify` → `7 ok, 0 drift,
-  0 missing`; `db/tests/smoke.sql` passes.
+- **Migrations** — `0001`–`0008` applied, `db/migrate.sh verify` → `8 ok, 0 drift,
+  0 missing`; `db/tests/smoke.sql` passes (8 negative cases).
 
 Still open: the four items under "What needs a decision from you" below.
+
+## Delivery framework (12-phase view)
+
+| # | Phase | Status |
+|---|---|---|
+| 1 | Storage foundation | ✅ complete |
+| 2 | **Database hardening** | ✅ **complete** — `0008`: immutability guards, `search_path` pinned on all 21 functions, format CHECKs, FK index, least-privilege role scaffold (`storage_reader`/`storage_writer`), `db/schema.sql` snapshot, extended smoke test. RLS deferred to Phase 10 (needs a non-superuser credential — see `docs/DATABASE_HARDENING.md`). |
+| 3 | Storage service layer | 🟡 4 workflows imported, inactive |
+| 4 | Asset lifecycle | 🟡 DB machinery complete; not wired end-to-end |
+| 5 | Processing pipeline | 🟡 tables + state machine + helpers; no worker workflow |
+| 6 | Events / jobs | 🟡 event log + job queue; no routing/consumers |
+| 7 | RAG / knowledge integration | 🟡 schema + retrieval view; no ingestion/embeddings |
+| 8 | Backup / disaster recovery | 🟡 script ready; no offsite, not scheduled, no drill |
+| 9 | Observability | 🟡 12 views; no dashboard/alerts |
+| 10 | Security / production hardening | 🔴 root RustFS key everywhere; RLS pending |
+| 11 | n8n integration | 🟡 imported inactive; credentials unverified in UI |
+| 12 | Production validation | 🔴 not started |
 
 ## Phase completion
 
@@ -65,7 +82,8 @@ Still open: the four items under "What needs a decision from you" below.
 
 `0001` baseline (adopted) · `0002` object-key standard · `0003` temp lifecycle ·
 `0004` processing pipeline · `0005` RAG chunks · `0006` observability views ·
-`0007` data hygiene (fixture row tagged).
+`0007` data hygiene (fixture row tagged) · `0008` database hardening.
 
-Smoke test: `db/tests/smoke.sql` — passes (key validation, temp expiry, pipeline
-state machine, chunk insert, soft-delete).
+Smoke test: `db/tests/smoke.sql` — passes (key validation, temp expiry, mime /
+immutability guards, pipeline state machine, chunk insert, soft-delete; 8 negative
+cases). Schema snapshot: `db/schema.sql`. Hardening detail: `docs/DATABASE_HARDENING.md`.

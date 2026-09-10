@@ -1,6 +1,6 @@
 -- Smoke test for the storage schema. Runs entirely inside a transaction
 -- that is rolled back, so it never mutates real data.
---   docker exec -i n8n-postgres psql -U n8n -d n8n -v ON_ERROR_STOP=1 -f - < db/tests/smoke.sql
+--   docker exec -i n8n-postgres psql -U n8n -d n8n -v ON_ERROR_STOP=1 -X -f - < db/tests/smoke.sql
 BEGIN;
 SET LOCAL client_min_messages = WARNING;
 
@@ -8,6 +8,7 @@ DO $$
 DECLARE
     t  uuid := gen_random_uuid();
     a  uuid := gen_random_uuid();
+    a2 uuid := gen_random_uuid();
     v  uuid;
     j  uuid;
     k  text;
@@ -19,8 +20,9 @@ BEGIN
         format('unexpected key: %s', k);
 
     -- good asset insert
-    INSERT INTO storage.assets (asset_id, tenant_id, bucket, object_key, file_size_bytes, storage_status)
-    VALUES (a, t, 'newax-documents', k, 123, 'active');
+    INSERT INTO storage.assets (asset_id, tenant_id, bucket, object_key, file_size_bytes, storage_status,
+                                mime_type, file_extension)
+    VALUES (a, t, 'newax-documents', k, 123, 'active', 'application/pdf', 'pdf');
 
     -- object key without the asset_id is rejected
     BEGIN
@@ -50,10 +52,47 @@ BEGIN
         bad_count := bad_count + 1;
     END;
 
+    -- 0008: bad mime_type shape is rejected
+    BEGIN
+        INSERT INTO storage.assets (asset_id, tenant_id, bucket, object_key, mime_type)
+        VALUES (a2, t, 'newax-documents',
+                storage.build_object_key('documents', t, 'x', 'y', a2, 'original.pdf'), 'PDF document');
+        RAISE EXCEPTION 'expected mime_type rejection did not happen';
+    EXCEPTION WHEN check_violation THEN
+        bad_count := bad_count + 1;
+    END;
+
+    -- 0008: identity column is immutable
+    BEGIN
+        UPDATE storage.assets SET tenant_id = gen_random_uuid() WHERE asset_id = a;
+        RAISE EXCEPTION 'expected immutable-column rejection did not happen';
+    EXCEPTION WHEN others THEN
+        IF SQLERRM LIKE '%immutable%' THEN bad_count := bad_count + 1;
+        ELSE RAISE; END IF;
+    END;
+
+    -- 0008: bucket/object_key frozen once the asset is active
+    BEGIN
+        UPDATE storage.assets SET object_key = object_key || '-moved' WHERE asset_id = a;
+        RAISE EXCEPTION 'expected bucket/object_key freeze rejection did not happen';
+    EXCEPTION WHEN others THEN
+        IF SQLERRM LIKE '%pending or uploading%' THEN bad_count := bad_count + 1;
+        ELSE RAISE; END IF;
+    END;
+
     -- version + processing pipeline
-    INSERT INTO storage.asset_versions (asset_id, tenant_id, bucket, object_key, is_current)
-    VALUES (a, t, 'newax-documents', k, true)
+    INSERT INTO storage.asset_versions (asset_id, tenant_id, bucket, object_key, is_current, checksum_sha256)
+    VALUES (a, t, 'newax-documents', k, true, repeat('a', 64))
     RETURNING asset_version_id INTO v;
+
+    -- 0008: asset version snapshot is immutable except is_current/deleted_at
+    BEGIN
+        UPDATE storage.asset_versions SET checksum_sha256 = repeat('b', 64) WHERE asset_version_id = v;
+        RAISE EXCEPTION 'expected asset_version immutability rejection did not happen';
+    EXCEPTION WHEN others THEN
+        IF SQLERRM LIKE '%immutable%' THEN bad_count := bad_count + 1;
+        ELSE RAISE; END IF;
+    END;
 
     j := storage.enqueue_processing(a, t, 'document', v);
     ASSERT storage.enqueue_processing(a, t, 'document', v) = j, 'enqueue not idempotent';
@@ -88,8 +127,8 @@ BEGIN
     ASSERT (SELECT storage_status FROM storage.assets WHERE asset_id = a) = 'deleted';
     ASSERT storage.mark_asset_deleted(a, t, 'smoke-test') = false, 'second delete should be a no-op';
 
-    ASSERT bad_count = 4, format('expected 4 negative cases, got %s', bad_count);
-    RAISE NOTICE 'SMOKE OK: build_object_key, key validation, temp expiry, pipeline state machine, chunks, soft-delete all pass';
+    ASSERT bad_count = 8, format('expected 8 negative cases, got %s', bad_count);
+    RAISE NOTICE 'SMOKE OK: key validation, temp expiry, mime/immutability guards, pipeline state machine, chunks, soft-delete all pass';
 END $$;
 
 ROLLBACK;
