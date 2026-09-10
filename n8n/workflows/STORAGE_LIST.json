@@ -1,0 +1,59 @@
+{
+  "id": "pFruLXj0QwDApPUx",
+  "name": "STORAGE_LIST",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "99999999-9999-4999-8999-999999999901",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "bucketName": "={{ $json.bucket }}",
+        "returnAll": "={{ $json.return_all || false }}",
+        "limit": "={{ $json.limit || 100 }}",
+        "options": {
+          "folderKey": "={{ $json.prefix || '' }}"
+        }
+      },
+      "id": "99999999-9999-4999-8999-999999999902",
+      "name": "List objects by prefix",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "s3": {
+          "id": "UOBSnxPxyEhgyZQH",
+          "name": "S3 account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "List objects by prefix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

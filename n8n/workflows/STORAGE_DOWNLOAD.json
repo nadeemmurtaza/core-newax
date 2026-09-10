@@ -1,0 +1,56 @@
+{
+  "id": "CfY9EAOBs7ev3bHN",
+  "name": "STORAGE_DOWNLOAD",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "66666666-6666-4666-8666-666666666601",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "bucketName": "={{ $json.bucket }}",
+        "fileKey": "={{ $json.object_key }}",
+        "binaryPropertyName": "={{ $json.binary_property || 'data' }}"
+      },
+      "id": "66666666-6666-4666-8666-666666666602",
+      "name": "Get object from RustFS",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "s3": {
+          "id": "UOBSnxPxyEhgyZQH",
+          "name": "S3 account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Get object from RustFS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

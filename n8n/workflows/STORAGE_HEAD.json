@@ -1,0 +1,60 @@
+{
+  "id": "dgkOcol63jJQXgxv",
+  "name": "STORAGE_HEAD",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "77777777-7777-4777-8777-777777777701",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "bucketName": "={{ $json.bucket }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "folderKey": "={{ $json.object_key }}"
+        }
+      },
+      "id": "77777777-7777-4777-8777-777777777702",
+      "name": "Stat object (prefix list, limit 1)",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "s3": {
+          "id": "UOBSnxPxyEhgyZQH",
+          "name": "S3 account"
+        }
+      },
+      "notes": "RustFS/S3 generic node has no HEAD op; this lists by exact key and returns Key/Size/LastModified/ETag. Empty result => object missing."
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Stat object (prefix list, limit 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

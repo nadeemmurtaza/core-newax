@@ -1,0 +1,111 @@
+{
+  "id": "PF75nXNtMIUpPszc",
+  "name": "STORAGE_UPLOAD",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "55555555-5555-4555-8555-555555555501",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "={{ $json.bucket }}",
+        "fileName": "={{ $json.object_key }}",
+        "binaryData": true,
+        "binaryPropertyName": "={{ $json.binary_property || 'data' }}",
+        "additionalFields": {}
+      },
+      "id": "55555555-5555-4555-8555-555555555502",
+      "name": "Put object in RustFS",
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "s3": {
+          "id": "UOBSnxPxyEhgyZQH",
+          "name": "S3 account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "bucket",
+              "type": "string",
+              "value": "={{ $('When called by another workflow').item.json.bucket }}"
+            },
+            {
+              "id": "a2",
+              "name": "object_key",
+              "type": "string",
+              "value": "={{ $('When called by another workflow').item.json.object_key }}"
+            },
+            {
+              "id": "a3",
+              "name": "tenant_id",
+              "type": "string",
+              "value": "={{ $('When called by another workflow').item.json.tenant_id }}"
+            },
+            {
+              "id": "a4",
+              "name": "uploaded",
+              "type": "boolean",
+              "value": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "55555555-5555-4555-8555-555555555503",
+      "name": "Shape result for STORAGE_REGISTER_ASSET",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ],
+      "notes": "Pipe this into STORAGE_REGISTER_ASSET (add tenant_id, mime_type, file_size_bytes, checksum_sha256 as needed)."
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Put object in RustFS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Put object in RustFS": {
+      "main": [
+        [
+          {
+            "node": "Shape result for STORAGE_REGISTER_ASSET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

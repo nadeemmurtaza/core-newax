@@ -1,0 +1,47 @@
+{
+  "id": "IMUaE956JxsGv7x3",
+  "name": "STORAGE_GENERATE_URL",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// AWS SigV4 presigned URL for RustFS (path-style). Self-contained.\n// REQUIRES one of:\n//   * the Code-node sandbox exposes global WebCrypto (Node 20 `crypto.subtle`), or\n//   * the n8n container has NODE_FUNCTION_ALLOW_BUILTIN=crypto\n// Input JSON: { method:'GET'|'PUT', bucket, object_key, expires_seconds,\n//               endpoint, region, access_key_id, secret_access_key }\n// NOTE: passing the secret as workflow input is a foot-gun. Prefer generating\n// presigned URLs in the service that already holds the RustFS key.\n\nconst inp = $input.first().json;\nconst region = inp.region || 'us-east-1';\nconst service = 's3';\nconst method = (inp.method || 'GET').toUpperCase();\nconst endpoint = (inp.endpoint || 'http://rustfs:9000').replace(/\\/+$/, '');\nconst bucket = inp.bucket;\nconst key = inp.object_key;\nconst expires = Math.min(parseInt(inp.expires_seconds || 900, 10), 604800);\nconst accessKeyId = inp.access_key_id;\nconst secretAccessKey = inp.secret_access_key;\nif (!bucket || !key || !accessKeyId || !secretAccessKey) {\n  throw new Error('bucket, object_key, access_key_id, secret_access_key are required');\n}\n\nlet subtle;\nif (typeof crypto !== 'undefined' && crypto.subtle) {\n  subtle = crypto.subtle;\n} else {\n  subtle = require('crypto').webcrypto.subtle;\n}\nconst enc = new TextEncoder();\nconst host = new URL(endpoint).host;\nconst amzDate = new Date().toISOString().replace(/[:-]|\\.\\d{3}/g, '');\nconst dateStamp = amzDate.slice(0, 8);\nconst hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');\nasync function sha256Hex(s) { return hex(await subtle.digest('SHA-256', enc.encode(s))); }\nasync function hmac(keyBytes, msg) {\n  const k = await subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);\n  return new Uint8Array(await subtle.sign('HMAC', k, enc.encode(msg)));\n}\n\nconst uriPath = '/' + encodeURIComponent(bucket) + '/' + key.split('/').map(encodeURIComponent).join('/');\nconst scope = `${dateStamp}/${region}/${service}/aws4_request`;\nconst params = {\n  'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',\n  'X-Amz-Credential': `${accessKeyId}/${scope}`,\n  'X-Amz-Date': amzDate,\n  'X-Amz-Expires': String(expires),\n  'X-Amz-SignedHeaders': 'host',\n};\nconst canonicalQuery = Object.keys(params).sort()\n  .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&');\nconst canonicalRequest = [method, uriPath, canonicalQuery, `host:${host}\\n`, 'host', 'UNSIGNED-PAYLOAD'].join('\\n');\nconst stringToSign = ['AWS4-HMAC-SHA256', amzDate, scope, await sha256Hex(canonicalRequest)].join('\\n');\n\nlet k = enc.encode('AWS4' + secretAccessKey);\nfor (const part of [dateStamp, region, service, 'aws4_request']) k = await hmac(k, part);\nconst signature = hex(await hmac(k, stringToSign));\n\nconst url = `${endpoint}${uriPath}?${canonicalQuery}&X-Amz-Signature=${signature}`;\nreturn [{ json: {\n  url, method, bucket, object_key: key,\n  expires_seconds: expires,\n  expires_at: new Date(Date.now() + expires * 1000).toISOString(),\n} }];\n"
+      },
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa02",
+      "name": "Sign presigned URL (SigV4)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Sign presigned URL (SigV4)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,7 +1,10 @@
 {
+  "id": "88j66T6FND79RDVr",
   "name": "STORAGE_ENQUEUE_PROCESSING",
   "active": false,
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "nodes": [
     {
       "parameters": {},
@@ -9,7 +12,10 @@
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [0, 0]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
@@ -23,15 +29,29 @@
       "name": "Enqueue processing job",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [240, 0],
+      "position": [
+        240,
+        0
+      ],
       "credentials": {
-        "postgres": { "id": "l0gPR9XCXO2YXsc6", "name": "Postgres account" }
+        "postgres": {
+          "id": "l0gPR9XCXO2YXsc6",
+          "name": "Postgres account"
+        }
       }
     }
   ],
   "connections": {
     "When called by another workflow": {
-      "main": [[{ "node": "Enqueue processing job", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Enqueue processing job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   }
 }
