@@ -1,9 +1,9 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.19",
+  "registry_version": "0.1.20",
   "registry_status": "draft",
-  "last_updated": "2026-07-16",
+  "last_updated": "2026-09-11",
   "owner": "NEWAX Engineering",
   "purpose": "Internal source of truth for planned, draft, active, deprecated, replaced, and archived NEWAX modules.",
   "governance": {
@@ -1095,6 +1095,41 @@
       "documentation_path": "packages/lms-payments/README.md",
       "changelog_path": "packages/lms-payments/CHANGELOG.md",
       "compatibility_notes": "Payment records are sensitive. The module must not directly modify student-owned data and must use approved interfaces or events."
+    },
+    {
+      "module_name": "Storage",
+      "module_key": "storage",
+      "module_layer": "platform_service",
+      "module_version": "0.1.0",
+      "module_status": "planned",
+      "module_owner": "NEWAX Engineering",
+      "description": "Owns durable binary object storage (RustFS-backed): registration, versions, soft-delete lifecycle, processing pipeline, and RAG chunking, operated today from the separate rustfs-admin project and integrated with Files for Tenant-safe discovery.",
+      "dependencies": [
+        { "module_key": "tenants", "version": ">=0.1.0" },
+        { "module_key": "organizations", "version": ">=0.2.0" },
+        { "module_key": "files", "version": ">=0.1.0" }
+      ],
+      "required_permissions": [
+        "storage.register",
+        "storage.view",
+        "storage.upload",
+        "storage.download",
+        "storage.delete"
+      ],
+      "exposed_events": ["asset.created", "asset.deleted"],
+      "consumed_events": [],
+      "configuration_options": ["bucket_whitelist", "object_key_standard"],
+      "database_ownership": [
+        "storage.assets",
+        "storage.asset_versions",
+        "storage.asset_events",
+        "storage.asset_processing_jobs",
+        "storage.asset_chunks"
+      ],
+      "tenant_scope": "tenant_and_current_organization_scoped",
+      "documentation_path": "docs/decisions/0035-activate-a-storage-module-for-rustfs-admin.md",
+      "changelog_path": "packages/storage/CHANGELOG.md",
+      "compatibility_notes": "Concept tracked only (ADR-0035, Proposed) - not yet implemented as a core-newax package. Owned tables currently live in a separate Postgres database (the rustfs-admin project's n8n-hosted 'storage' schema), not this repository's database; see ADR-0035 section 4. Links to core_files via storage.assets.core_file_id, populated by an n8n workflow calling files.register - no database foreign key until physical colocation."
     }
   ]
 }
