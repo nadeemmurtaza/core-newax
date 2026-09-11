@@ -1,12 +1,11 @@
--- Canonical snapshot of the storage schema. Generated, do not edit.
--- Regenerate: docker exec n8n-postgres pg_dump -U n8n -d n8n --schema=storage --schema-only --no-owner --no-privileges
--- Source of truth is db/migrations/*.sql + db/migrate.sh; this file is a diff aid.
-
 --
 -- PostgreSQL database dump
 --
 
+\restrict 6fsJ4fB2w5c43Jadgk3hWKbwaIhLbizfi9ujBOgx0WeIdcPmMHQ2ArZh67l0xm1
 
+-- Dumped from database version 16.15 (Debian 16.15-1.pgdg12+2)
+-- Dumped by pg_dump version 16.15 (Debian 16.15-1.pgdg12+2)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1122,6 +1121,7 @@ CREATE TABLE storage.assets (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     deleted_at timestamp with time zone,
     expires_at timestamp with time zone,
+    core_file_id uuid,
     CONSTRAINT assets_bucket_check CHECK ((bucket = ANY (ARRAY['newax-images'::text, 'newax-videos'::text, 'newax-documents'::text, 'newax-temp'::text, 'newax-backups'::text]))),
     CONSTRAINT assets_checksum_sha256_format CHECK (((checksum_sha256 IS NULL) OR (checksum_sha256 ~ '^[0-9a-fA-F]{64}$'::text))),
     CONSTRAINT assets_created_updated_order_check CHECK ((updated_at >= created_at)),
@@ -1185,6 +1185,13 @@ COMMENT ON COLUMN storage.assets.deleted_at IS 'Soft deletion timestamp. Object 
 --
 
 COMMENT ON COLUMN storage.assets.expires_at IS 'Business-level expiry. Required for newax-temp objects; NULL for permanent buckets unless a retention policy applies.';
+
+
+--
+-- Name: COLUMN assets.core_file_id; Type: COMMENT; Schema: storage; Owner: -
+--
+
+COMMENT ON COLUMN storage.assets.core_file_id IS 'core-newax core_files.id for this asset''s tenant-safe discovery record (ADR-0032). Set by STORAGE_REGISTER after a successful files.register call; NULL until then and for assets registered before this integration existed. No local FK: core_files lives in a separate database until Phase 2 colocation.';
 
 
 --
@@ -1768,6 +1775,13 @@ CREATE INDEX assets_checksum_idx ON storage.assets USING btree (checksum_sha256)
 
 
 --
+-- Name: assets_core_file_id_idx; Type: INDEX; Schema: storage; Owner: -
+--
+
+CREATE INDEX assets_core_file_id_idx ON storage.assets USING btree (core_file_id) WHERE (core_file_id IS NOT NULL);
+
+
+--
 -- Name: assets_created_at_idx; Type: INDEX; Schema: storage; Owner: -
 --
 
@@ -1952,4 +1966,5 @@ ALTER TABLE ONLY storage.asset_versions
 -- PostgreSQL database dump complete
 --
 
+\unrestrict 6fsJ4fB2w5c43Jadgk3hWKbwaIhLbizfi9ujBOgx0WeIdcPmMHQ2ArZh67l0xm1
 
