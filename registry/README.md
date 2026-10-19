@@ -1,8 +1,8 @@
-# NEWAX Module Registry
+# NEWAX Registries
 
 ## Purpose
 
-This directory contains the operational registry used to track reusable NEWAX modules.
+This directory contains the operational registries used to track reusable NEWAX modules and NEWAX project domains.
 
 The registry is the internal source of truth for module identity, architecture layer, lifecycle status, version, ownership, dependencies, permissions, events, configuration, database ownership, tenant scope, documentation paths, and compatibility notes.
 
@@ -10,9 +10,10 @@ It supports NEWAX as **The Business Infrastructure Company** by keeping reusable
 
 ## Files
 
-| File                                         | Purpose                                                         |
-| -------------------------------------------- | --------------------------------------------------------------- |
-| [module-registry.json](module-registry.json) | Operational record of tracked NEWAX modules and their metadata. |
+| File                                           | Purpose                                                                                                    |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [module-registry.json](module-registry.json)   | Operational record of tracked NEWAX modules and their metadata.                                            |
+| [project-registry.json](project-registry.json) | Operational record of tracked NEWAX project domains, their integration class, and their conformance level. |
 
 Related documentation:
 
@@ -21,6 +22,8 @@ Related documentation:
 - [Module Approval Checklist](../docs/standards/module-approval-checklist.md)
 - [Documentation Standard](../docs/standards/documentation-standard.md)
 - [Module Registry Example](../templates/module-registry/module-registry.example.json)
+- [Platform Data Topology](../docs/architecture/platform-data-topology.md)
+- [ADR 0036: Establish Project Identity and Registry](../docs/decisions/0036-establish-project-identity-and-registry.md)
 
 ## Current Status
 

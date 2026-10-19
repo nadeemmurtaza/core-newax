@@ -1,9 +1,9 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.19",
+  "registry_version": "0.1.20",
   "registry_status": "draft",
-  "last_updated": "2026-07-16",
+  "last_updated": "2026-08-23",
   "owner": "NEWAX Engineering",
   "purpose": "Internal source of truth for planned, draft, active, deprecated, replaced, and archived NEWAX modules.",
   "governance": {
@@ -1095,6 +1095,314 @@
       "documentation_path": "packages/lms-payments/README.md",
       "changelog_path": "packages/lms-payments/CHANGELOG.md",
       "compatibility_notes": "Payment records are sensitive. The module must not directly modify student-owned data and must use approved interfaces or events."
+    },
+    {
+      "module_name": "Platform Operations",
+      "module_key": "platform-operations",
+      "module_layer": "foundation",
+      "module_version": "0.1.0",
+      "module_status": "planned",
+      "module_owner": "NEWAX Engineering",
+      "description": "Maintains the platform's own operational records: project identity, service catalog, connection routing, distribution state, entitlements, feature flags, and quotas.",
+      "dependencies": [
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": [
+        "platform.projects.view",
+        "platform.projects.manage",
+        "platform.entitlements.view",
+        "platform.entitlements.manage",
+        "platform.flags.manage",
+        "platform.quotas.view"
+      ],
+      "exposed_events": [
+        "project.registered",
+        "project.status_changed",
+        "entitlement.granted",
+        "entitlement.revoked"
+      ],
+      "consumed_events": [],
+      "configuration_options": [
+        "entitlement_cache_ttl",
+        "flag_evaluation_policy",
+        "quota_enforcement_mode"
+      ],
+      "database_ownership": [
+        "core_projects",
+        "core_project_services",
+        "core_connection_registry",
+        "core_event_subscriptions",
+        "core_subscription_cursors",
+        "core_entitlements",
+        "core_feature_flags",
+        "core_quotas"
+      ],
+      "tenant_scope": "mixed_platform_and_tenant_scoped",
+      "documentation_path": "packages/platform-operations/README.md",
+      "changelog_path": "packages/platform-operations/CHANGELOG.md",
+      "compatibility_notes": "Holds platform state, never business data. Connection registry stores credential references, never credential values. Entitlements are an authorization input enforced server-side, not a user-interface hint. Established by ADR 0043."
+    },
+    {
+      "module_name": "Core Distribution",
+      "module_key": "core-distribution",
+      "module_layer": "foundation",
+      "module_version": "0.1.0",
+      "module_status": "planned",
+      "module_owner": "NEWAX Engineering",
+      "description": "Publishes core changes through a transactional outbox and delivery log with per-subscriber cursors, and accepts signed project submissions through the core inbox.",
+      "dependencies": [
+        {
+          "module_key": "platform-operations",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": [
+        "distribution.subscriptions.manage",
+        "distribution.deadletter.view",
+        "distribution.deadletter.requeue"
+      ],
+      "exposed_events": [],
+      "consumed_events": [],
+      "configuration_options": [
+        "delivery_retry_policy",
+        "delivery_log_retention",
+        "inbox_timestamp_window",
+        "dead_letter_threshold"
+      ],
+      "database_ownership": [
+        "core_outbox_events",
+        "core_delivery_log",
+        "core_inbox_submissions",
+        "core_dead_letter_events"
+      ],
+      "tenant_scope": "tenant_aware_transport",
+      "documentation_path": "packages/core-distribution/README.md",
+      "changelog_path": "packages/core-distribution/CHANGELOG.md",
+      "compatibility_notes": "Carries every module's exposed events rather than owning them. Delivery is at least once and consumers must be idempotent on eventId. Established by ADR 0040; envelope defined by the Core Data Contract Standard."
+    },
+    {
+      "module_name": "Master Data Governance",
+      "module_key": "master-data-governance",
+      "module_layer": "foundation",
+      "module_version": "0.1.0",
+      "module_status": "planned",
+      "module_owner": "NEWAX Engineering",
+      "description": "Adjudicates contributed candidate records against canonical People and Organizations through tiered matching, governed merges, declared survivorship, and field-level provenance.",
+      "dependencies": [
+        {
+          "module_key": "people",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "organizations",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": [
+        "masterdata.candidates.view",
+        "masterdata.candidates.review",
+        "masterdata.merge",
+        "masterdata.unmerge",
+        "masterdata.survivorship.override"
+      ],
+      "exposed_events": [
+        "person.merged",
+        "person.unmerged",
+        "organization.merged",
+        "organization.unmerged",
+        "candidate.review_required"
+      ],
+      "consumed_events": [],
+      "configuration_options": [
+        "match_rule_set",
+        "match_confidence_thresholds",
+        "survivorship_rules",
+        "review_queue_policy"
+      ],
+      "database_ownership": [
+        "core_record_candidates",
+        "core_match_decisions",
+        "core_record_merges",
+        "core_field_provenance"
+      ],
+      "tenant_scope": "tenant_scoped",
+      "documentation_path": "packages/master-data-governance/README.md",
+      "changelog_path": "packages/master-data-governance/CHANGELOG.md",
+      "compatibility_notes": "Matching never crosses a tenant boundary. Superseded identifiers are retained and continue to resolve to the survivor; they are never deleted or reused. Merges are published events and are reversible. Established by ADR 0044."
+    },
+    {
+      "module_name": "Growth",
+      "module_key": "growth",
+      "module_layer": "business_domain",
+      "module_version": "0.1.0",
+      "module_status": "planned",
+      "module_owner": "NEWAX Engineering",
+      "description": "Owns campaigns, audiences and segments, leads and opportunities, touchpoints, attribution, and the central consent and suppression record.",
+      "dependencies": [
+        {
+          "module_key": "people",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "organizations",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "contacts",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": [
+        "growth.campaigns.view",
+        "growth.campaigns.manage",
+        "growth.audiences.manage",
+        "growth.leads.view",
+        "growth.leads.manage",
+        "growth.touchpoints.view",
+        "growth.consent.view",
+        "growth.consent.manage",
+        "growth.attribution.view"
+      ],
+      "exposed_events": [
+        "consent.granted",
+        "consent.withdrawn",
+        "suppression.applied",
+        "lead.created",
+        "lead.stage_changed",
+        "touchpoint.recorded"
+      ],
+      "consumed_events": ["person.merged", "person.created"],
+      "configuration_options": [
+        "consent_purposes",
+        "consent_channels",
+        "regional_consent_rules",
+        "attribution_models",
+        "segment_evaluation_policy"
+      ],
+      "database_ownership": [
+        "core_campaigns",
+        "core_audiences",
+        "core_audience_members",
+        "core_leads",
+        "core_opportunities",
+        "core_touchpoints",
+        "core_attribution_models",
+        "core_attribution_results",
+        "core_consent_records",
+        "core_suppressions"
+      ],
+      "tenant_scope": "tenant_scoped",
+      "documentation_path": "packages/growth/README.md",
+      "changelog_path": "packages/growth/CHANGELOG.md",
+      "compatibility_notes": "Consent is a gate on every outbound action, recorded per person, purpose, and channel with provenance. Withdrawal is immediate and global. Consent checks fail closed. Projects own delivery mechanics; Growth owns whether an action is permitted. Established by ADR 0045."
+    },
+    {
+      "module_name": "Measurement",
+      "module_key": "measurement",
+      "module_layer": "business_domain",
+      "module_version": "0.1.0",
+      "module_status": "planned",
+      "module_owner": "NEWAX Engineering",
+      "description": "Owns measurement containers, external destinations, canonical event mapping, and consent-gated server-side forwarding to analytics and advertising platforms.",
+      "dependencies": [
+        {
+          "module_key": "growth",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "platform-operations",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": [
+        "measurement.containers.view",
+        "measurement.containers.manage",
+        "measurement.destinations.manage",
+        "measurement.mappings.manage",
+        "measurement.forwarding.view"
+      ],
+      "exposed_events": ["measurement.event_forwarded", "measurement.forward_failed"],
+      "consumed_events": ["consent.withdrawn", "suppression.applied"],
+      "configuration_options": [
+        "canonical_event_vocabulary",
+        "destination_retry_policy",
+        "regional_destination_rules",
+        "forwarding_record_retention"
+      ],
+      "database_ownership": [
+        "core_measurement_containers",
+        "core_measurement_destinations",
+        "core_measurement_event_mappings",
+        "core_measurement_forwarding_records"
+      ],
+      "tenant_scope": "tenant_scoped",
+      "documentation_path": "packages/measurement/README.md",
+      "changelog_path": "packages/measurement/CHANGELOG.md",
+      "compatibility_notes": "Destination credentials are held as secret references resolved at runtime and never stored as values. No project holds destination credentials or calls a destination directly. Forwarding fails closed when consent is indeterminate. Established by ADR 0046."
+    },
+    {
+      "module_name": "Analytics Rollup",
+      "module_key": "analytics-rollup",
+      "module_layer": "platform_service",
+      "module_version": "0.1.0",
+      "module_status": "planned",
+      "module_owner": "NEWAX Engineering",
+      "description": "Aggregates telemetry submitted by project domains into a derived cross-project reporting store.",
+      "dependencies": [
+        {
+          "module_key": "platform-operations",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "core-distribution",
+          "version": ">=0.1.0"
+        },
+        {
+          "module_key": "tenants",
+          "version": ">=0.1.0"
+        }
+      ],
+      "required_permissions": [
+        "analytics.reports.view",
+        "analytics.crosstenant.view",
+        "analytics.definitions.manage"
+      ],
+      "exposed_events": [],
+      "consumed_events": [],
+      "configuration_options": [
+        "telemetry_schema_version",
+        "rollup_definitions",
+        "telemetry_retention",
+        "aggregation_schedule"
+      ],
+      "database_ownership": [
+        "core_telemetry_events",
+        "core_rollup_definitions",
+        "core_rollup_aggregates"
+      ],
+      "tenant_scope": "tenant_scoped",
+      "documentation_path": "packages/analytics-rollup/README.md",
+      "changelog_path": "packages/analytics-rollup/CHANGELOG.md",
+      "compatibility_notes": "Derived and never authoritative; losing it is a rebuild, not data loss. Populated only by telemetry projects push. Core never reads a project database. Cross-tenant aggregates are NEWAX-internal, permission-gated, and never exposed to a tenant. Established by ADR 0047."
     }
   ]
 }
