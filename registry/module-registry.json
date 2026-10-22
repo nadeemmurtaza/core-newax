@@ -23,8 +23,16 @@
         "github_url": "https://github.com/nadeemmurtaza/nID",
         "role": "Single identity provider: login, 2FA, OAuth sessions, secrets vault",
         "status": "active",
-        "owns": ["account", "session", "oauth_client", "2fa", "secrets_vault"],
-        "must_not_own": ["business_data"]
+        "owns": [
+          "account",
+          "session",
+          "oauth_client",
+          "2fa",
+          "secrets_vault"
+        ],
+        "must_not_own": [
+          "business_data"
+        ]
       },
       {
         "repo_key": "erp-1",
@@ -32,8 +40,21 @@
         "github_url": "https://github.com/nadeemmurtaza/erp-1",
         "role": "Commerce/ERP: catalog, orders, fulfillment, inventory, finance, HR",
         "status": "active",
-        "owns": ["sales", "supply-chain", "money", "people.hr,payroll,attendance", "merchandising.catalog,collections,content"],
-        "must_not_own": ["crm", "support", "marketing_campaigns", "identity_verification", "own_user_model", "rag"],
+        "owns": [
+          "sales",
+          "supply-chain",
+          "money",
+          "people.hr,payroll,attendance",
+          "merchandising.catalog,collections,content"
+        ],
+        "must_not_own": [
+          "crm",
+          "support",
+          "marketing_campaigns",
+          "identity_verification",
+          "own_user_model",
+          "rag"
+        ],
         "known_misplacements": [
           "customers/crm,support,notify,onsitemessages -> Communicator",
           "merchandising/marketing -> resolves a 3-way duplicate with newcom/campaign-service and Communicator broadcasts",
@@ -47,8 +68,14 @@
         "github_url": "https://github.com/nadeemmurtaza/newcom",
         "role": "Bundles 4 separate services pending split: esp (nmail, email engine), collab-service (real-time docs), web (workspace shell), campaign-service",
         "status": "draft",
-        "owns": ["email_sending", "deliverability", "realtime_doc_collaboration"],
-        "must_not_own": ["customer_facing_messaging"],
+        "owns": [
+          "email_sending",
+          "deliverability",
+          "realtime_doc_collaboration"
+        ],
+        "must_not_own": [
+          "customer_facing_messaging"
+        ],
         "known_misplacements": [
           "esp, collab-service, web should each become their own repo -- different languages, unrelated products, no shared deploy lifecycle",
           "campaign-service folds into whichever repo wins the campaign-engine triplicate"
@@ -60,8 +87,22 @@
         "github_url": "https://github.com/nadeemmurtaza/Communicator",
         "role": "Omnichannel outreach + AI reply engine: conversations, drafts, broadcasts",
         "status": "active",
-        "owns": ["conversations", "messages", "drafts", "automation_rules", "knowledge_base", "broadcasts"],
-        "must_not_own": ["rbac", "sso", "billing", "generic_ticketing", "generic_webhooks_engine", "own_email_infra"],
+        "owns": [
+          "conversations",
+          "messages",
+          "drafts",
+          "automation_rules",
+          "knowledge_base",
+          "broadcasts"
+        ],
+        "must_not_own": [
+          "rbac",
+          "sso",
+          "billing",
+          "generic_ticketing",
+          "generic_webhooks_engine",
+          "own_email_infra"
+        ],
         "known_misplacements": [
           "RBAC/SSO/SAML -> nID",
           "Stripe billing -> erp-1 (modules/money)",
@@ -76,8 +117,14 @@
         "github_url": "https://github.com/Newax-Technologies/harvester",
         "role": "Lead sourcing and qualification",
         "status": "active",
-        "owns": ["lead_discovery", "qualification_scoring"],
-        "must_not_own": ["outreach", "messaging"],
+        "owns": [
+          "lead_discovery",
+          "qualification_scoring"
+        ],
+        "must_not_own": [
+          "outreach",
+          "messaging"
+        ],
         "compatibility_notes": "Already correctly decoupled -- talks to Communicator via REST only, never direct DB access. Reference pattern for every other integration."
       },
       {
@@ -86,8 +133,12 @@
         "github_url": "https://github.com/nadeemmurtaza/AegisDesk",
         "role": "Offline-first Android personal device agent",
         "status": "separate_track",
-        "owns": ["on_device_automation"],
-        "must_not_own": ["networked_ecosystem_integration"],
+        "owns": [
+          "on_device_automation"
+        ],
+        "must_not_own": [
+          "networked_ecosystem_integration"
+        ],
         "compatibility_notes": "No Internet permission is a core design constraint; joining the Module Gateway/nID login requires an explicit product-direction decision this repo hasn't made."
       }
     ]
@@ -102,11 +153,20 @@
       "module_owner": "NEWAX Engineering",
       "description": "Maintains the customer ownership and data-isolation boundary independently from legal and operating organizations.",
       "dependencies": [],
-      "required_permissions": ["tenants.view", "tenants.create"],
-      "exposed_events": ["tenant.created"],
+      "required_permissions": [
+        "tenants.view",
+        "tenants.create"
+      ],
+      "exposed_events": [
+        "tenant.created"
+      ],
       "consumed_events": [],
-      "configuration_options": ["tenant_status_values"],
-      "database_ownership": ["core_tenants"],
+      "configuration_options": [
+        "tenant_status_values"
+      ],
+      "database_ownership": [
+        "core_tenants"
+      ],
       "tenant_scope": "global_customer_boundary",
       "documentation_path": "packages/tenants/README.md",
       "changelog_path": "packages/tenants/CHANGELOG.md",
@@ -152,7 +212,11 @@
         "family_graph_max_depth",
         "family_sensitive_disclosure_policy"
       ],
-      "database_ownership": ["core_people", "core_person_identifiers", "core_person_relationships"],
+      "database_ownership": [
+        "core_people",
+        "core_person_identifiers",
+        "core_person_relationships"
+      ],
       "tenant_scope": "mixed_global_and_organization_context",
       "documentation_path": "packages/people/README.md",
       "changelog_path": "packages/people/CHANGELOG.md",
@@ -237,10 +301,20 @@
         "organizations.update",
         "organizations.archive"
       ],
-      "exposed_events": ["organization.created", "organization.updated", "organization.archived"],
+      "exposed_events": [
+        "organization.created",
+        "organization.updated",
+        "organization.archived"
+      ],
       "consumed_events": [],
-      "configuration_options": ["organization_status_values", "organization_type_values"],
-      "database_ownership": ["core_organizations", "core_organization_relationships"],
+      "configuration_options": [
+        "organization_status_values",
+        "organization_type_values"
+      ],
+      "database_ownership": [
+        "core_organizations",
+        "core_organization_relationships"
+      ],
       "tenant_scope": "tenant_scoped",
       "documentation_path": "packages/organizations/README.md",
       "changelog_path": "packages/organizations/CHANGELOG.md",
@@ -270,10 +344,23 @@
         "memberships.update",
         "memberships.remove"
       ],
-      "exposed_events": ["membership.created", "membership.updated", "membership.removed"],
-      "consumed_events": ["person.archived", "organization.archived"],
-      "configuration_options": ["membership_status_values", "membership_type_values"],
-      "database_ownership": ["core_memberships", "core_membership_roles"],
+      "exposed_events": [
+        "membership.created",
+        "membership.updated",
+        "membership.removed"
+      ],
+      "consumed_events": [
+        "person.archived",
+        "organization.archived"
+      ],
+      "configuration_options": [
+        "membership_status_values",
+        "membership_type_values"
+      ],
+      "database_ownership": [
+        "core_memberships",
+        "core_membership_roles"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/memberships/README.md",
       "changelog_path": "packages/memberships/CHANGELOG.md",
@@ -321,13 +408,18 @@
         "user.identity_removed",
         "user.primary_identity_changed"
       ],
-      "consumed_events": ["person.archived"],
+      "consumed_events": [
+        "person.archived"
+      ],
       "configuration_options": [
         "account_status_values",
         "login_identity_types",
         "identity_normalization_policy"
       ],
-      "database_ownership": ["core_users", "core_user_identities"],
+      "database_ownership": [
+        "core_users",
+        "core_user_identities"
+      ],
       "tenant_scope": "global_account_with_organization_scoped_access",
       "documentation_path": "packages/users/README.md",
       "changelog_path": "packages/users/CHANGELOG.md",
@@ -425,7 +517,10 @@
         "role.assigned",
         "role.removed"
       ],
-      "consumed_events": ["membership.removed", "organization.archived"],
+      "consumed_events": [
+        "membership.removed",
+        "organization.archived"
+      ],
       "configuration_options": [
         "permission_naming_convention",
         "role_assignment_policy",
@@ -508,7 +603,9 @@
         "rate_limit_policy",
         "hsts_policy"
       ],
-      "database_ownership": ["core_http_rate_limit_buckets"],
+      "database_ownership": [
+        "core_http_rate_limit_buckets"
+      ],
       "tenant_scope": "public_account_and_organization_http_boundary",
       "documentation_path": "packages/http-security/README.md",
       "changelog_path": "packages/http-security/CHANGELOG.md",
@@ -538,7 +635,9 @@
         "contacts.update",
         "contacts.remove"
       ],
-      "exposed_events": ["contact.created"],
+      "exposed_events": [
+        "contact.created"
+      ],
       "consumed_events": [],
       "configuration_options": [
         "contact_type_values",
@@ -573,8 +672,13 @@
           "version": ">=0.2.0"
         }
       ],
-      "required_permissions": ["addresses.view", "addresses.create"],
-      "exposed_events": ["address.created"],
+      "required_permissions": [
+        "addresses.view",
+        "addresses.create"
+      ],
+      "exposed_events": [
+        "address.created"
+      ],
       "consumed_events": [],
       "configuration_options": [
         "organization_address_type_values",
@@ -609,11 +713,21 @@
           "version": ">=0.2.0"
         }
       ],
-      "required_permissions": ["objects.types.manage", "objects.create", "objects.view"],
-      "exposed_events": ["object.type_registered", "object.created"],
+      "required_permissions": [
+        "objects.types.manage",
+        "objects.create",
+        "objects.view"
+      ],
+      "exposed_events": [
+        "object.type_registered",
+        "object.created"
+      ],
       "consumed_events": [],
       "configuration_options": [],
-      "database_ownership": ["core_object_types", "core_objects"],
+      "database_ownership": [
+        "core_object_types",
+        "core_objects"
+      ],
       "tenant_scope": "tenant_and_current_organization_scoped",
       "documentation_path": "packages/objects/README.md",
       "changelog_path": "packages/objects/CHANGELOG.md",
@@ -641,11 +755,15 @@
           "version": ">=0.1.0"
         }
       ],
-      "required_permissions": ["audit.view"],
+      "required_permissions": [
+        "audit.view"
+      ],
       "exposed_events": [],
       "consumed_events": [],
       "configuration_options": [],
-      "database_ownership": ["core_audit_logs"],
+      "database_ownership": [
+        "core_audit_logs"
+      ],
       "tenant_scope": "mixed_global_tenant_and_organization_scoped",
       "documentation_path": "packages/audit/README.md",
       "changelog_path": "packages/audit/CHANGELOG.md",
@@ -673,11 +791,18 @@
           "version": ">=0.1.0"
         }
       ],
-      "required_permissions": ["files.register", "files.view"],
-      "exposed_events": ["file.registered"],
+      "required_permissions": [
+        "files.register",
+        "files.view"
+      ],
+      "exposed_events": [
+        "file.registered"
+      ],
       "consumed_events": [],
       "configuration_options": [],
-      "database_ownership": ["core_files"],
+      "database_ownership": [
+        "core_files"
+      ],
       "tenant_scope": "tenant_and_current_organization_scoped",
       "documentation_path": "packages/files/README.md",
       "changelog_path": "packages/files/CHANGELOG.md",
@@ -705,11 +830,18 @@
           "version": ">=0.1.0"
         }
       ],
-      "required_permissions": ["external_references.register", "external_references.view"],
-      "exposed_events": ["external_reference.registered"],
+      "required_permissions": [
+        "external_references.register",
+        "external_references.view"
+      ],
+      "exposed_events": [
+        "external_reference.registered"
+      ],
       "consumed_events": [],
       "configuration_options": [],
-      "database_ownership": ["core_external_references"],
+      "database_ownership": [
+        "core_external_references"
+      ],
       "tenant_scope": "tenant_and_current_organization_scoped_with_dormant_global_records",
       "documentation_path": "packages/external-references/README.md",
       "changelog_path": "packages/external-references/CHANGELOG.md",
@@ -738,14 +870,25 @@
         "notifications.send",
         "notifications.templates.manage"
       ],
-      "exposed_events": ["notification.queued", "notification.sent", "notification.failed"],
-      "consumed_events": ["student.created", "payment.approved", "course.published"],
+      "exposed_events": [
+        "notification.queued",
+        "notification.sent",
+        "notification.failed"
+      ],
+      "consumed_events": [
+        "student.created",
+        "payment.approved",
+        "course.published"
+      ],
       "configuration_options": [
         "notification_channels",
         "template_policy",
         "delivery_retry_policy"
       ],
-      "database_ownership": ["core_notifications", "core_notification_templates"],
+      "database_ownership": [
+        "core_notifications",
+        "core_notification_templates"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/notifications/README.md",
       "changelog_path": "packages/notifications/CHANGELOG.md",
@@ -769,15 +912,23 @@
           "version": ">=0.1.0"
         }
       ],
-      "required_permissions": ["dashboard.view", "dashboard.configure"],
-      "exposed_events": ["dashboard.viewed", "dashboard.configuration_updated"],
+      "required_permissions": [
+        "dashboard.view",
+        "dashboard.configure"
+      ],
+      "exposed_events": [
+        "dashboard.viewed",
+        "dashboard.configuration_updated"
+      ],
       "consumed_events": [],
       "configuration_options": [
         "available_widgets",
         "default_layouts",
         "organization_dashboard_policy"
       ],
-      "database_ownership": ["core_dashboard_configurations"],
+      "database_ownership": [
+        "core_dashboard_configurations"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/dashboard/README.md",
       "changelog_path": "packages/dashboard/CHANGELOG.md",
@@ -805,15 +956,24 @@
           "version": ">=0.1.0"
         }
       ],
-      "required_permissions": ["reports.view", "reports.export"],
-      "exposed_events": ["report.viewed", "report.exported"],
+      "required_permissions": [
+        "reports.view",
+        "reports.export"
+      ],
+      "exposed_events": [
+        "report.viewed",
+        "report.exported"
+      ],
       "consumed_events": [],
       "configuration_options": [
         "export_formats",
         "report_retention_policy",
         "sensitive_report_controls"
       ],
-      "database_ownership": ["core_report_definitions", "core_report_exports"],
+      "database_ownership": [
+        "core_report_definitions",
+        "core_report_exports"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/reports/README.md",
       "changelog_path": "packages/reports/CHANGELOG.md",
@@ -855,10 +1015,22 @@
         "students.update",
         "students.suspend"
       ],
-      "exposed_events": ["student.created", "student.updated", "student.suspended"],
-      "consumed_events": ["organization.archived", "person.archived"],
-      "configuration_options": ["student_status_values", "student_profile_required_fields"],
-      "database_ownership": ["lms_student_profiles"],
+      "exposed_events": [
+        "student.created",
+        "student.updated",
+        "student.suspended"
+      ],
+      "consumed_events": [
+        "organization.archived",
+        "person.archived"
+      ],
+      "configuration_options": [
+        "student_status_values",
+        "student_profile_required_fields"
+      ],
+      "database_ownership": [
+        "lms_student_profiles"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/lms-students/README.md",
       "changelog_path": "packages/lms-students/CHANGELOG.md",
@@ -900,10 +1072,23 @@
         "teachers.update",
         "teachers.assign"
       ],
-      "exposed_events": ["teacher.created", "teacher.updated", "teacher.assigned"],
-      "consumed_events": ["organization.archived", "person.archived"],
-      "configuration_options": ["teacher_status_values", "teacher_profile_required_fields"],
-      "database_ownership": ["lms_teacher_profiles", "lms_teacher_assignments"],
+      "exposed_events": [
+        "teacher.created",
+        "teacher.updated",
+        "teacher.assigned"
+      ],
+      "consumed_events": [
+        "organization.archived",
+        "person.archived"
+      ],
+      "configuration_options": [
+        "teacher_status_values",
+        "teacher_profile_required_fields"
+      ],
+      "database_ownership": [
+        "lms_teacher_profiles",
+        "lms_teacher_assignments"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/lms-teachers/README.md",
       "changelog_path": "packages/lms-teachers/CHANGELOG.md",
@@ -938,10 +1123,23 @@
         "courses.publish",
         "courses.archive"
       ],
-      "exposed_events": ["course.created", "course.updated", "course.published", "course.archived"],
-      "consumed_events": ["organization.archived"],
-      "configuration_options": ["course_status_values", "course_publication_policy"],
-      "database_ownership": ["lms_courses", "lms_subjects"],
+      "exposed_events": [
+        "course.created",
+        "course.updated",
+        "course.published",
+        "course.archived"
+      ],
+      "consumed_events": [
+        "organization.archived"
+      ],
+      "configuration_options": [
+        "course_status_values",
+        "course_publication_policy"
+      ],
+      "database_ownership": [
+        "lms_courses",
+        "lms_subjects"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/lms-courses/README.md",
       "changelog_path": "packages/lms-courses/CHANGELOG.md",
@@ -980,10 +1178,22 @@
         "lectures.publish",
         "lectures.archive"
       ],
-      "exposed_events": ["lecture.created", "lecture.published", "lecture.archived"],
-      "consumed_events": ["course.archived"],
-      "configuration_options": ["lecture_content_types", "external_video_policy"],
-      "database_ownership": ["lms_lectures", "lms_lecture_resources"],
+      "exposed_events": [
+        "lecture.created",
+        "lecture.published",
+        "lecture.archived"
+      ],
+      "consumed_events": [
+        "course.archived"
+      ],
+      "configuration_options": [
+        "lecture_content_types",
+        "external_video_policy"
+      ],
+      "database_ownership": [
+        "lms_lectures",
+        "lms_lecture_resources"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/lms-lectures/README.md",
       "changelog_path": "packages/lms-lectures/CHANGELOG.md",
@@ -1021,10 +1231,22 @@
         "enrollments.approve",
         "enrollments.cancel"
       ],
-      "exposed_events": ["enrollment.requested", "enrollment.approved", "enrollment.cancelled"],
-      "consumed_events": ["student.suspended", "course.archived"],
-      "configuration_options": ["enrollment_approval_policy", "enrollment_status_values"],
-      "database_ownership": ["lms_enrollments"],
+      "exposed_events": [
+        "enrollment.requested",
+        "enrollment.approved",
+        "enrollment.cancelled"
+      ],
+      "consumed_events": [
+        "student.suspended",
+        "course.archived"
+      ],
+      "configuration_options": [
+        "enrollment_approval_policy",
+        "enrollment_status_values"
+      ],
+      "database_ownership": [
+        "lms_enrollments"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/lms-enrollments/README.md",
       "changelog_path": "packages/lms-enrollments/CHANGELOG.md",
@@ -1059,9 +1281,19 @@
         "tests.publish",
         "tests.attempt"
       ],
-      "exposed_events": ["test.created", "test.published", "test.attempt_submitted"],
-      "consumed_events": ["course.archived"],
-      "configuration_options": ["test_timer_policy", "attempt_limit_policy", "scoring_policy"],
+      "exposed_events": [
+        "test.created",
+        "test.published",
+        "test.attempt_submitted"
+      ],
+      "consumed_events": [
+        "course.archived"
+      ],
+      "configuration_options": [
+        "test_timer_policy",
+        "attempt_limit_policy",
+        "scoring_policy"
+      ],
       "database_ownership": [
         "lms_tests",
         "lms_test_questions",
@@ -1105,10 +1337,22 @@
         "results.update",
         "results.publish"
       ],
-      "exposed_events": ["result.calculated", "result.updated", "result.published"],
-      "consumed_events": ["test.attempt_submitted", "student.suspended"],
-      "configuration_options": ["result_visibility_policy", "manual_review_policy"],
-      "database_ownership": ["lms_test_results"],
+      "exposed_events": [
+        "result.calculated",
+        "result.updated",
+        "result.published"
+      ],
+      "consumed_events": [
+        "test.attempt_submitted",
+        "student.suspended"
+      ],
+      "configuration_options": [
+        "result_visibility_policy",
+        "manual_review_policy"
+      ],
+      "database_ownership": [
+        "lms_test_results"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/lms-test-results/README.md",
       "changelog_path": "packages/lms-test-results/CHANGELOG.md",
@@ -1161,18 +1405,131 @@
         "payment.rejected",
         "payment.receipt_created"
       ],
-      "consumed_events": ["student.created", "student.suspended"],
+      "consumed_events": [
+        "student.created",
+        "student.suspended"
+      ],
       "configuration_options": [
         "payment_status_values",
         "approval_policy",
         "receipt_format_defaults",
         "payment_evidence_policy"
       ],
-      "database_ownership": ["lms_payments", "lms_payment_approvals", "lms_payment_receipts"],
+      "database_ownership": [
+        "lms_payments",
+        "lms_payment_approvals",
+        "lms_payment_receipts"
+      ],
       "tenant_scope": "organization_scoped",
       "documentation_path": "packages/lms-payments/README.md",
       "changelog_path": "packages/lms-payments/CHANGELOG.md",
       "compatibility_notes": "Payment records are sensitive. The module must not directly modify student-owned data and must use approved interfaces or events."
+    },
+    {
+      "module_name": "ERP-1 (Commercial Business Platform)",
+      "module_key": "erp-1",
+      "module_layer": "business_modules",
+      "module_version": "0.1.0",
+      "module_status": "active",
+      "module_owner": "NEWAX Engineering",
+      "description": "Multi-tenant commercial ERP platform: catalog, orders, fulfillment, inventory with double-entry stock ledger, purchasing, double-entry financial accounting, and HR/payroll.",
+      "dependencies": [
+        "authentication",
+        "access-control",
+        "audit"
+      ],
+      "required_permissions": [
+        "orders.view",
+        "orders.manage",
+        "catalog.view",
+        "catalog.manage",
+        "inventory.view",
+        "inventory.manage",
+        "accounting.view",
+        "accounting.manage"
+      ],
+      "exposed_events": [
+        "order.placed",
+        "order.status_changed",
+        "order.cancelled",
+        "payment.succeeded",
+        "payment.failed",
+        "payment.refunded",
+        "user.registered",
+        "stitching.job_created",
+        "stitching.job_stage_changed"
+      ],
+      "consumed_events": [
+        "person.created",
+        "person.updated",
+        "organization.created",
+        "organization.updated"
+      ],
+      "configuration_options": [
+        "multi_tenant_mode",
+        "currency_default",
+        "tax_regime"
+      ],
+      "database_ownership": [
+        "erp_catalog",
+        "erp_orders",
+        "erp_inventory",
+        "erp_accounting",
+        "erp_payroll"
+      ],
+      "tenant_scope": "organization_context",
+      "documentation_path": "docs/ecosystem/erp-1.md",
+      "changelog_path": "docs/ecosystem/CHANGELOG.md",
+      "compatibility_notes": "Follows ECOSYSTEM.md boundaries. Owns catalog, orders, inventory, finance, HR. Does not own CRM/support (Communicator) or Identity/Vault (nID)."
+    },
+    {
+      "module_name": "Communicator (Customer AI Support & Omnichannel Messaging)",
+      "module_key": "communicator",
+      "module_layer": "application",
+      "module_version": "0.2.0",
+      "module_status": "active",
+      "module_owner": "core-team",
+      "description": "Automated omnichannel communication engine (WhatsApp, SMS, Email), Customer AI live support agent, and Verilo-style LiveProof return/refund verification portal.",
+      "dependencies": [
+        "core-newax"
+      ],
+      "required_permissions": [
+        "comm:messages:read",
+        "comm:messages:write",
+        "comm:proofs:verify"
+      ],
+      "exposed_events": [
+        "refund.proof_captured",
+        "conversation.started",
+        "message.received",
+        "lead.contacted"
+      ],
+      "consumed_events": [
+        "order.placed",
+        "payment.succeeded",
+        "support.ticket_created"
+      ],
+      "configuration_options": [
+        "DATABASE_URL",
+        "PUBLIC_URL",
+        "LIVE_PROOF_STORAGE_DIR",
+        "ECOSYSTEM_EVENT_BUS_URL",
+        "ANTHROPIC_API_KEY",
+        "TWILIO_ACCOUNT_SID"
+      ],
+      "database_ownership": [
+        "contacts",
+        "conversations",
+        "messages",
+        "drafts",
+        "live_proof_sessions",
+        "live_proof_evidences",
+        "audit_logs"
+      ],
+      "tenant_scope": "scoped",
+      "documentation_path": "docs/ARCHITECTURE.md",
+      "changelog_path": "CHANGELOG.md",
+      "compatibility_notes": "Follows ECOSYSTEM.md boundaries. Owns customer communications, AI support live chat, and LiveProof fraud-prevention camera capture."
     }
   ]
 }
