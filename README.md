@@ -8,6 +8,14 @@ NEWAX is **The Business Infrastructure Company**. This repository supports that 
 
 > Build infrastructure once, own it, improve it deliberately, and reuse it safely.
 
+## Part of the NEWAX ecosystem
+
+This is the foundation repo for a connected set of NEWAX products. See
+[`ECOSYSTEM.md`](ECOSYSTEM.md) for the per-repo ownership table and the
+no-direct-calls rule, and
+[`docs/ecosystem/MODULE-AUDIT-AND-ROADMAP.md`](docs/ecosystem/MODULE-AUDIT-AND-ROADMAP.md)
+for the full grounded audit and phased plan this doc is built from.
+
 ## Current Status
 
 NEWAX Core is now in **executable platform-foundation mode**.
