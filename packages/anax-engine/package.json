@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "clean": "rm -rf dist coverage",
-    "test": "vitest run"
+    "test": "node --test tests/anax-engine.test.mjs && vitest run tests/anax-engine.spec.ts"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

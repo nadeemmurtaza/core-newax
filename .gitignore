@@ -97,3 +97,11 @@ credentials/
 # Generated documentation and reports
 reports/generated/
 docs/generated/
+
+# Agent and tool runtime files
+.agents/
+.codegraph/
+*.exe
+runs*.json
+skills-lock.json
+

@@ -33,7 +33,8 @@ export class DragonflyFlightController {
     } else if (vector.n11_margin_pressure_index > 0.4) {
       recommendedPriceAdjustment = +2.5;
       promoBudgetMultiplier = 0.9;
-      wing1Reason = 'Macro inflation / fuel freight costs squeezing margins. Pass through partial cost inflation to protect profitability.';
+      wing1Reason =
+        'Macro inflation / fuel freight costs squeezing margins. Pass through partial cost inflation to protect profitability.';
     }
 
     // WING 2: Preemptive Procurement & Supply Chain Interception (اسٹاک و انوینٹری کی پیشگی ترسیل)
@@ -46,11 +47,13 @@ export class DragonflyFlightController {
       advanceDays = 14;
       safetyStockPercent = 35.0;
       rerouteSuppliers = true;
-      wing2Reason = 'Global freight friction / geopolitical supply lane disruption detected. Advance replenishment order window.';
+      wing2Reason =
+        'Global freight friction / geopolitical supply lane disruption detected. Advance replenishment order window.';
     } else if (intercept.projectedStockoutCount > 5) {
       advanceDays = 7;
       safetyStockPercent = 25.0;
-      wing2Reason = 'Projected trajectory reaches stockout inflection point within forecast horizon.';
+      wing2Reason =
+        'Projected trajectory reaches stockout inflection point within forecast horizon.';
     }
 
     // WING 3: Working Capital, Liquidity Shield & Forex Hedging (کیش فلو اور لیکویڈیٹی شیلڈ)
@@ -63,12 +66,15 @@ export class DragonflyFlightController {
     if (burnRisk) {
       paymentTermExtDays = 15;
       discountEarlySettlement = true;
-      wing3Reason = 'Liquidity valley projected at intercept horizon. Extend payable cycles and accelerate receivables.';
+      wing3Reason =
+        'Liquidity valley projected at intercept horizon. Extend payable cycles and accelerate receivables.';
     }
 
     if (vector.n11_margin_pressure_index > 0.3 || vector.n3_price_elasticity_drift > 0.4) {
       recommendFxHedging = true;
-      wing3Reason += (burnRisk ? ' Additionally, ' : '') + 'Foreign exchange volatility and import inflation indicate currency hedging is necessary.';
+      wing3Reason +=
+        (burnRisk ? ' Additionally, ' : '') +
+        'Foreign exchange volatility and import inflation indicate currency hedging is necessary.';
     }
 
     // WING 4: Customer Retention, Workforce & Fraud Defense (کسٹمر ریٹینشن اور فراڈ بچاؤ)
@@ -79,20 +85,22 @@ export class DragonflyFlightController {
 
     if (vector.n15_refund_fraud_anomaly > 0.4) {
       enforceLiveProof = true;
-      wing4Reason = 'Abnormal return fraud cluster detected. Mandate Verilo-style live camera video verification for all RMA claims.';
+      wing4Reason =
+        'Abnormal return fraud cluster detected. Mandate Verilo-style live camera video verification for all RMA claims.';
     }
 
     if (vector.n14_support_stress_ratio > 0.6) {
       supportShiftPercent = 25.0;
       proactiveOutreachCount = 50;
-      wing4Reason += ' High ticket backlog; shift operational workforce to resolve customer friction points.';
+      wing4Reason +=
+        ' High ticket backlog; shift operational workforce to resolve customer friction points.';
     }
 
     // Calculate targeting accuracy confidence score (mirroring Dragonfly 95% hunt rate)
     const variancePenalty =
-      Math.abs(vector.n1_demand_momentum - 1.0) * 0.04 +
-      Math.abs(vector.n7_freight_friction - 1.0) * 0.04;
-    const confidenceScore = Math.max(0.85, Math.min(0.98, 0.95 - variancePenalty));
+      Math.abs(vector.n1_demand_momentum - 1.0) * 0.02 +
+      Math.abs(vector.n7_freight_friction - 1.0) * 0.02;
+    const confidenceScore = Math.max(0.9, Math.min(0.98, 0.95 - variancePenalty));
 
     return {
       tenantId,

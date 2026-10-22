@@ -1,0 +1,30 @@
+{
+  "name": "@newax/module-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NEWAX Module Gateway and Event Bus Client - Zero-trust decoupled communication, domain event pub/sub, and synchronous RPC gateway.",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "test": "vitest run",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@newax/crypto-mesh": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}
