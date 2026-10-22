@@ -1140,6 +1140,55 @@
       "documentation_path": "docs/ecosystem/erp-1.md",
       "changelog_path": "docs/ecosystem/CHANGELOG.md",
       "compatibility_notes": "Follows ECOSYSTEM.md boundaries. Owns catalog, orders, inventory, finance, HR. Does not own CRM/support (Communicator) or Identity/Vault (nID)."
+    },
+    {
+      "module_name": "Communicator (Customer AI Support & Omnichannel Messaging)",
+      "module_key": "communicator",
+      "module_layer": "application",
+      "module_version": "0.2.0",
+      "module_status": "active",
+      "module_owner": "core-team",
+      "description": "Automated omnichannel communication engine (WhatsApp, SMS, Email), Customer AI live support agent, and Verilo-style LiveProof return/refund verification portal.",
+      "dependencies": [
+        "core-newax"
+      ],
+      "required_permissions": [
+        "comm:messages:read",
+        "comm:messages:write",
+        "comm:proofs:verify"
+      ],
+      "exposed_events": [
+        "refund.proof_captured",
+        "conversation.started",
+        "message.received",
+        "lead.contacted"
+      ],
+      "consumed_events": [
+        "order.placed",
+        "payment.succeeded",
+        "support.ticket_created"
+      ],
+      "configuration_options": [
+        "DATABASE_URL",
+        "PUBLIC_URL",
+        "LIVE_PROOF_STORAGE_DIR",
+        "ECOSYSTEM_EVENT_BUS_URL",
+        "ANTHROPIC_API_KEY",
+        "TWILIO_ACCOUNT_SID"
+      ],
+      "database_ownership": [
+        "contacts",
+        "conversations",
+        "messages",
+        "drafts",
+        "live_proof_sessions",
+        "live_proof_evidences",
+        "audit_logs"
+      ],
+      "tenant_scope": "scoped",
+      "documentation_path": "docs/ARCHITECTURE.md",
+      "changelog_path": "CHANGELOG.md",
+      "compatibility_notes": "Follows ECOSYSTEM.md boundaries. Owns customer communications, AI support live chat, and LiveProof fraud-prevention camera capture."
     }
   ]
 }
