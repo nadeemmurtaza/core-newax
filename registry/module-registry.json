@@ -1,9 +1,9 @@
 {
   "registry_name": "NEWAX Module Registry",
   "registry_key": "newax-module-registry",
-  "registry_version": "0.1.19",
+  "registry_version": "0.2.0",
   "registry_status": "draft",
-  "last_updated": "2026-07-16",
+  "last_updated": "2026-10-22",
   "owner": "NEWAX Engineering",
   "purpose": "Internal source of truth for planned, draft, active, deprecated, replaced, and archived NEWAX modules.",
   "governance": {
@@ -13,6 +13,84 @@
     "module_standard": "docs/standards/module-standard.md",
     "registry_standard": "docs/standards/module-registry-standard.md",
     "important_note": "A registry entry tracks a module. It does not approve the module for production use. Only modules with active status and completed approval may be reused in client systems."
+  },
+  "external_repositories": {
+    "note": "These are the separately-deployed NEWAX repos, not packages/modules inside this monorepo. Tracked here (rather than in `modules`, whose schema assumes an in-repo package path) so the registry is still the one place that lists every piece of the ecosystem. Full audit: docs/ecosystem/MODULE-AUDIT-AND-ROADMAP.md. Per-repo detail: each repo's own ECOSYSTEM.md.",
+    "repos": [
+      {
+        "repo_key": "nid",
+        "repo_name": "nID",
+        "github_url": "https://github.com/nadeemmurtaza/nID",
+        "role": "Single identity provider: login, 2FA, OAuth sessions, secrets vault",
+        "status": "active",
+        "owns": ["account", "session", "oauth_client", "2fa", "secrets_vault"],
+        "must_not_own": ["business_data"]
+      },
+      {
+        "repo_key": "erp-1",
+        "repo_name": "erp-1 (Yaseen)",
+        "github_url": "https://github.com/nadeemmurtaza/erp-1",
+        "role": "Commerce/ERP: catalog, orders, fulfillment, inventory, finance, HR",
+        "status": "active",
+        "owns": ["sales", "supply-chain", "money", "people.hr,payroll,attendance", "merchandising.catalog,collections,content"],
+        "must_not_own": ["crm", "support", "marketing_campaigns", "identity_verification", "own_user_model", "rag"],
+        "known_misplacements": [
+          "customers/crm,support,notify,onsitemessages -> Communicator",
+          "merchandising/marketing -> resolves a 3-way duplicate with newcom/campaign-service and Communicator broadcasts",
+          "system/identity-verification, system/users -> nID",
+          "system/rag -> likely Communicator"
+        ]
+      },
+      {
+        "repo_key": "newcom",
+        "repo_name": "newcom",
+        "github_url": "https://github.com/nadeemmurtaza/newcom",
+        "role": "Bundles 4 separate services pending split: esp (nmail, email engine), collab-service (real-time docs), web (workspace shell), campaign-service",
+        "status": "draft",
+        "owns": ["email_sending", "deliverability", "realtime_doc_collaboration"],
+        "must_not_own": ["customer_facing_messaging"],
+        "known_misplacements": [
+          "esp, collab-service, web should each become their own repo -- different languages, unrelated products, no shared deploy lifecycle",
+          "campaign-service folds into whichever repo wins the campaign-engine triplicate"
+        ]
+      },
+      {
+        "repo_key": "communicator",
+        "repo_name": "Communicator",
+        "github_url": "https://github.com/nadeemmurtaza/Communicator",
+        "role": "Omnichannel outreach + AI reply engine: conversations, drafts, broadcasts",
+        "status": "active",
+        "owns": ["conversations", "messages", "drafts", "automation_rules", "knowledge_base", "broadcasts"],
+        "must_not_own": ["rbac", "sso", "billing", "generic_ticketing", "generic_webhooks_engine", "own_email_infra"],
+        "known_misplacements": [
+          "RBAC/SSO/SAML -> nID",
+          "Stripe billing -> erp-1 (modules/money)",
+          "generic ticketing/SLA -> erp-1 support, or narrow to conversation-scope",
+          "generic outgoing-webhooks engine -> this registry's Module Gateway",
+          "own email channel -> route through newcom/esp (nmail) instead"
+        ]
+      },
+      {
+        "repo_key": "harvester",
+        "repo_name": "harvester",
+        "github_url": "https://github.com/Newax-Technologies/harvester",
+        "role": "Lead sourcing and qualification",
+        "status": "active",
+        "owns": ["lead_discovery", "qualification_scoring"],
+        "must_not_own": ["outreach", "messaging"],
+        "compatibility_notes": "Already correctly decoupled -- talks to Communicator via REST only, never direct DB access. Reference pattern for every other integration."
+      },
+      {
+        "repo_key": "aegisdesk",
+        "repo_name": "AegisDesk",
+        "github_url": "https://github.com/nadeemmurtaza/AegisDesk",
+        "role": "Offline-first Android personal device agent",
+        "status": "separate_track",
+        "owns": ["on_device_automation"],
+        "must_not_own": ["networked_ecosystem_integration"],
+        "compatibility_notes": "No Internet permission is a core design constraint; joining the Module Gateway/nID login requires an explicit product-direction decision this repo hasn't made."
+      }
+    ]
   },
   "modules": [
     {
