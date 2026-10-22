@@ -16,6 +16,10 @@ no-direct-calls rule, and
 [`docs/ecosystem/MODULE-AUDIT-AND-ROADMAP.md`](docs/ecosystem/MODULE-AUDIT-AND-ROADMAP.md)
 for the full grounded audit and phased plan this doc is built from.
 
+> ⚠️ GitHub Dependabot is reporting 68 vulnerabilities on this repo's default
+> branch (7 critical, 23 high, 35 moderate, 3 low) as of 2026-10-22. Not yet
+> triaged. See the [Security tab](https://github.com/nadeemmurtaza/core-newax/security/dependabot).
+
 ## Current Status
 
 NEWAX Core is now in **executable platform-foundation mode**.
