@@ -9,8 +9,10 @@ import type { EncryptedTransitEnvelope } from './types.js';
  * or customer client device.
  *
  * Holds ONLY the entity's own cryptographic keys:
- * - ingressSecretHex: used to encrypt outbound messages for NeuraCore.
- * - egressSecretHex: used to decrypt inbound messages delivered from NeuraCore.
+ * - ingressSecretHex: 256-bit AES key used to encrypt outbound messages for NeuraCore.
+ * - egressSecretHex: 256-bit AES key used to decrypt inbound messages delivered from NeuraCore.
+ * - authSecretHex: 512-bit HMAC-SHA512 key used for message integrity.
+ * - rsaPrivateKeyPem: optional 4096-bit RSA private key for banking-grade asymmetric signatures.
  *
  * Has ZERO knowledge of recipient keys or other system nodes.
  */
@@ -35,13 +37,19 @@ export class CryptoMeshClient {
       recipientId,
       keyId: this.credentials.keyId,
       authSecretHex: this.credentials.authSecretHex,
+      ...(this.credentials.rsaPrivateKeyPem
+        ? { rsaPrivateKeyPem: this.credentials.rsaPrivateKeyPem }
+        : {}),
     });
   }
 
   /**
    * Decrypts an inbound envelope forwarded by NeuraCore.
    */
-  decryptFromRelay<T = unknown>(envelope: EncryptedTransitEnvelope): T {
+  decryptFromRelay<T = unknown>(
+    envelope: EncryptedTransitEnvelope,
+    options?: { neuraCoreRsaPublicKeyPem?: string },
+  ): T {
     if (envelope.tenantId !== this.credentials.tenantId) {
       throw new CryptographicIntegrityError(
         `Cross-tenant access violation: message belongs to tenant '${envelope.tenantId}', but client is bound to '${this.credentials.tenantId}'.`,
@@ -56,6 +64,7 @@ export class CryptoMeshClient {
 
     return TransitCipher.decrypt<T>(envelope, this.credentials.egressSecretHex, {
       authSecretHex: this.credentials.authSecretHex,
+      rsaPublicKeyPem: options?.neuraCoreRsaPublicKeyPem,
       enforceReplayCheck: true,
     });
   }

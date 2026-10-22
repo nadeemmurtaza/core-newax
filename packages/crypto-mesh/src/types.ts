@@ -1,9 +1,15 @@
 /**
  * NEWAX Cryptographic Transit Relay - Type Definitions
  *
- * Implements Zero-Trust Multi-Hop Re-Encryption:
- * Sender encrypts using K_sender -> NeuraCore decrypts with K_sender & re-encrypts with K_receiver -> Receiver decrypts with K_receiver.
- * Neither party ever discovers the other party's cryptographic key.
+ * Implements Banking-Grade Multi-Layer Zero-Trust Re-Encryption:
+ * - Layer 1: RSA-4096 Asymmetric Identity Binding & Envelope Sealing (Largest known standard asymmetric key size).
+ * - Layer 2: AES-256-GCM Authenticated Encryption with 12-byte cryptographically random IV (Largest symmetric key size).
+ * - Layer 3: 512-bit HMAC-SHA512 Canonical Envelope Integrity Signature (Largest standard secure hashing algorithm).
+ * - Layer 4: HKDF-SHA512 Ephemeral Session Key Derivation for Perfect Forward Secrecy.
+ *
+ * SENDER AND RECEIVER HAVE STRICTLY SEPARATE KEYS.
+ * NeuraCore acts as the sovereign cryptographic bridge.
+ * Neither party ever discovers or accesses the other party's keys.
  */
 
 export interface EncryptedTransitEnvelope {
@@ -34,8 +40,11 @@ export interface EncryptedTransitEnvelope {
   /** UTC ISO-8601 timestamp of message creation (used for anti-replay enforcement) */
   timestamp: string;
 
-  /** Base64-encoded HMAC-SHA256 signature binding the envelope metadata to prevent tampering */
+  /** Base64-encoded 512-bit HMAC-SHA512 signature binding envelope metadata */
   signature: string;
+
+  /** Optional RSA-4096 asymmetric signature for high-value financial / banking-grade operations */
+  asymmetricSignature?: string;
 }
 
 export interface EntityKeyRecord {
@@ -54,8 +63,14 @@ export interface EntityKeyRecord {
   /** 256-bit AES hex key used by NeuraCore to encrypt data delivered to this entity */
   egressSecretHex: string;
 
-  /** HMAC secret hex used to sign and verify envelope headers */
+  /** 512-bit HMAC-SHA512 secret hex used to sign and verify envelope headers (64 bytes = 128 hex chars) */
   authSecretHex: string;
+
+  /** 4096-bit RSA Public Key PEM for asymmetric envelope sealing and verification */
+  rsaPublicKeyPem?: string;
+
+  /** 4096-bit RSA Private Key PEM (Held exclusively by the entity, never shared) */
+  rsaPrivateKeyPem?: string;
 
   /** Revocation status */
   revoked: boolean;

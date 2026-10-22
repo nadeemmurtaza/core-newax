@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { generateKeyPairSync, randomBytes } from 'node:crypto';
 import type { EntityKeyRecord } from './types.js';
 
 export class KeyNotFoundError extends Error {
@@ -19,19 +19,26 @@ export interface ClientEntityCredentials {
   tenantId: string;
   entityId: string;
   keyId: string;
-  /** Encryption key for outbound messages directed to NeuraCore */
+  /** 256-bit AES key for outbound messages directed to NeuraCore */
   ingressSecretHex: string;
-  /** Decryption key for inbound messages arriving from NeuraCore */
+  /** 256-bit AES key for inbound messages arriving from NeuraCore */
   egressSecretHex: string;
-  /** HMAC secret for signing envelopes */
+  /** 512-bit HMAC-SHA512 secret for envelope signing (64 bytes = 128 hex chars) */
   authSecretHex: string;
+  /** Optional RSA-4096 public key for asymmetric verification */
+  rsaPublicKeyPem?: string;
+  /** Optional RSA-4096 private key held strictly by this entity */
+  rsaPrivateKeyPem?: string;
 }
 
 /**
  * NeuraKeyVault: Multi-Tenant Zero-Trust Key Management Store for NeuraCore.
  *
  * Stores distinct sender (ingress) and receiver (egress) keys per entity.
- * Guarantees cryptographic isolation between all microservices, ERP nodes, and client devices.
+ * Uses maximum known key lengths:
+ * - 256-bit AES-GCM (military / banking standard)
+ * - 512-bit HMAC-SHA512 (largest standard integrity key)
+ * - 4096-bit RSA asymmetric keypair (largest standard asymmetric key used in Tier-1 banking)
  */
 export class NeuraKeyVault {
   private readonly records = new Map<string, EntityKeyRecord>();
@@ -42,21 +49,35 @@ export class NeuraKeyVault {
 
   /**
    * Registers a new entity or rotates keys for an existing entity.
-   * Generates cryptographically secure 256-bit random keys for ingress, egress, and HMAC authentication.
+   * Generates maximum length keys (256-bit AES, 512-bit HMAC, and optional 4096-bit RSA).
    */
   registerEntity(
     tenantId: string,
     entityId: string,
-    customSecrets?: {
+    options?: {
       ingressSecretHex?: string;
       egressSecretHex?: string;
       authSecretHex?: string;
+      generateRsa4096?: boolean;
     },
   ): EntityKeyRecord {
-    const keyId = `kid_${Date.now()}_${randomBytes(4).toString('hex')}`;
-    const ingressSecretHex = customSecrets?.ingressSecretHex ?? randomBytes(32).toString('hex');
-    const egressSecretHex = customSecrets?.egressSecretHex ?? randomBytes(32).toString('hex');
-    const authSecretHex = customSecrets?.authSecretHex ?? randomBytes(32).toString('hex');
+    const keyId = `kid_${Date.now()}_${randomBytes(8).toString('hex')}`;
+    const ingressSecretHex = options?.ingressSecretHex ?? randomBytes(32).toString('hex'); // 256-bit
+    const egressSecretHex = options?.egressSecretHex ?? randomBytes(32).toString('hex'); // 256-bit
+    const authSecretHex = options?.authSecretHex ?? randomBytes(64).toString('hex'); // 512-bit (64 bytes)
+
+    let rsaPublicKeyPem: string | undefined;
+    let rsaPrivateKeyPem: string | undefined;
+
+    if (options?.generateRsa4096) {
+      const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+        modulusLength: 4096,
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+      });
+      rsaPublicKeyPem = publicKey;
+      rsaPrivateKeyPem = privateKey;
+    }
 
     const record: EntityKeyRecord = {
       tenantId,
@@ -65,6 +86,8 @@ export class NeuraKeyVault {
       ingressSecretHex,
       egressSecretHex,
       authSecretHex,
+      ...(rsaPublicKeyPem ? { rsaPublicKeyPem } : {}),
+      ...(rsaPrivateKeyPem ? { rsaPrivateKeyPem } : {}),
       revoked: false,
       createdAt: new Date().toISOString(),
     };
@@ -104,6 +127,8 @@ export class NeuraKeyVault {
       ingressSecretHex: record.ingressSecretHex,
       egressSecretHex: record.egressSecretHex,
       authSecretHex: record.authSecretHex,
+      ...(record.rsaPublicKeyPem ? { rsaPublicKeyPem: record.rsaPublicKeyPem } : {}),
+      ...(record.rsaPrivateKeyPem ? { rsaPrivateKeyPem: record.rsaPrivateKeyPem } : {}),
     };
   }
 

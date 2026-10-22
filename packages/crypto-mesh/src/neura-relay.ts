@@ -5,8 +5,8 @@ import type { EncryptedTransitEnvelope, RelayOptions, RelayResult } from './type
 /**
  * NeuraCryptoRelay: The Central Sovereign Cryptographic Bridge in NeuraCore.
  *
- * Enforces Zero-Trust Dual-Key Cryptographic Isolation:
- * - Sender encrypts payload with its own secret (K_sender).
+ * Enforces Zero-Trust Dual-Key Cryptographic Isolation with Banking-Grade Key Sizes:
+ * - Sender encrypts payload with its own secret (K_sender) and signs with 512-bit HMAC / RSA-4096.
  * - NeuraCore receives ciphertext over the wire, validates signature and freshness.
  * - NeuraCore decrypts with K_sender, performs optional translation/governance audit.
  * - NeuraCore re-encrypts with the destination recipient's unique secret (K_receiver).
@@ -18,7 +18,10 @@ import type { EncryptedTransitEnvelope, RelayOptions, RelayResult } from './type
 export class NeuraCryptoRelay {
   private readonly seenSignatures = new Map<string, number>();
 
-  constructor(private readonly keyVault: NeuraKeyVault) {}
+  constructor(
+    private readonly keyVault: NeuraKeyVault,
+    private readonly neuraCoreRsaPrivateKeyPem?: string,
+  ) {}
 
   /**
    * Cleans expired anti-replay nonces from the replay cache.
@@ -65,6 +68,7 @@ export class NeuraCryptoRelay {
       senderRecord.ingressSecretHex,
       {
         authSecretHex: senderRecord.authSecretHex,
+        rsaPublicKeyPem: senderRecord.rsaPublicKeyPem,
         maxClockSkewSeconds: maxSkew,
         enforceReplayCheck: true,
       },
@@ -93,6 +97,7 @@ export class NeuraCryptoRelay {
         recipientId: incomingEnvelope.recipientId,
         keyId: recipientRecord.keyId,
         authSecretHex: recipientRecord.authSecretHex,
+        rsaPrivateKeyPem: this.neuraCoreRsaPrivateKeyPem,
       },
     );
     const egressEncryptionMs = Math.max(0.1, Date.now() - egressStart);

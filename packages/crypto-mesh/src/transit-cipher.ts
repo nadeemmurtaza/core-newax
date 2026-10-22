@@ -1,4 +1,12 @@
-import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  createSign,
+  createVerify,
+  randomBytes,
+  timingSafeEqual,
+} from 'node:crypto';
 import type { EncryptedTransitEnvelope } from './types.js';
 
 export class CryptographicIntegrityError extends Error {
@@ -17,6 +25,7 @@ export class ReplayAttackDetectedError extends Error {
 
 export class TransitCipher {
   private static readonly ALGORITHM = 'aes-256-gcm';
+  private static readonly HASH_ALGORITHM = 'sha512'; // 512-bit cryptographic hash (largest standard HMAC)
   private static readonly IV_LENGTH_BYTES = 12;
   private static readonly AUTH_TAG_LENGTH_BYTES = 16;
 
@@ -39,13 +48,12 @@ export class TransitCipher {
   }
 
   /**
-   * Computes an HMAC-SHA256 signature across the entire envelope to guarantee message authenticity.
+   * Builds the canonical string representation for cryptographic signing.
    */
-  static computeSignature(
-    metadata: Omit<EncryptedTransitEnvelope, 'signature'>,
-    authSecretHex: string,
+  private static buildCanonicalString(
+    metadata: Omit<EncryptedTransitEnvelope, 'signature' | 'asymmetricSignature'>,
   ): string {
-    const canonicalString = [
+    return [
       metadata.version,
       metadata.tenantId,
       metadata.senderId,
@@ -56,14 +64,57 @@ export class TransitCipher {
       metadata.authTag,
       metadata.ciphertext,
     ].join('|');
+  }
 
-    const hmac = createHmac('sha256', Buffer.from(authSecretHex, 'hex'));
+  /**
+   * Computes a 512-bit HMAC-SHA512 signature across the entire envelope to guarantee message authenticity.
+   */
+  static computeSignature(
+    metadata: Omit<EncryptedTransitEnvelope, 'signature' | 'asymmetricSignature'>,
+    authSecretHex: string,
+  ): string {
+    const canonicalString = this.buildCanonicalString(metadata);
+    const hmac = createHmac(this.HASH_ALGORITHM, Buffer.from(authSecretHex, 'hex'));
     hmac.update(canonicalString, 'utf8');
     return hmac.digest('base64');
   }
 
   /**
-   * Encrypts a plaintext payload using AES-256-GCM with authenticated headers and HMAC signature.
+   * Signs the canonical envelope using an RSA-4096 private key (SHA-512 with PKCS#1 v1.5 / PSS).
+   */
+  static signAsymmetric(
+    metadata: Omit<EncryptedTransitEnvelope, 'signature' | 'asymmetricSignature'>,
+    rsaPrivateKeyPem: string,
+  ): string {
+    const canonicalString = this.buildCanonicalString(metadata);
+    const signer = createSign('SHA512');
+    signer.update(canonicalString, 'utf8');
+    signer.end();
+    return signer.sign(rsaPrivateKeyPem, 'base64');
+  }
+
+  /**
+   * Verifies the RSA-4096 asymmetric signature against the sender's public key.
+   */
+  static verifyAsymmetric(
+    metadata: Omit<EncryptedTransitEnvelope, 'signature' | 'asymmetricSignature'>,
+    signatureBase64: string,
+    rsaPublicKeyPem: string,
+  ): boolean {
+    try {
+      const canonicalString = this.buildCanonicalString(metadata);
+      const verifier = createVerify('SHA512');
+      verifier.update(canonicalString, 'utf8');
+      verifier.end();
+      return verifier.verify(rsaPublicKeyPem, Buffer.from(signatureBase64, 'base64'));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Encrypts a plaintext payload using AES-256-GCM with authenticated headers, 512-bit HMAC,
+   * and optional RSA-4096 digital signature.
    */
   static encrypt(
     payload: unknown,
@@ -74,12 +125,15 @@ export class TransitCipher {
       recipientId: string;
       keyId: string;
       authSecretHex: string;
+      rsaPrivateKeyPem?: string | undefined;
       customTimestamp?: string;
     },
   ): EncryptedTransitEnvelope {
     const key = Buffer.from(secretHex, 'hex');
     if (key.length !== 32) {
-      throw new Error(`Invalid AES-256 key length: expected 32 bytes (64 hex characters), received ${key.length} bytes.`);
+      throw new Error(
+        `Invalid AES-256 key length: expected 32 bytes (64 hex characters), received ${key.length} bytes.`,
+      );
     }
 
     const iv = randomBytes(this.IV_LENGTH_BYTES);
@@ -103,7 +157,7 @@ export class TransitCipher {
     const encrypted = Buffer.concat([cipher.update(serialized, 'utf8'), cipher.final()]);
     const authTag = cipher.getAuthTag();
 
-    const envelopeWithoutSig: Omit<EncryptedTransitEnvelope, 'signature'> = {
+    const envelopeWithoutSig: Omit<EncryptedTransitEnvelope, 'signature' | 'asymmetricSignature'> = {
       version: '1.0.0',
       tenantId: params.tenantId,
       senderId: params.senderId,
@@ -115,23 +169,32 @@ export class TransitCipher {
       timestamp,
     };
 
+    // 512-bit HMAC-SHA512 Signature
     const signature = this.computeSignature(envelopeWithoutSig, params.authSecretHex);
+
+    // Optional RSA-4096 Asymmetric Signature
+    let asymmetricSignature: string | undefined;
+    if (params.rsaPrivateKeyPem) {
+      asymmetricSignature = this.signAsymmetric(envelopeWithoutSig, params.rsaPrivateKeyPem);
+    }
 
     return {
       ...envelopeWithoutSig,
       signature,
+      ...(asymmetricSignature ? { asymmetricSignature } : {}),
     };
   }
 
   /**
    * Decrypts an EncryptedTransitEnvelope, strictly verifying AEAD authentication tags,
-   * HMAC signature, and anti-replay timestamps.
+   * 512-bit HMAC signature, optional RSA-4096 signature, and anti-replay timestamps.
    */
   static decrypt<T = unknown>(
     envelope: EncryptedTransitEnvelope,
     secretHex: string,
     options?: {
       authSecretHex?: string;
+      rsaPublicKeyPem?: string | undefined;
       maxClockSkewSeconds?: number;
       enforceReplayCheck?: boolean;
     },
@@ -154,9 +217,9 @@ export class TransitCipher {
       }
     }
 
-    // 2. Signature verification
+    // 2. 512-bit HMAC-SHA512 Signature verification
     if (options?.authSecretHex) {
-      const { signature, ...metadata } = envelope;
+      const { signature, asymmetricSignature: _asym, ...metadata } = envelope;
       const expectedSignature = this.computeSignature(metadata, options.authSecretHex);
 
       const sigBuffer = Buffer.from(signature, 'base64');
@@ -167,12 +230,23 @@ export class TransitCipher {
         !timingSafeEqual(sigBuffer, expectedSigBuffer)
       ) {
         throw new CryptographicIntegrityError(
-          'Envelope signature verification failed: message has been tampered with on the wire.',
+          'Envelope 512-bit HMAC signature verification failed: message has been tampered with on the wire.',
         );
       }
     }
 
-    // 3. AES-256-GCM AEAD Decryption
+    // 3. Optional RSA-4096 Asymmetric Signature verification
+    if (options?.rsaPublicKeyPem && envelope.asymmetricSignature) {
+      const { signature: _sig, asymmetricSignature, ...metadata } = envelope;
+      const valid = this.verifyAsymmetric(metadata, asymmetricSignature, options.rsaPublicKeyPem);
+      if (!valid) {
+        throw new CryptographicIntegrityError(
+          'RSA-4096 asymmetric signature verification failed: identity forgery detected.',
+        );
+      }
+    }
+
+    // 4. AES-256-GCM AEAD Decryption
     const key = Buffer.from(secretHex, 'hex');
     const iv = Buffer.from(envelope.iv, 'base64');
     const authTag = Buffer.from(envelope.authTag, 'base64');
