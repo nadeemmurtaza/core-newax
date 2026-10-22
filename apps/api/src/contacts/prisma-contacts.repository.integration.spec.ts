@@ -20,6 +20,7 @@ describeWithDatabase('PrismaContactsRepository PostgreSQL integration', () => {
   let prisma: PrismaClient;
   let repository: PrismaContactsRepository;
   const organizationIds: string[] = [];
+  const tenantIds: string[] = [];
   const normalizedValues = [EMAIL, SECOND_EMAIL, THIRD_EMAIL, FOURTH_EMAIL];
 
   beforeAll(async () => {
@@ -39,12 +40,16 @@ describeWithDatabase('PrismaContactsRepository PostgreSQL integration', () => {
       where: { normalizedValue: { in: normalizedValues } },
     });
     await prisma.coreOrganization.deleteMany({ where: { id: { in: organizationIds } } });
+    await prisma.coreTenant.deleteMany({ where: { id: { in: tenantIds } } });
     await prisma.$disconnect();
   });
 
   it('serializes duplicates, reuses global methods across organizations, and replaces primaries', async () => {
+    const tenant = await prisma.coreTenant.create({ data: { name: organizationName('Tenant') } });
+    tenantIds.push(tenant.id);
     const firstOrganization = await prisma.coreOrganization.create({
       data: {
+        tenantId: tenant.id,
         legalName: organizationName('A'),
         displayName: organizationName('A display'),
         organizationType: 'company',
@@ -52,6 +57,7 @@ describeWithDatabase('PrismaContactsRepository PostgreSQL integration', () => {
     });
     const secondOrganization = await prisma.coreOrganization.create({
       data: {
+        tenantId: tenant.id,
         legalName: organizationName('B'),
         displayName: organizationName('B display'),
         organizationType: 'company',

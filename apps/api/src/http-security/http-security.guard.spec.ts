@@ -199,6 +199,24 @@ describe('HttpSecurityGuard public authentication mutation policy', () => {
       statusCode: 500,
     });
   });
+
+  it('allows a public, authentication-sensitive GET endpoint without the mutation marker', async () => {
+    const rateLimiter = new RecordingRateLimiter();
+    const guard = createGuard(
+      new Map<string, unknown>([
+        [HTTP_CONTEXT_MODE_KEY, 'public'],
+        [HTTP_AUTHENTICATION_SENSITIVE_KEY, true],
+      ]),
+      rateLimiter,
+    );
+    const currentRequest = { ...request(), method: 'GET' };
+
+    await expect(
+      guard.canActivate(executionContext(currentRequest, new FakeResponse())),
+    ).resolves.toBe(true);
+    expect(rateLimiter.authenticationSensitive).toBe(true);
+    expect(currentRequest.newaxStateChanging).toBe(false);
+  });
 });
 
 describe('HttpSecurityGuard account endpoint authentication', () => {

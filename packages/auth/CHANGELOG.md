@@ -2,6 +2,26 @@
 
 All notable changes to the NEWAX Authentication module are documented here.
 
+## 0.2.0 - 2026-07-26
+
+### Added
+
+- `OAuthProvider` interface (port) for provider-agnostic external identity integration.
+- `ExternalIdentityProfile` type for normalized OAuth profile data.
+- `ExternalIdentityRecord` and `CreateExternalIdentityInput` types for external identity persistence.
+- `OAuthLoginInput` type extending `AuthenticationRequestMetadata` for OAuth login calls.
+- `findExternalIdentity` and `upsertExternalIdentity` methods on `AuthenticationRepository`.
+- `loginWithExternalIdentity` method on `AuthenticationService` for provider-agnostic OAuth session issuance.
+- Unit tests for the OAuth login flow including existing-link, email-match, suspended account, and locked account cases.
+- ADR 0026 documenting the design, provider selection, identity linking strategy, and security considerations.
+
+### Security
+
+- OAuth logins reuse the same session issuance path as password logins, preserving session validation and revocation semantics.
+- OAuth does not provision new users; only active accounts with a verified email match are eligible.
+- Provider subjects (stable external IDs) are used as the canonical external identity key; display handles are stored separately and updated on each login.
+- Access tokens from OAuth providers are never persisted to the database.
+
 ## 0.1.0 - 2026-07-11
 
 ### Added

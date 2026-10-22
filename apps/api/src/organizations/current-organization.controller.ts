@@ -13,6 +13,7 @@ interface CurrentOrganizationResponse {
   readonly success: true;
   readonly data: {
     readonly id: string;
+    readonly tenant_id: string;
     readonly legal_name: string;
     readonly display_name: string;
     readonly type: string;
@@ -49,6 +50,7 @@ export class CurrentOrganizationController {
       success: true,
       data: {
         id: organization.id,
+        tenant_id: organization.tenantId,
         legal_name: organization.legalName,
         display_name: organization.displayName,
         type: organization.organizationType,

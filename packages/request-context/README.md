@@ -4,7 +4,7 @@
 
 Draft reusable platform service.
 
-Version: `0.1.0`
+Version: `0.2.0`
 
 ## Purpose
 
@@ -87,7 +87,7 @@ An organization context adds:
 - Effective permission codes evaluated for the membership.
 - Permission evaluation timestamp.
 
-The client selects a membership identifier. The server derives the organization identifier from the trusted membership record.
+The client selects a membership identifier. The server derives the Tenant and Organization identifiers from the trusted membership record.
 
 ## Account membership discovery
 
@@ -111,7 +111,7 @@ Rules:
 
 - The service receives trusted organization context, not client-declared user, person, organization, role, permission, or status fields.
 - The selected membership is reloaded from the Central Registry with active person, membership, organization, non-ended, and non-deleted filters.
-- Reloaded person, membership, and organization identifiers must match trusted organization context.
+- Reloaded person, membership, and Tenant and Organization identifiers must match trusted organization context.
 - A selection that becomes unavailable fails with the concealed membership-unavailable response.
 - Identifier mismatches or malformed persistence records fail as integrity errors.
 - The response includes only selected organization display identity, membership presentation fields, session expiry, permission-evaluation time, and fixed capability indicators.
@@ -148,7 +148,7 @@ Missing memberships, memberships belonging to another person, suspended membersh
 
 ## Permission integrity
 
-Permission evaluation must return the same membership and organization identifiers that were validated by the trusted membership directory.
+Permission evaluation must return the same membership and Tenant and Organization identifiers that were validated by the trusted membership directory.
 
 A mismatch is treated as an integrity failure rather than as an empty permission set.
 

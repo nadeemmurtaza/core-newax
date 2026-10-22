@@ -153,3 +153,7 @@ Rejected. Confirmation is part of the Trusted Request Context platform responsib
 - ADR 0019: Build HTTP Security Boundary.
 - ADR 0020: Build Bounded Authentication HTTP Endpoints.
 - ADR 0021: Build Account Membership Discovery.
+
+## Tenant boundary amendment
+
+ADR 0027 adds the server-derived `tenant_id` to organization context confirmation. The Tenant must remain active, and the confirmed membership and Organization must match the trusted Tenant boundary.

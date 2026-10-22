@@ -8,6 +8,7 @@ describe('readWebEnvironment', () => {
       HOSTNAME: '0.0.0.0',
       PORT: 3001,
       SEARCH_INDEXING_ENABLED: false,
+      API_INTERNAL_ORIGIN: 'http://127.0.0.1:3000',
     });
   });
 
@@ -17,11 +18,13 @@ describe('readWebEnvironment', () => {
         HOSTNAME: ' 127.0.0.1 ',
         PORT: ' 4100 ',
         SEARCH_INDEXING_ENABLED: ' true ',
+        API_INTERNAL_ORIGIN: ' https://api.internal.example/ ',
       }),
     ).toEqual({
       HOSTNAME: '127.0.0.1',
       PORT: 4100,
       SEARCH_INDEXING_ENABLED: true,
+      API_INTERNAL_ORIGIN: 'https://api.internal.example',
     });
   });
 
@@ -38,6 +41,15 @@ describe('readWebEnvironment', () => {
   ])('rejects invalid port value %j', (invalidPort, expectedMessage) => {
     expect(() => readWebEnvironment({ PORT: invalidPort })).toThrow(expectedMessage);
   });
+
+  it.each(['', 'relative/path', 'ftp://example.com', 'https://user:secret@example.com'])(
+    'rejects invalid API origin %j',
+    (origin) => {
+      expect(() => readWebEnvironment({ API_INTERNAL_ORIGIN: origin })).toThrow(
+        /API_INTERNAL_ORIGIN/u,
+      );
+    },
+  );
 
   it('accepts an explicit false indexing value', () => {
     expect(readWebEnvironment({ SEARCH_INDEXING_ENABLED: 'false' }).SEARCH_INDEXING_ENABLED).toBe(

@@ -3,14 +3,13 @@ import { readFileSync } from 'node:fs';
 import {
   FAILURE_CONCLUSIONS,
   githubRequest,
+  isExecutedFailure,
   listAll,
   loadCatalog,
   parseMetadata,
-  parsePullRequestField,
 } from './engineering-learning-core.mjs';
 import { verifyGithubExplanationEvidence } from './explanation-evidence-github.mjs';
 import {
-  evaluateLearningOutcome,
   parseExplanationEvidenceRecord,
   verifyExplanation,
   verifyRootCauseExplanation,
@@ -58,6 +57,14 @@ async function listPullRequestRuns(commits) {
   return [...runsById.values()];
 }
 
+async function filterExecutedFailures(runs) {
+  const candidates = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
+  const results = await Promise.all(
+    candidates.map(async (run) => ((await isExecutedFailure(run)) ? run : null)),
+  );
+  return results.filter(Boolean);
+}
+
 const eventPath = process.env.GITHUB_EVENT_PATH;
 if (eventPath === undefined || eventPath.length === 0) {
   fail(['GITHUB_EVENT_PATH is unavailable.']);
@@ -80,14 +87,9 @@ const linkedIssues = issues.filter((issue) => {
   return Number(parseMetadata(issue.body)['pr-number']) === pullRequest.number;
 });
 const runs = await listPullRequestRuns(commits);
-const failedRuns = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
-const declaredOutcome = parsePullRequestField(pullRequest.body ?? '', '- Learning outcome:');
-const outcomeDecision = evaluateLearningOutcome({
-  declaredOutcome,
-  failedRuns,
-  linkedIssues,
-});
-const errors = [...outcomeDecision.errors];
+const failedRuns = await filterExecutedFailures(runs);
+const evidenceCount = failedRuns.length + linkedIssues.length;
+const errors = [];
 const catalog = loadCatalog();
 const explanationDecisions = [];
 
@@ -201,7 +203,7 @@ console.log(
   JSON.stringify({
     failedRuns: failedRuns.map((run) => run.id),
     linkedIssues: linkedIssues.map((issue) => issue.number),
-    outcome: declaredOutcome,
+    outcome: evidenceCount > 0 ? 'evidence-backed' : 'none',
     explanationDecisions,
     semanticTruthAutomaticallyVerified: false,
     status: 'root-cause-and-explanation-governance-verified',

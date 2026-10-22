@@ -11,6 +11,7 @@ import {
   type HttpSecurityPolicy,
 } from '@newax/http-security';
 
+import { AuditModule } from '../audit/audit.module';
 import type { ApplicationEnvironment } from '../config/environment';
 import { DatabaseModule } from '../database/database.module';
 import { RequestContextModule } from '../request-context/request-context.module';
@@ -25,10 +26,9 @@ import {
   SystemHttpSecurityClock,
 } from './node-http-security.infrastructure';
 import { PrismaHttpRateLimitStore } from './prisma-http-rate-limit.store';
-import { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
 
 @Module({
-  imports: [DatabaseModule, RequestContextModule],
+  imports: [AuditModule, DatabaseModule, RequestContextModule],
   providers: [
     {
       provide: HTTP_SECURITY_POLICY,
@@ -68,7 +68,6 @@ import { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
     SensitiveResponseRedactor,
     SystemHttpSecurityClock,
     HttpRequestIdFactory,
-    PrismaHttpSecurityAuditSink,
     PrismaHttpRateLimitStore,
     {
       provide: NodeHttpSecurityCrypto,

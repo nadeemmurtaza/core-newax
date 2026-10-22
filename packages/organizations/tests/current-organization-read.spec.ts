@@ -13,6 +13,7 @@ import type {
   UpdateOrganizationRecordInput,
 } from '../src/types/organization';
 
+const TENANT_ID = '00000000-0000-4000-8000-000000000008';
 const ORGANIZATION_ID = '00000000-0000-4000-8000-000000000001';
 const ACTOR_USER_ID = '00000000-0000-4000-8000-000000000099';
 const CREATED_AT = new Date('2026-07-01T00:00:00.000Z');
@@ -21,6 +22,7 @@ const UPDATED_AT = new Date('2026-07-10T00:00:00.000Z');
 function organization(overrides: Partial<OrganizationRecord> = {}): OrganizationRecord {
   return {
     id: ORGANIZATION_ID,
+    tenantId: TENANT_ID,
     parentOrganizationId: null,
     legalName: 'NEWAX (SMC-PRIVATE) LIMITED',
     displayName: 'NEWAX',
@@ -37,9 +39,11 @@ function organization(overrides: Partial<OrganizationRecord> = {}): Organization
 
 class FakeOrganizationRepository implements OrganizationRepository {
   record: OrganizationRecord | null = organization();
+  requestedTenantId: string | null = null;
   requestedId: string | null = null;
 
-  async findById(id: string): Promise<OrganizationRecord | null> {
+  async findById(tenantId: string, id: string): Promise<OrganizationRecord | null> {
+    this.requestedTenantId = tenantId;
     this.requestedId = id;
     return this.record;
   }
@@ -56,11 +60,15 @@ class FakeOrganizationRepository implements OrganizationRepository {
     throw new Error('Not implemented in this test.');
   }
 
-  async list(_query: OrganizationListQuery): Promise<OrganizationPage> {
+  async list(_tenantId: string, _query: OrganizationListQuery): Promise<OrganizationPage> {
     throw new Error('Not implemented in this test.');
   }
 
-  async update(_id: string, _input: UpdateOrganizationRecordInput): Promise<OrganizationRecord> {
+  async update(
+    _tenantId: string,
+    _id: string,
+    _input: UpdateOrganizationRecordInput,
+  ): Promise<OrganizationRecord> {
     throw new Error('Not implemented in this test.');
   }
 
@@ -76,6 +84,7 @@ class NoopEventPublisher implements OrganizationEventPublisher {
 function context(...permissionCodes: readonly string[]): CurrentOrganizationRequestContext {
   return {
     actorUserId: ACTOR_USER_ID,
+    tenantId: TENANT_ID,
     organizationId: ORGANIZATION_ID,
     permissionCodes: new Set(permissionCodes),
   };
@@ -88,9 +97,11 @@ describe('OrganizationsService.getCurrent', () => {
 
     const result = await service.getCurrent(context(ORGANIZATION_PERMISSIONS.view));
 
+    expect(repository.requestedTenantId).toBe(TENANT_ID);
     expect(repository.requestedId).toBe(ORGANIZATION_ID);
     expect(result).toEqual({
       id: ORGANIZATION_ID,
+      tenantId: TENANT_ID,
       legalName: 'NEWAX (SMC-PRIVATE) LIMITED',
       displayName: 'NEWAX',
       organizationType: 'company',
@@ -122,6 +133,10 @@ describe('OrganizationsService.getCurrent', () => {
       {
         ...context(ORGANIZATION_PERMISSIONS.view),
         actorUserId: 'not-a-uuid',
+      },
+      {
+        ...context(ORGANIZATION_PERMISSIONS.view),
+        tenantId: 'not-a-uuid',
       },
       {
         ...context(ORGANIZATION_PERMISSIONS.view),
@@ -162,6 +177,18 @@ describe('OrganizationsService.getCurrent', () => {
         service.getCurrent(context(ORGANIZATION_PERMISSIONS.view)),
       ).rejects.toMatchObject({ code: 'ORGANIZATION_NOT_FOUND' });
     }
+  });
+
+  it('rejects repository records outside the trusted tenant boundary', async () => {
+    const repository = new FakeOrganizationRepository();
+    repository.record = organization({
+      tenantId: '00000000-0000-4000-8000-000000000009',
+    });
+    const service = new OrganizationsService(repository, new NoopEventPublisher());
+
+    await expect(service.getCurrent(context(ORGANIZATION_PERMISSIONS.view))).rejects.toMatchObject({
+      code: 'ORGANIZATION_INTEGRITY_FAILURE',
+    });
   });
 
   it('rejects repository records outside the trusted organization boundary', async () => {

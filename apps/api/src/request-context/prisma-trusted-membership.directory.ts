@@ -4,6 +4,7 @@ import type {
   TrustedMembershipRecord,
   TrustedMembershipStatus,
   TrustedOrganizationStatus,
+  TrustedTenantStatus,
 } from '@newax/request-context';
 
 import { PrismaService } from '../database/prisma.service';
@@ -20,7 +21,13 @@ export class PrismaTrustedMembershipDirectory implements TrustedMembershipDirect
         personId: true,
         organizationId: true,
         status: true,
-        organization: { select: { status: true } },
+        organization: {
+          select: {
+            tenantId: true,
+            status: true,
+            tenant: { select: { status: true, deletedAt: true } },
+          },
+        },
       },
     });
 
@@ -29,6 +36,8 @@ export class PrismaTrustedMembershipDirectory implements TrustedMembershipDirect
       : {
           id: record.id,
           personId: record.personId,
+          tenantId: record.organization.tenantId,
+          tenantStatus: this.mapTenantStatus(record.organization.tenant.status),
           organizationId: record.organizationId,
           membershipStatus: this.mapMembershipStatus(record.status),
           organizationStatus: this.mapOrganizationStatus(record.organization.status),
@@ -40,6 +49,13 @@ export class PrismaTrustedMembershipDirectory implements TrustedMembershipDirect
       return value;
     }
     throw new Error(`Unsupported membership status: ${value}`);
+  }
+
+  private mapTenantStatus(value: string): TrustedTenantStatus {
+    if (value === 'active' || value === 'suspended' || value === 'archived') {
+      return value;
+    }
+    throw new Error(`Unsupported tenant status: ${value}`);
   }
 
   private mapOrganizationStatus(value: string): TrustedOrganizationStatus {

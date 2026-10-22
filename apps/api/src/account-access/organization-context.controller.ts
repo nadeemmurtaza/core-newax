@@ -25,6 +25,7 @@ interface OrganizationContextConfirmationResponse {
   readonly success: true;
   readonly data: {
     readonly context_scope: 'organization';
+    readonly tenant_id: string;
     readonly membership_id: string;
     readonly organization: {
       readonly id: string;
@@ -61,6 +62,7 @@ export class OrganizationContextController {
       success: true,
       data: {
         context_scope: 'organization',
+        tenant_id: result.tenantId,
         membership_id: result.membershipId,
         organization: {
           id: result.organizationId,

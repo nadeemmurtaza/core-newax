@@ -48,6 +48,7 @@ export class PrismaAccountMembershipDiscoveryDirectory implements AccountMembers
         is: {
           status: 'active',
           deletedAt: null,
+          tenant: { is: { status: 'active', deletedAt: null } },
         },
       },
     };

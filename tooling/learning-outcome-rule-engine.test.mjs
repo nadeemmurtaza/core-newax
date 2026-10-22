@@ -88,8 +88,8 @@ test('deduplicates reasons while preserving all matched files', () => {
 test('validates required records and infers new versus existing without an author-selected outcome', () => {
   const result = validateLearningRecord({
     requirement: { learningOutcome: 'required' },
-    ledgerEntries: ['EL-0023', 'EL-0014'],
-    ledgerEntriesValue: 'EL-0023, EL-0014',
+    ledgerEntries: ['EL-0024', 'EL-0014'],
+    ledgerEntriesValue: 'EL-0024, EL-0014',
     learningIssueNumbers: [224],
     learningIssuesValue: '#224',
     rootCauseStatus: 'confirmed',
@@ -98,7 +98,7 @@ test('validates required records and infers new versus existing without an autho
     changedFiles: [
       {
         filename:
-          'docs/verification/engineering-learning-ledger/EL-0023-manual-learning-outcome.md',
+          'docs/verification/engineering-learning-ledger/EL-0024-manual-learning-outcome.md',
         status: 'added',
       },
     ],
@@ -106,7 +106,7 @@ test('validates required records and infers new versus existing without an autho
   });
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.classifications, [
-    { ledgerEntry: 'EL-0023', classification: 'new' },
+    { ledgerEntry: 'EL-0024', classification: 'new' },
     { ledgerEntry: 'EL-0014', classification: 'existing' },
   ]);
 });

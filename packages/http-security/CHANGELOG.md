@@ -31,7 +31,7 @@ All notable changes to the NEWAX HTTP Security Boundary are documented here.
 - Ambiguous `Content-Length` and `Transfer-Encoding` framing is rejected.
 - Unknown public state-changing endpoints are denied.
 - CSRF tokens are signed and bound to the authenticated session.
-- Raw rate-limit keys, cookies, credentials, session tokens, CSRF tokens, request bodies, query strings, and stack traces are excluded from audit metadata and public errors.
+- Raw rate-limit keys, cookies, credentials, session identifiers, session tokens, CSRF tokens, request bodies, query strings, and stack traces are excluded from audit metadata and public errors.
 - Arbitrary error objects cannot select their own public HTTP status.
 - Successful state-changing operations are audited after completion rather than before execution.
 

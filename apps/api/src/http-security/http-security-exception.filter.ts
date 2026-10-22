@@ -9,12 +9,12 @@ import {
 } from '@nestjs/common';
 import { HttpSecurityError, type HttpSecurityMethod } from '@newax/http-security';
 
+import { AuditHttpSecuritySink } from '../audit/http-security-audit.sink';
 import type {
   HttpSecurityRequestAdapter,
   HttpSecurityResponseAdapter,
 } from './http-security-request';
 import { SystemHttpSecurityClock } from './node-http-security.infrastructure';
-import { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
 
 interface CodedError {
   readonly code: string;
@@ -30,7 +30,7 @@ interface MappedHttpError {
 }
 
 const KNOWN_ERROR_CODE_PATTERN =
-  /^(ORGANIZATION|PERSON|MEMBERSHIP|ACCESS|USER|AUTHENTICATION|REQUEST_CONTEXT|HTTP_SECURITY)_[A-Z0-9_]+$/u;
+  /^(ORGANIZATION|PERSON|PEOPLE_INTAKE|CONTACT|ADDRESS|OBJECT|MEMBERSHIP|ACCESS|USER|AUTHENTICATION|REQUEST_CONTEXT|HTTP_SECURITY)_[A-Z0-9_]+$/u;
 
 @Catch()
 @Injectable()
@@ -38,8 +38,8 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpSecurityExceptionFilter.name);
 
   constructor(
-    @Inject(PrismaHttpSecurityAuditSink)
-    private readonly auditSink: PrismaHttpSecurityAuditSink,
+    @Inject(AuditHttpSecuritySink)
+    private readonly auditSink: AuditHttpSecuritySink,
     @Inject(SystemHttpSecurityClock)
     private readonly clock: SystemHttpSecurityClock,
   ) {}
@@ -162,8 +162,19 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
     if (code.includes('_CONFLICT') || code.includes('_ALREADY_')) {
       return 409;
     }
-    if (code.endsWith('_INVALID_INPUT') || code.endsWith('_POLICY_FAILED')) {
+    if (
+      code.endsWith('_INVALID_INPUT') ||
+      code.endsWith('_CURSOR_INVALID') ||
+      code.endsWith('_POLICY_FAILED')
+    ) {
       return 400;
+    }
+    // An unavailable upstream provider is a retryable server-side failure,
+    // not a conflict with the current resource state — checked ahead of the
+    // generic _UNAVAILABLE rule below, which covers client/account-state
+    // conflicts such as AUTHENTICATION_ACCOUNT_UNAVAILABLE.
+    if (code.endsWith('_PROVIDER_UNAVAILABLE')) {
+      return 503;
     }
     if (code.endsWith('_UNAVAILABLE')) {
       return 409;
@@ -205,6 +216,9 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
     if (statusCode === 429) {
       return 'RATE_LIMITED';
     }
+    if (statusCode === 503) {
+      return 'SERVICE_UNAVAILABLE';
+    }
     return 'INTERNAL_ERROR';
   }
 
@@ -235,6 +249,9 @@ export class HttpSecurityExceptionFilter implements ExceptionFilter {
     }
     if (statusCode === 429) {
       return 'Too many requests. Try again later.';
+    }
+    if (statusCode === 503) {
+      return 'The service is temporarily unavailable. Try again later.';
     }
     return 'The request could not be completed.';
   }

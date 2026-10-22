@@ -49,10 +49,19 @@ ADRs are used for decisions with long-term impact on:
 | [ADR 0023](0023-build-current-organization-read-api.md)                   | Accepted | Expose a bounded current-organization profile derived only from trusted context and protected by `organizations.view`.                           |
 | [ADR 0024](0024-build-current-person-read-api.md)                         | Accepted | Expose a bounded authenticated self-profile derived only from trusted account context without granting organization-wide `people.view`.          |
 | [ADR 0025](0025-build-organization-contacts-registry-foundation.md)       | Accepted | Establish permission-controlled organization email and phone contacts while deferring person-contact visibility until an explicit policy exists. |
+| [ADR 0026](0026-build-current-organization-contacts-http-api.md)          | Accepted | Expose bounded current-organization contact creation and listing through trusted context and explicit Contacts permissions.                      |
+| [ADR 0027](0027-separate-tenant-ownership-from-organizations.md)          | Accepted | Give every customer Tenant an independent ID and require Organizations, hierarchy, and relationships to remain inside that Tenant.               |
+| [ADR 0028](0028-build-organization-addresses-registry-foundation.md)      | Accepted | Build tenant-bound Organization address creation and listing while deferring Person-address visibility until explicit privacy policy exists.     |
+| [ADR 0029](0029-build-current-organization-addresses-http-api.md)         | Accepted | Expose bounded current-Organization address creation and listing without accepting client-supplied Tenant or Organization authority.             |
+| [ADR 0030](0030-build-object-registry-foundation.md)                      | Accepted | Establish Tenant-safe Object Type registration and current-Organization Object creation and listing.                                             |
+| [ADR 0031](0031-build-current-organization-objects-http-api.md)           | Accepted | Expose bounded current-Organization Object creation and listing without accepting client-supplied Tenant or Organization authority.              |
+| [ADR 0032](0032-build-file-metadata-registry-foundation.md)               | Accepted | Establish Tenant-safe, provider-neutral File metadata registration and current-Organization listing without exposing storage locators.           |
+| [ADR 0033](0033-build-audit-governance-foundation.md)                     | Accepted | Establish Tenant-aware Audit recording and permission-gated current-Organization summaries without exposing sensitive stored details.            |
+| [ADR 0034](0034-build-external-references-governance-foundation.md)       | Accepted | Establish Tenant-safe current-Organization external-identifier mappings without adding credentials, synchronization, or metadata disclosure.     |
 
 ## Decision Sequence
 
-The ADRs form a deliberate sequence rather than twenty-five independent opinions wandering around the repository unsupervised.
+The ADRs form a deliberate sequence rather than thirty-two independent opinions wandering around the repository unsupervised.
 
 ### Architecture Foundation
 
@@ -64,7 +73,8 @@ The ADRs form a deliberate sequence rather than twenty-five independent opinions
 ### Access, Tenancy, and Identity
 
 - ADR 0002 establishes permission-based authorization.
-- ADR 0003 establishes organization-scoped multi-tenancy.
+- ADR 0003 establishes tenant-ready multi-tenancy and isolation.
+- ADR 0027 separates customer Tenant identity from legal and operating Organizations.
 - ADR 0008 establishes the Central Identity and Organization Registry.
 - ADR 0010 separates authentication, identity, users, memberships, roles, and permissions.
 
@@ -86,6 +96,15 @@ The ADRs form a deliberate sequence rather than twenty-five independent opinions
 - ADR 0023 exposes the first organization profile through trusted context without accepting client-supplied tenant authority or unrelated registry data.
 - ADR 0024 exposes the authenticated account's bounded person profile without client person selection or organization-wide People Registry authority.
 - ADR 0025 establishes organization-scoped contact creation and reads while deferring person-contact visibility, lifecycle, and verification policy.
+- ADR 0026 exposes those organization contact operations through strict trusted-context HTTP contracts without exposing registry internals.
+- ADR 0027 gives Tenant an independent customer identity and enforces same-Tenant Organization structure.
+- ADR 0028 establishes Organization addresses with canonical reuse, primary-address integrity, and an explicit Person-address privacy deferral.
+- ADR 0029 exposes those Organization address operations through strict trusted-context HTTP contracts without exposing canonical-registry internals.
+- ADR 0030 establishes Tenant-safe Object identity and same-Tenant hierarchy while deferring assignments, locations, lifecycle operations, and HTTP exposure.
+- ADR 0031 exposes current-Organization Object creation and listing through strict trusted-context HTTP contracts without exposing internal ownership keys.
+- ADR 0032 establishes Tenant-safe File metadata registration and listing while keeping bytes, storage locators, access URLs, lifecycle operations, and Documents outside the initial boundary.
+- ADR 0033 establishes Tenant-aware Audit recording and bounded current-Organization summaries while keeping sensitive details, export, retention, and event ingestion outside the initial boundary.
+- ADR 0034 establishes Tenant-safe External Reference registration and listing while keeping credentials, provider execution, synchronization, lifecycle operations, and metadata outside the initial boundary.
 
 ### Implementation Baseline
 
@@ -97,9 +116,9 @@ The accepted architecture currently means:
 
 - NEWAX Core begins as a modular monolith.
 - Foundation Modules remain independent from business domains.
-- The Central Registry owns shared people, organization, user, membership, object, contact, address, file, and audit foundation data.
+- The Central Registry owns shared people, organization, user, membership, object, contact, address, file, audit, and external-reference foundation data.
 - Business domains own their domain-specific master data and transactions.
-- Organizations provide the initial tenant context.
+- Tenants provide the customer ownership and data-isolation boundary; Organizations provide legal and operating context inside a Tenant.
 - Business authorization uses explicit permissions grouped through roles.
 - Client customization remains separate from reusable core modules.
 - Module communication uses clear services, contracts, APIs, or events.

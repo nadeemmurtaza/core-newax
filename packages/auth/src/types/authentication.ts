@@ -1,4 +1,5 @@
 export type AuthenticationIdentityType = 'email' | 'username' | 'phone';
+export type LoginFingerprintIdentityType = AuthenticationIdentityType | 'external';
 export type AuthenticationAccountStatus =
   'invited' | 'active' | 'suspended' | 'disabled' | 'archived';
 export type CredentialStatus = 'active' | 'disabled' | 'revoked' | 'expired';
@@ -145,4 +146,33 @@ export interface PasswordVerificationResult {
 export interface IssuedSessionToken {
   readonly token: string;
   readonly tokenHash: string;
+}
+
+export interface ExternalIdentityProfile {
+  readonly subject: string;
+  readonly email: string | null;
+  readonly username: string | null;
+}
+
+export interface ExternalIdentityRecord {
+  readonly id: string;
+  readonly userId: string;
+  readonly provider: string;
+  readonly providerSubject: string;
+  readonly providerUsername: string | null;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+}
+
+export interface CreateExternalIdentityInput {
+  readonly userId: string;
+  readonly provider: string;
+  readonly providerSubject: string;
+  readonly providerUsername: string | null;
+  readonly occurredAt: Date;
+}
+
+export interface OAuthLoginInput extends AuthenticationRequestMetadata {
+  readonly provider: string;
+  readonly profile: ExternalIdentityProfile;
 }

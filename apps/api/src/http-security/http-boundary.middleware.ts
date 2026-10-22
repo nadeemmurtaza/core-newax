@@ -6,13 +6,13 @@ import {
   type HttpSecurityPolicy,
 } from '@newax/http-security';
 
+import { AuditHttpSecuritySink } from '../audit/http-security-audit.sink';
 import type {
   HttpSecurityRequestAdapter,
   HttpSecurityResponseAdapter,
 } from './http-security-request';
 import { HTTP_SECURITY_POLICY } from './http-security.tokens';
 import { HttpRequestIdFactory, SystemHttpSecurityClock } from './node-http-security.infrastructure';
-import { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
 
 const SUPPORTED_METHODS: ReadonlySet<string> = new Set([
   'GET',
@@ -37,7 +37,7 @@ export class HttpBoundaryMiddleware implements NestMiddleware {
     private readonly requestIds: HttpRequestIdFactory,
     @Inject(SystemHttpSecurityClock)
     private readonly clock: SystemHttpSecurityClock,
-    @Inject(PrismaHttpSecurityAuditSink)
+    @Inject(AuditHttpSecuritySink)
     private readonly auditSink: HttpSecurityAuditSink,
   ) {
     this.headersPolicy = new SecurityHeadersPolicy(policy);

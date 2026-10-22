@@ -164,3 +164,7 @@ Registration, tax, hierarchy, contact, and administrative data require separate 
 ## 10. Approval
 
 This decision is accepted as the baseline for the first bounded organization read endpoint in NEWAX Core.
+
+## Tenant boundary amendment
+
+ADR 0027 adds `tenant_id` to the bounded current-organization response. The value is derived from trusted context and the persisted Organization record; clients cannot select or override it.

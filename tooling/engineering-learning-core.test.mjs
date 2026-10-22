@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   classifyFailure,
   createEngineeringEvent,
+  isExecutedFailure,
   normalizeText,
   parseIssueNumber,
   parseIssueNumbers,
@@ -223,4 +224,14 @@ test('operation intent accepts the matching pull-request metadata action', async
   });
 
   assert.deepEqual(errors, []);
+});
+
+test('isExecutedFailure treats a non-failure conclusion as not an executed failure', async () => {
+  assert.equal(await isExecutedFailure({ id: 1, conclusion: 'success' }), false);
+  assert.equal(await isExecutedFailure({ id: 1, conclusion: 'cancelled' }), false);
+});
+
+test('isExecutedFailure treats failure and timed_out conclusions as executed without a job lookup', async () => {
+  assert.equal(await isExecutedFailure({ id: 1, conclusion: 'failure' }), true);
+  assert.equal(await isExecutedFailure({ id: 1, conclusion: 'timed_out' }), true);
 });

@@ -2,6 +2,7 @@ export type OrganizationStatus = 'active' | 'suspended' | 'archived';
 
 export interface OrganizationRecord {
   readonly id: string;
+  readonly tenantId: string;
   readonly parentOrganizationId: string | null;
   readonly legalName: string;
   readonly displayName: string;
@@ -16,6 +17,7 @@ export interface OrganizationRecord {
 
 export interface OrganizationRequestContext {
   readonly actorUserId: string;
+  readonly tenantId: string;
   readonly permissionCodes: ReadonlySet<string>;
 }
 
@@ -25,6 +27,7 @@ export interface CurrentOrganizationRequestContext extends OrganizationRequestCo
 
 export interface CurrentOrganizationProfile {
   readonly id: string;
+  readonly tenantId: string;
   readonly legalName: string;
   readonly displayName: string;
   readonly organizationType: string;
@@ -65,6 +68,7 @@ export interface OrganizationPage {
 }
 
 export interface CreateOrganizationRecordInput {
+  readonly tenantId: string;
   readonly parentOrganizationId: string | null;
   readonly legalName: string;
   readonly displayName: string;

@@ -4,6 +4,7 @@ import type {
   OrganizationContextConfirmationRecord,
   TrustedMembershipStatus,
   TrustedOrganizationStatus,
+  TrustedTenantStatus,
 } from '@newax/request-context';
 
 import { PrismaService } from '../database/prisma.service';
@@ -16,6 +17,8 @@ interface OrganizationContextDatabaseRecord {
   readonly status: string;
   readonly jobTitle: string | null;
   readonly organization: {
+    readonly tenantId: string;
+    readonly tenant: { readonly status: string };
     readonly displayName: string;
     readonly organizationType: string;
     readonly status: string;
@@ -38,6 +41,7 @@ export class PrismaOrganizationContextConfirmationDirectory implements Organizat
           is: {
             status: 'active',
             deletedAt: null,
+            tenant: { is: { status: 'active', deletedAt: null } },
           },
         },
         organization: {
@@ -56,6 +60,8 @@ export class PrismaOrganizationContextConfirmationDirectory implements Organizat
         jobTitle: true,
         organization: {
           select: {
+            tenantId: true,
+            tenant: { select: { status: true } },
             displayName: true,
             organizationType: true,
             status: true,
@@ -73,6 +79,8 @@ export class PrismaOrganizationContextConfirmationDirectory implements Organizat
     return {
       membershipId: record.id,
       personId: record.personId,
+      tenantId: record.organization.tenantId,
+      tenantStatus: this.mapTenantStatus(record.organization.tenant.status),
       organizationId: record.organizationId,
       organizationDisplayName: record.organization.displayName,
       organizationType: record.organization.organizationType,
@@ -81,6 +89,13 @@ export class PrismaOrganizationContextConfirmationDirectory implements Organizat
       membershipStatus: this.mapMembershipStatus(record.status),
       jobTitle: record.jobTitle,
     };
+  }
+
+  private mapTenantStatus(value: string): TrustedTenantStatus {
+    if (value === 'active' || value === 'suspended' || value === 'archived') {
+      return value;
+    }
+    throw new Error(`Unsupported tenant status: ${value}`);
   }
 
   private mapMembershipStatus(value: string): TrustedMembershipStatus {

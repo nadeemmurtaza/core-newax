@@ -24,8 +24,11 @@ import type {
   AuthenticationSessionPage,
   AuthenticationSessionRecord,
   CreateAuthenticationSessionInput,
+  CreateExternalIdentityInput,
   CreatePasswordCredentialInput,
+  ExternalIdentityRecord,
   IssuedSessionToken,
+  LoginFingerprintIdentityType,
   PasswordCredentialRecord,
   PasswordVerificationResult,
   RecordAuthenticationAttemptInput,
@@ -102,6 +105,7 @@ class FakeRepository implements AuthenticationRepository {
   readonly credentials = new Map<string, PasswordCredentialRecord>();
   readonly sessions = new Map<string, AuthenticationSessionRecord>();
   readonly sessionHashes = new Map<string, string>();
+  readonly externalIdentities = new Map<string, ExternalIdentityRecord>();
   readonly attempts: RecordAuthenticationAttemptInput[] = [];
   revokedSessionCount = 0;
 
@@ -149,6 +153,18 @@ class FakeRepository implements AuthenticationRepository {
     this.sessions.set(created.id, created);
     this.sessionHashes.set(input.sessionTokenHash, created.id);
     return created;
+  }
+
+  async findExternalIdentity(
+    provider: string,
+    providerSubject: string,
+  ): Promise<ExternalIdentityRecord | null> {
+    for (const record of this.externalIdentities.values()) {
+      if (record.provider === provider && record.providerSubject === providerSubject) {
+        return record;
+      }
+    }
+    return null;
   }
 
   async findPasswordCredential(userId: string): Promise<PasswordCredentialRecord | null> {
@@ -286,6 +302,24 @@ class FakeRepository implements AuthenticationRepository {
     this.sessions.set(sessionId, updated);
     return updated;
   }
+
+  async upsertExternalIdentity(
+    input: CreateExternalIdentityInput,
+  ): Promise<ExternalIdentityRecord> {
+    const key = `${input.provider}:${input.providerSubject}`;
+    const existing = this.externalIdentities.get(key);
+    const record: ExternalIdentityRecord = {
+      id: existing?.id ?? `identity-${key}`,
+      userId: input.userId,
+      provider: input.provider,
+      providerSubject: input.providerSubject,
+      providerUsername: input.providerUsername,
+      createdAt: existing?.createdAt ?? input.occurredAt,
+      updatedAt: input.occurredAt,
+    };
+    this.externalIdentities.set(key, record);
+    return record;
+  }
 }
 
 class FakeUserDirectory implements AuthenticationUserDirectory {
@@ -382,7 +416,7 @@ class FakeSessionTokenService implements SessionTokenService {
 }
 
 class FakeFingerprintService implements LoginFingerprintService {
-  fingerprint(identityType: AuthenticationIdentityType, identityValue: string): string {
+  fingerprint(identityType: LoginFingerprintIdentityType, identityValue: string): string {
     return `fingerprint:${identityType}:${identityValue.toLowerCase()}`;
   }
 }

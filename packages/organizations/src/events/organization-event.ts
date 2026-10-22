@@ -6,6 +6,7 @@ export type OrganizationEventName =
 export interface OrganizationEvent {
   readonly name: OrganizationEventName;
   readonly actorUserId: string;
+  readonly tenantId: string;
   readonly organizationId: string;
   readonly occurredAt: Date;
   readonly organization: OrganizationRecord;

@@ -42,15 +42,15 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: .node-version
           package-manager-cache: false
@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload formatter-corrected diagnostic
         if: failure() && steps.formatting.outcome == 'failure'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: formatted-source-${{ github.sha }}
           path: formatted-source-${{ github.sha }}.tar.gz
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload ESLint diagnostic
         if: failure() && steps.linting.outcome == 'failure'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: eslint-report-${{ github.sha }}
           path: |
@@ -125,7 +125,18 @@ jobs:
         run: pnpm typecheck
 
       - name: Test
-        run: pnpm test
+        run: pnpm test:learning && pnpm test:coverage
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: coverage-${{ github.sha }}
+          path: |
+            apps/*/coverage
+            packages/*/coverage
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Build
         run: pnpm build

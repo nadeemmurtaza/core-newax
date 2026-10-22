@@ -1,0 +1,140 @@
+name: Engineering AI quality record
+description: Record attributable AI or engineering-tool output, validation evidence, correction, regression, resolution, or waiver.
+title: '[Engineering AI quality] '
+labels:
+  - engineering-learning
+body:
+  - type: input
+    id: event_id
+    attributes:
+      label: Event ID
+      description: Use a stable ID such as AIQ-OUT-0042.
+    validations:
+      required: true
+  - type: dropdown
+    id: event_type
+    attributes:
+      label: Event type
+      options:
+        - AI output
+        - Authoritative contradiction
+        - Framework API validation
+        - Documentation use
+        - Package metadata
+        - Policy violation
+        - Copy provenance
+        - Copy validation
+        - Static analysis
+        - Correction
+        - Regression test
+        - Resolution
+        - Waiver
+        - Supersession
+    validations:
+      required: true
+  - type: input
+    id: output_id
+    attributes:
+      label: Output ID
+      description: Stable ID shared by the generated output and all evidence records.
+  - type: input
+    id: status
+    attributes:
+      label: Status
+      description: Examples are active, verified, confirmed, missing, incompatible, deprecated, unsafe, dead, unused, unreachable, resolved, superseded, rejected, or withdrawn.
+    validations:
+      required: true
+  - type: input
+    id: occurrence_time
+    attributes:
+      label: Occurrence time
+      description: ISO 8601 timestamp when the event or output occurred.
+  - type: input
+    id: effective_time
+    attributes:
+      label: Effective time
+      description: ISO 8601 timestamp when authoritative evidence, policy, documentation, API, or package status became effective.
+  - type: textarea
+    id: output_provenance
+    attributes:
+      label: Output provenance
+      description: 'One value per line using key: value. Supported keys: Source kind, Provider, Model, Tool, Tool version, Prompt hash, Output hash, Artifact references, Generated.'
+      placeholder: |
+        Source kind: ai
+        Provider: provider-name
+        Model: model-name
+        Tool: coding-agent
+        Tool version: 1.0.0
+        Prompt hash: sha256 value only
+        Output hash: sha256 value only
+        Artifact references: path/a, path/b
+        Generated: Yes
+  - type: textarea
+    id: version_evidence
+    attributes:
+      label: Version and symbol evidence
+      description: 'One value per line using key: value. Supported keys: Framework, Framework version, Pinned version, Documentation version, Symbol, Package name, Package version, Replacement.'
+      placeholder: |
+        Framework: framework-name
+        Framework version: repository version
+        Pinned version: verified version
+        Documentation version: cited version
+        Symbol: API or generated symbol
+        Package name: package-name
+        Package version: 1.0.0
+        Replacement: maintained-package
+  - type: textarea
+    id: claim_evidence
+    attributes:
+      label: Claim and contradiction evidence
+      description: 'One value per line using key: value. Supported keys: Claim, Expected, Actual, Material impact, Confirms mistake.'
+      placeholder: |
+        Claim: bounded description
+        Expected: authoritative behavior
+        Actual: generated or observed behavior
+        Material impact: Yes
+        Confirms mistake: Yes
+  - type: textarea
+    id: validation_evidence
+    attributes:
+      label: Validation and policy evidence
+      description: 'One value per line using key: value. Supported keys: Policy ID, Validation kind, Validation code, Validation reference, Severity.'
+      placeholder: |
+        Policy ID: POLICY-ID
+        Validation kind: compiler, review, runtime, static-analysis, or registry
+        Validation code: stable code when available
+        Validation reference: durable issue, run, test, or document reference
+        Severity: low, medium, high, or critical
+  - type: textarea
+    id: copy_evidence
+    attributes:
+      label: Copy and stale-context evidence
+      description: 'One value per line using key: value. Supported keys: Copied from, Stale identifiers.'
+      placeholder: |
+        Copied from: path or durable source reference
+        Stale identifiers: identifier-a, permission-b
+  - type: textarea
+    id: lifecycle_evidence
+    attributes:
+      label: Lifecycle evidence
+      description: 'One value per line using key: value. Supported keys: References, Resolves, Finding type, Reviewer, Reason, Correction commit, Regression test, Regression run.'
+      placeholder: |
+        References: AIQ-OUT-0042
+        Resolves: finding or output IDs
+        Finding type: wrong-framework-api
+        Reviewer: reviewer identity
+        Reason: bounded explanation
+        Correction commit: full SHA
+        Regression test: exact test name
+        Regression run: exact run or job reference
+  - type: checkboxes
+    id: privacy_confirmation
+    attributes:
+      label: Dataset privacy confirmation
+      options:
+        - label: I recorded hashes and durable references instead of raw prompts or raw generated output.
+          required: true
+        - label: I did not include generated code, secrets, credentials, tokens, customer data, or private repository content.
+          required: true
+        - label: I did not classify a bug as an AI or tool mistake without attributable output provenance.
+          required: true

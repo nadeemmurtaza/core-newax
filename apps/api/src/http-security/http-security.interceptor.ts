@@ -6,16 +6,18 @@ import {
   Logger,
   type NestInterceptor,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { SensitiveResponseRedactor, type HttpSecurityAuditSink } from '@newax/http-security';
 import { from, lastValueFrom, type Observable } from 'rxjs';
 
+import { AuditHttpSecuritySink } from '../audit/http-security-audit.sink';
 import { AsyncLocalStorageTrustedRequestContextStore } from '../request-context/node-request-context.infrastructure';
+import { HTTP_AUDIT_AS_STATE_CHANGING_KEY } from './http-security.decorators';
 import type {
   HttpSecurityRequestAdapter,
   HttpSecurityResponseAdapter,
 } from './http-security-request';
 import { SystemHttpSecurityClock } from './node-http-security.infrastructure';
-import { PrismaHttpSecurityAuditSink } from './prisma-http-security-audit.sink';
 
 @Injectable()
 export class HttpSecurityInterceptor implements NestInterceptor {
@@ -26,21 +28,28 @@ export class HttpSecurityInterceptor implements NestInterceptor {
     private readonly contextStore: AsyncLocalStorageTrustedRequestContextStore,
     @Inject(SensitiveResponseRedactor)
     private readonly redactor: SensitiveResponseRedactor,
-    @Inject(PrismaHttpSecurityAuditSink)
-    private readonly auditSink: PrismaHttpSecurityAuditSink,
+    @Inject(AuditHttpSecuritySink)
+    private readonly auditSink: AuditHttpSecuritySink,
     @Inject(SystemHttpSecurityClock)
     private readonly clock: SystemHttpSecurityClock,
+    @Inject(Reflector)
+    private readonly reflector: Reflector,
   ) {}
 
   intercept(executionContext: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = executionContext.switchToHttp().getRequest<HttpSecurityRequestAdapter>();
     const response = executionContext.switchToHttp().getResponse<HttpSecurityResponseAdapter>();
     const context = request.trustedContext;
+    const auditAsStateChanging =
+      this.reflector.getAllAndOverride<boolean>(HTTP_AUDIT_AS_STATE_CHANGING_KEY, [
+        executionContext.getHandler(),
+        executionContext.getClass(),
+      ]) ?? false;
 
     const execute = async (): Promise<unknown> => {
       const value = await lastValueFrom(next.handle());
       const redacted = this.redactor.redact(value);
-      await this.auditCompleted(request, response, this.auditSink);
+      await this.auditCompleted(request, response, this.auditSink, auditAsStateChanging);
       return redacted;
     };
 
@@ -51,8 +60,12 @@ export class HttpSecurityInterceptor implements NestInterceptor {
     request: HttpSecurityRequestAdapter,
     response: HttpSecurityResponseAdapter,
     auditSink: HttpSecurityAuditSink,
+    auditAsStateChanging: boolean,
   ): Promise<void> {
-    if (request.newaxStateChanging !== true || request.newaxSecurityRequest === undefined) {
+    if (
+      (request.newaxStateChanging !== true && !auditAsStateChanging) ||
+      request.newaxSecurityRequest === undefined
+    ) {
       return;
     }
 
@@ -73,7 +86,6 @@ export class HttpSecurityInterceptor implements NestInterceptor {
         metadata: {
           contextScope: context?.scope ?? 'public',
           membershipId: context?.scope === 'organization' ? context.membershipId : null,
-          authenticatedSessionId: request.newaxAuthenticatedSessionId ?? null,
           requiredPermissions: [...(request.newaxRequiredPermissions ?? [])],
         },
         occurredAt: this.clock.now(),

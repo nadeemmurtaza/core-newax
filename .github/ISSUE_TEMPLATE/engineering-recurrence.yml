@@ -1,0 +1,116 @@
+name: Engineering recurrence record
+description: Record a repeated confirmed root cause, the applicable rule, and why it was not followed.
+title: '[Engineering recurrence] '
+labels:
+  - engineering-learning
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Recurrence requires the same confirmed or machine-supported root-cause ID. Similar symptoms, wording, authorship, category, or timing are not enough.
+
+  - type: input
+    id: recurrence-id
+    attributes:
+      label: Recurrence record ID
+      placeholder: REC-ROOT-X-4
+    validations:
+      required: true
+
+  - type: input
+    id: root-cause-id
+    attributes:
+      label: Root cause ID
+      placeholder: ROOT-X
+    validations:
+      required: true
+
+  - type: textarea
+    id: previous-occurrences
+    attributes:
+      label: Previous occurrences
+      description: List exact issue, PR, commit, and occurrence references in chronological order.
+      placeholder: PR #17, PR #31, PR #49
+    validations:
+      required: true
+
+  - type: input
+    id: current-occurrence-id
+    attributes:
+      label: Current occurrence ID
+    validations:
+      required: true
+
+  - type: input
+    id: prevention-rule
+    attributes:
+      label: Applicable prevention rule
+      description: Use a durable rule, pack, ledger, or source reference.
+    validations:
+      required: true
+
+  - type: input
+    id: rule-effective-at
+    attributes:
+      label: Rule effective at
+      placeholder: 2026-07-18T00:00:00Z
+    validations:
+      required: true
+
+  - type: dropdown
+    id: disposition
+    attributes:
+      label: Why was the rule not followed?
+      options:
+        - not-applicable
+        - not-effective-yet
+        - not-integrated
+        - not-executed
+        - bypassed-with-approval
+        - bypassed-without-approval
+        - control-failed
+        - failure-ignored
+        - unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: explanation-evidence
+    attributes:
+      label: Explanation and evidence references
+      description: Explain the control gap and provide exact issue, run, review, approval, or commit references.
+    validations:
+      required: true
+
+  - type: input
+    id: reviewer
+    attributes:
+      label: Reviewer
+    validations:
+      required: true
+
+  - type: input
+    id: approver
+    attributes:
+      label: Approver for an approved bypass
+      description: Required only for bypassed-with-approval.
+
+  - type: textarea
+    id: waiver-scope
+    attributes:
+      label: Approved bypass scope and effective time
+      description: Required only for bypassed-with-approval.
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Evidence acknowledgements
+      options:
+        - label: Every previous occurrence uses the exact same verified root-cause ID.
+          required: true
+        - label: Pre-rule occurrences are history and have not been labelled as control violations.
+          required: true
+        - label: Duplicate ingestion has not increased the occurrence count.
+          required: true
+        - label: The record excludes secrets, raw private prompts, and unnecessary private source content.
+          required: true

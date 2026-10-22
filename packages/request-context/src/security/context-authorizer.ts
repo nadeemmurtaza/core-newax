@@ -62,6 +62,7 @@ export class ContextAuthorizer {
   toModuleContext(context: TrustedOrganizationRequestContext): ModuleRequestContext {
     return {
       actorUserId: context.userId,
+      tenantId: context.tenantId,
       organizationId: context.organizationId,
       permissionCodes: context.permissionCodes,
     };

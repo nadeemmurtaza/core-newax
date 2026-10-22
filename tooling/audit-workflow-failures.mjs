@@ -1,4 +1,4 @@
-import { FAILURE_CONCLUSIONS, listAll } from './engineering-learning-core.mjs';
+import { FAILURE_CONCLUSIONS, isExecutedFailure, listAll } from './engineering-learning-core.mjs';
 import { captureWorkflowRunFailure } from './workflow-failure-capture.mjs';
 
 const hours = Number(process.env.ENGINEERING_AUDIT_HOURS ?? '168');
@@ -10,10 +10,12 @@ const cutoff = Date.now() - hours * 60 * 60 * 1000;
 const runs = await listAll('/actions/runs?status=completed', {
   collectionKey: 'workflow_runs',
 });
-const failedRuns = runs.filter((run) => {
+const recentRuns = runs.filter((run) => {
   const completedAt = Date.parse(run.updated_at ?? run.created_at ?? '');
   return FAILURE_CONCLUSIONS.has(run.conclusion) && completedAt >= cutoff;
 });
+const executedFailureFlags = await Promise.all(recentRuns.map((run) => isExecutedFailure(run)));
+const failedRuns = recentRuns.filter((_run, index) => executedFailureFlags[index]);
 
 const results = [];
 for (const run of failedRuns) {

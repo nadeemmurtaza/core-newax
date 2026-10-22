@@ -4,6 +4,7 @@ import {
   FAILURE_CONCLUSIONS,
   createEngineeringEvent,
   githubRequest,
+  isExecutedFailure,
   listAll,
   loadCatalog,
   parseIssueNumbers,
@@ -178,6 +179,14 @@ async function listPullRequestRuns(commits) {
   return [...runsById.values()];
 }
 
+async function filterExecutedFailures(runs) {
+  const candidates = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
+  const results = await Promise.all(
+    candidates.map(async (run) => ((await isExecutedFailure(run)) ? run : null)),
+  );
+  return results.filter(Boolean);
+}
+
 async function listPullRequestLearningIssues(pullRequestNumber) {
   const issues = await listAll('/issues?state=all');
   return issues.filter((issue) => {
@@ -235,7 +244,7 @@ const [runs, linkedIssues, changedFiles] = await Promise.all([
   listAll(`/pulls/${pullRequest.number}/files`),
 ]);
 
-const failedRuns = runs.filter((run) => FAILURE_CONCLUSIONS.has(run.conclusion));
+const failedRuns = await filterExecutedFailures(runs);
 const linkedIssueNumbers = new Set(linkedIssues.map((issue) => issue.number));
 const listedIssueNumbers = new Set(learningIssueNumbers);
 const linkedIssueMetadata = new Map(

@@ -16,11 +16,14 @@ import type {
   UpdateOrganizationRecordInput,
 } from '../src/types/organization';
 
+const TENANT_ID = '00000000-0000-4000-8000-000000000008';
+
 const now = new Date('2026-07-11T00:00:00.000Z');
 
 function organization(overrides: Partial<OrganizationRecord> = {}): OrganizationRecord {
   return {
     id: '00000000-0000-4000-8000-000000000001',
+    tenantId: TENANT_ID,
     parentOrganizationId: null,
     legalName: 'NEWAX (SMC-PRIVATE) LIMITED',
     displayName: 'NEWAX',
@@ -41,7 +44,7 @@ class FakeOrganizationRepository implements OrganizationRepository {
   cycle = false;
   lastCreateInput: CreateOrganizationRecordInput | null = null;
 
-  async archive(id: string, archivedAt: Date): Promise<OrganizationRecord> {
+  async archive(_tenantId: string, id: string, archivedAt: Date): Promise<OrganizationRecord> {
     const current = this.records.get(id);
     if (current === undefined) {
       throw new Error('Missing fake organization.');
@@ -67,19 +70,23 @@ class FakeOrganizationRepository implements OrganizationRepository {
     return created;
   }
 
-  async findById(id: string): Promise<OrganizationRecord | null> {
+  async findById(_tenantId: string, id: string): Promise<OrganizationRecord | null> {
     return this.records.get(id) ?? null;
   }
 
-  async hasActiveChildren(_id: string): Promise<boolean> {
+  async hasActiveChildren(_tenantId: string, _id: string): Promise<boolean> {
     return this.hasChildren;
   }
 
-  async list(_query: OrganizationListQuery): Promise<OrganizationPage> {
+  async list(_tenantId: string, _query: OrganizationListQuery): Promise<OrganizationPage> {
     return { items: [...this.records.values()], nextCursor: null };
   }
 
-  async update(id: string, input: UpdateOrganizationRecordInput): Promise<OrganizationRecord> {
+  async update(
+    _tenantId: string,
+    id: string,
+    input: UpdateOrganizationRecordInput,
+  ): Promise<OrganizationRecord> {
     const current = this.records.get(id);
     if (current === undefined) {
       throw new Error('Missing fake organization.');
@@ -105,7 +112,11 @@ class FakeOrganizationRepository implements OrganizationRepository {
     return updated;
   }
 
-  async wouldCreateCycle(_organizationId: string, _candidateParentId: string): Promise<boolean> {
+  async wouldCreateCycle(
+    _tenantId: string,
+    _organizationId: string,
+    _candidateParentId: string,
+  ): Promise<boolean> {
     return this.cycle;
   }
 }
@@ -121,6 +132,7 @@ class RecordingEventPublisher implements OrganizationEventPublisher {
 function context(...permissions: string[]): OrganizationRequestContext {
   return {
     actorUserId: '00000000-0000-4000-8000-000000000099',
+    tenantId: TENANT_ID,
     permissionCodes: new Set(permissions),
   };
 }
@@ -152,6 +164,7 @@ describe('OrganizationsService', () => {
 
     expect(created.displayName).toBe('NEWAX');
     expect(repository.lastCreateInput).toEqual({
+      tenantId: TENANT_ID,
       parentOrganizationId: null,
       legalName: 'NEWAX (SMC-PRIVATE) LIMITED',
       displayName: 'NEWAX',

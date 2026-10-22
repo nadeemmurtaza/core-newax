@@ -1,0 +1,161 @@
+name: Engineering executive metric record
+description: Record source-backed cost, time, AI validation, or human-review evidence for the executive dashboard.
+title: '[Engineering metric] '
+labels:
+  - engineering-learning
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Record source evidence only. Dashboard totals, rates, means, rankings, trends, and KPI values are generated. Missing evidence stays missing and must never be entered as zero.
+
+  - type: input
+    id: metric-id
+    attributes:
+      label: Metric record ID
+      placeholder: METRIC-2026-001
+    validations:
+      required: true
+
+  - type: dropdown
+    id: metric-type
+    attributes:
+      label: Metric type
+      options:
+        - cost
+        - time-loss
+        - ai-validation
+        - review-outcome
+    validations:
+      required: true
+
+  - type: input
+    id: occurred-at
+    attributes:
+      label: Evidence time
+      placeholder: 2026-07-18T00:00:00Z
+    validations:
+      required: true
+
+  - type: input
+    id: occurrence-id
+    attributes:
+      label: Occurrence ID
+      description: Required for cost and time-loss evidence when the value belongs to one engineering occurrence.
+
+  - type: input
+    id: category
+    attributes:
+      label: Category
+      description: Required for cost and time-loss evidence.
+
+  - type: input
+    id: amount
+    attributes:
+      label: Cost amount
+      description: Use a nonnegative decimal only for cost records. Do not convert currencies.
+
+  - type: input
+    id: currency
+    attributes:
+      label: Currency
+      placeholder: PKR
+
+  - type: input
+    id: lost-minutes
+    attributes:
+      label: Time lost in minutes
+      description: Use a nonnegative whole number only for time-loss records.
+
+  - type: dropdown
+    id: evidence-status
+    attributes:
+      label: Evidence status
+      options:
+        - verified
+        - estimated
+    validations:
+      required: true
+
+  - type: input
+    id: ai-output-id
+    attributes:
+      label: AI output ID
+      description: Required for AI validation records.
+
+  - type: dropdown
+    id: ai-outcome
+    attributes:
+      label: AI validation outcome
+      options:
+        - correct
+        - partial
+        - incorrect
+        - not-applicable
+
+  - type: input
+    id: pull-request-number
+    attributes:
+      label: Pull request number
+      description: Required for review-outcome records.
+
+  - type: input
+    id: review-finding-id
+    attributes:
+      label: Review finding ID
+      description: Required for review-outcome records.
+
+  - type: dropdown
+    id: review-valid
+    attributes:
+      label: Review finding validity
+      options:
+        - valid
+        - invalid
+        - not-applicable
+
+  - type: dropdown
+    id: resolved-before-merge
+    attributes:
+      label: Resolved before merge
+      options:
+        - yes
+        - no
+        - not-applicable
+
+  - type: dropdown
+    id: escaped
+    attributes:
+      label: Finding escaped review
+      options:
+        - yes
+        - no
+        - not-applicable
+
+  - type: input
+    id: reviewer
+    attributes:
+      label: Reviewer
+      description: Required for AI validation and review-outcome evidence.
+
+  - type: textarea
+    id: source-references
+    attributes:
+      label: Source references
+      description: Provide durable issue, PR, review, workflow, commit, invoice, timesheet, or approved estimate references. Separate values with commas.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Evidence acknowledgements
+      options:
+        - label: This record contains source evidence, not a manually calculated dashboard KPI.
+          required: true
+        - label: Missing values have not been entered as zero.
+          required: true
+        - label: Estimated values are identified as estimated.
+          required: true
+        - label: The record excludes secrets, credentials, raw private prompts, raw AI output, and unnecessary source content.
+          required: true

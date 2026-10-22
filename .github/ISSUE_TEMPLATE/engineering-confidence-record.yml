@@ -1,0 +1,76 @@
+name: Engineering confidence record
+description: Record recalculable confidence inputs for one Engineering Intelligence finding.
+title: '[Engineering confidence] '
+labels:
+  - engineering-learning
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Confidence percentages are generated from the input evidence under policy `CONFIDENCE-1.0.0`. Do not enter final percentages manually. A score is an evidence-support index, not a probability of truth.
+
+  - type: input
+    id: finding-id
+    attributes:
+      label: Finding ID
+      description: Stable finding or occurrence identifier.
+      placeholder: FINDING-123
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source-type
+    attributes:
+      label: Source type
+      description: Engineering Intelligence subsystem that produced the finding.
+      options:
+        - root-cause
+        - duplicate
+        - planning
+        - communication
+        - AI or tool quality
+        - explanation
+        - prevention
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: source-reference
+    attributes:
+      label: Source reference
+      description: Durable issue, pull request, workflow, dataset, or artifact reference.
+      placeholder: issue:123 or workflow:456/job:789/step:test
+    validations:
+      required: true
+
+  - type: textarea
+    id: confidence-input-json
+    attributes:
+      label: Confidence input JSON
+      description: Provide recalculable normalized inputs only. Do not include a computed envelope or manually chosen scores.
+      render: json
+      placeholder: |
+        {
+          "finding": {"id": "F-1"},
+          "rootCauseAssessment": null,
+          "duplicateAssessment": null,
+          "evidenceRecords": [],
+          "requiredEvidenceRoles": [],
+          "explanationVerification": null,
+          "automationAssessment": null
+        }
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Scoring acknowledgements
+      options:
+        - label: I understand that final percentages are recalculated and cannot be supplied manually.
+          required: true
+        - label: I understand that scores measure evidence support under a versioned rule policy, not real-world probability.
+          required: true
+        - label: I have removed secrets, raw private prompts, and unnecessary sensitive content from the input.
+          required: true

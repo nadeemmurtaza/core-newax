@@ -37,10 +37,12 @@ export class OrganizationsService {
   ): Promise<OrganizationRecord> {
     this.requirePermission(context, ORGANIZATION_PERMISSIONS.create);
 
+    const tenantId = this.requireTrustedUuid(context.tenantId, 'context.tenantId');
     const parentOrganizationId = input.parentOrganizationId ?? null;
-    await this.validateParent(parentOrganizationId);
+    await this.validateParent(tenantId, parentOrganizationId);
 
     const organization = await this.repository.create({
+      tenantId,
       parentOrganizationId,
       legalName: this.requireText(input.legalName, 'legalName'),
       displayName: this.requireText(input.displayName, 'displayName'),
@@ -52,6 +54,7 @@ export class OrganizationsService {
     await this.eventPublisher.publish({
       name: 'organization.created',
       actorUserId: context.actorUserId,
+      tenantId: organization.tenantId,
       organizationId: organization.id,
       occurredAt: new Date(),
       organization,
@@ -65,7 +68,10 @@ export class OrganizationsService {
     organizationId: string,
   ): Promise<OrganizationRecord> {
     this.requirePermission(context, ORGANIZATION_PERMISSIONS.view);
-    return this.requireOrganization(organizationId);
+    return this.requireOrganization(
+      this.requireTrustedUuid(context.tenantId, 'context.tenantId'),
+      organizationId,
+    );
   }
 
   async getCurrent(
@@ -73,11 +79,12 @@ export class OrganizationsService {
   ): Promise<CurrentOrganizationProfile> {
     this.requireTrustedUuid(context.actorUserId, 'context.actorUserId');
     this.requirePermission(context, ORGANIZATION_PERMISSIONS.view);
+    const tenantId = this.requireTrustedUuid(context.tenantId, 'context.tenantId');
     const organizationId = this.requireTrustedUuid(
       context.organizationId,
       'context.organizationId',
     );
-    const organization = await this.repository.findById(organizationId);
+    const organization = await this.repository.findById(tenantId, organizationId);
 
     if (
       organization === null ||
@@ -91,7 +98,11 @@ export class OrganizationsService {
     }
 
     const persistedId = this.requireTrustedUuid(organization.id, 'organization.id');
-    if (persistedId !== organizationId) {
+    const persistedTenantId = this.requireTrustedUuid(
+      organization.tenantId,
+      'organization.tenantId',
+    );
+    if (persistedId !== organizationId || persistedTenantId !== tenantId) {
       throw new OrganizationModuleError(
         'ORGANIZATION_INTEGRITY_FAILURE',
         'The organization repository returned a record outside the trusted organization boundary.',
@@ -109,6 +120,7 @@ export class OrganizationsService {
 
     return Object.freeze({
       id: persistedId,
+      tenantId: persistedTenantId,
       legalName: this.requireStoredText(organization.legalName, 'organization.legalName', 255),
       displayName: this.requireStoredText(
         organization.displayName,
@@ -162,7 +174,10 @@ export class OrganizationsService {
       normalizedQuery.afterId = this.requireText(query.afterId, 'afterId');
     }
 
-    return this.repository.list(normalizedQuery);
+    return this.repository.list(
+      this.requireTrustedUuid(context.tenantId, 'context.tenantId'),
+      normalizedQuery,
+    );
   }
 
   async update(
@@ -171,7 +186,8 @@ export class OrganizationsService {
     input: UpdateOrganizationInput,
   ): Promise<OrganizationRecord> {
     this.requirePermission(context, ORGANIZATION_PERMISSIONS.update);
-    const current = await this.requireOrganization(organizationId);
+    const tenantId = this.requireTrustedUuid(context.tenantId, 'context.tenantId');
+    const current = await this.requireOrganization(tenantId, organizationId);
 
     if (current.status === 'archived') {
       throw new OrganizationModuleError(
@@ -194,11 +210,11 @@ export class OrganizationsService {
         );
       }
 
-      await this.validateParent(parentOrganizationId);
+      await this.validateParent(tenantId, parentOrganizationId);
 
       if (
         parentOrganizationId !== null &&
-        (await this.repository.wouldCreateCycle(organizationId, parentOrganizationId))
+        (await this.repository.wouldCreateCycle(tenantId, organizationId, parentOrganizationId))
       ) {
         throw new OrganizationModuleError(
           'ORGANIZATION_HIERARCHY_CYCLE',
@@ -237,11 +253,12 @@ export class OrganizationsService {
       );
     }
 
-    const organization = await this.repository.update(organizationId, update);
+    const organization = await this.repository.update(tenantId, organizationId, update);
 
     await this.eventPublisher.publish({
       name: 'organization.updated',
       actorUserId: context.actorUserId,
+      tenantId: organization.tenantId,
       organizationId: organization.id,
       occurredAt: new Date(),
       organization,
@@ -255,13 +272,14 @@ export class OrganizationsService {
     organizationId: string,
   ): Promise<OrganizationRecord> {
     this.requirePermission(context, ORGANIZATION_PERMISSIONS.archive);
-    const current = await this.requireOrganization(organizationId);
+    const tenantId = this.requireTrustedUuid(context.tenantId, 'context.tenantId');
+    const current = await this.requireOrganization(tenantId, organizationId);
 
     if (current.status === 'archived') {
       return current;
     }
 
-    if (await this.repository.hasActiveChildren(organizationId)) {
+    if (await this.repository.hasActiveChildren(tenantId, organizationId)) {
       throw new OrganizationModuleError(
         'ORGANIZATION_HAS_ACTIVE_CHILDREN',
         'An organization with active child organizations cannot be archived.',
@@ -269,11 +287,12 @@ export class OrganizationsService {
       );
     }
 
-    const organization = await this.repository.archive(organizationId, new Date());
+    const organization = await this.repository.archive(tenantId, organizationId, new Date());
 
     await this.eventPublisher.publish({
       name: 'organization.archived',
       actorUserId: context.actorUserId,
+      tenantId: organization.tenantId,
       organizationId: organization.id,
       occurredAt: new Date(),
       organization,
@@ -286,6 +305,7 @@ export class OrganizationsService {
     context: OrganizationRequestContext,
     permission: OrganizationPermission,
   ): void {
+    this.requireTrustedUuid(context.tenantId, 'context.tenantId');
     if (context.actorUserId.trim().length === 0) {
       throw new OrganizationModuleError(
         'ORGANIZATION_INVALID_INPUT',
@@ -302,11 +322,14 @@ export class OrganizationsService {
     }
   }
 
-  private async requireOrganization(organizationId: string): Promise<OrganizationRecord> {
+  private async requireOrganization(
+    tenantId: string,
+    organizationId: string,
+  ): Promise<OrganizationRecord> {
     const id = this.requireText(organizationId, 'organizationId');
-    const organization = await this.repository.findById(id);
+    const organization = await this.repository.findById(tenantId, id);
 
-    if (organization === null) {
+    if (organization === null || organization.tenantId !== tenantId) {
       throw new OrganizationModuleError(
         'ORGANIZATION_NOT_FOUND',
         'The organization does not exist.',
@@ -317,12 +340,16 @@ export class OrganizationsService {
     return organization;
   }
 
-  private async validateParent(parentOrganizationId: string | null): Promise<void> {
+  private async validateParent(
+    tenantId: string,
+    parentOrganizationId: string | null,
+  ): Promise<void> {
     if (parentOrganizationId === null) {
       return;
     }
 
     const parent = await this.repository.findById(
+      tenantId,
       this.requireText(parentOrganizationId, 'parentOrganizationId'),
     );
 

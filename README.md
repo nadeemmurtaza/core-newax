@@ -8,6 +8,18 @@ NEWAX is **The Business Infrastructure Company**. This repository supports that 
 
 > Build infrastructure once, own it, improve it deliberately, and reuse it safely.
 
+## Part of the NEWAX ecosystem
+
+This is the foundation repo for a connected set of NEWAX products. See
+[`ECOSYSTEM.md`](ECOSYSTEM.md) for the per-repo ownership table and the
+no-direct-calls rule, and
+[`docs/ecosystem/MODULE-AUDIT-AND-ROADMAP.md`](docs/ecosystem/MODULE-AUDIT-AND-ROADMAP.md)
+for the full grounded audit and phased plan this doc is built from.
+
+> ⚠️ GitHub Dependabot is reporting 68 vulnerabilities on this repo's default
+> branch (7 critical, 23 high, 35 moderate, 3 low) as of 2026-10-22. Not yet
+> triaged. See the [Security tab](https://github.com/nadeemmurtaza/core-newax/security/dependabot).
+
 ## Current Status
 
 NEWAX Core is now in **executable platform-foundation mode**.
@@ -17,6 +29,7 @@ The repository contains:
 - A working TypeScript monorepo
 - A NestJS API application
 - A Next.js web application
+- An internal People Intake data-entry and verification workspace
 - PostgreSQL and Prisma database infrastructure
 - Strict environment validation
 - Automated tests and production builds
@@ -50,7 +63,7 @@ The architecture remains a **modular monolith first**. Microservices, Kubernetes
 
 Read:
 
-- [ADR 0011: Technology Stack and Repository Baseline](docs/decisions/0011-define-technology-stack-and-repository-baseline.md)
+- [ADR 0011: Define Technology Stack and Implementation Baseline](docs/decisions/0011-define-technology-stack-and-implementation-baseline.md)
 - [Architecture Decision Records](docs/decisions/README.md)
 
 ## Repository Applications

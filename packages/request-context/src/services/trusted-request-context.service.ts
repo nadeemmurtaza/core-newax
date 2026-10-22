@@ -76,6 +76,7 @@ export class TrustedRequestContextService {
       membership === null ||
       membership.personId !== accountContext.personId ||
       membership.membershipStatus !== 'active' ||
+      membership.tenantStatus !== 'active' ||
       membership.organizationStatus !== 'active'
     ) {
       throw this.membershipUnavailable();
@@ -111,6 +112,7 @@ export class TrustedRequestContextService {
       sessionId: accountContext.sessionId,
       sessionExpiresAt: new Date(accountContext.sessionExpiresAt.getTime()),
       membershipId: membership.id,
+      tenantId: membership.tenantId,
       organizationId: membership.organizationId,
       permissionCodes: new ImmutablePermissionSet(permissionCodes),
       evaluatedAt: new Date(evaluation.evaluatedAt.getTime()),
@@ -127,6 +129,7 @@ export class TrustedRequestContextService {
   private assertMembershipIntegrity(membership: TrustedMembershipRecord): void {
     this.requireTrustedUuid(membership.id, 'membership.id');
     this.requireTrustedUuid(membership.personId, 'membership.personId');
+    this.requireTrustedUuid(membership.tenantId, 'membership.tenantId');
     this.requireTrustedUuid(membership.organizationId, 'membership.organizationId');
   }
 
