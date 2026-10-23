@@ -1,0 +1,48 @@
+{
+  "name": "@newaxhq/bi",
+  "version": "1.0.1",
+  "description": "Analytical interaction layer for NEWAX dashboards: slicers, relative-date filters, cross-filter coordination between charts, drill-down path tracking, metric/dimension selection, and KPI scorecards/target gauges. Coordinates what @newaxhq/charts' click events mean across a dashboard; owns no data, no calculations, no authorization -- those stay with the backend/analytics layer.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nadeemmurtaza/core-newax.git",
+    "directory": "packages/bi"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": "24.18.0",
+    "pnpm": "11.11.0"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@newaxhq/charts": "workspace:*",
+    "@newaxhq/ui": "workspace:*",
+    "recharts": "3.10.1"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "@types/react": "19.2.17",
+    "@vitest/coverage-v8": "4.1.10",
+    "react": "19.2.8",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}

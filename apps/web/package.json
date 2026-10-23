@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@nadeemmurtaza/design-system": "workspace:*",
+    "@newaxhq/bi": "workspace:*",
     "@newaxhq/charts": "workspace:*",
     "@newaxhq/dashboard-core": "workspace:*",
     "@newaxhq/dashboard-ui": "workspace:*",
