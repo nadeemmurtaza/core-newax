@@ -21,6 +21,11 @@
   },
   "dependencies": {
     "@nadeemmurtaza/design-system": "workspace:*",
+    "@newaxhq/charts": "workspace:*",
+    "@newaxhq/dashboard-core": "workspace:*",
+    "@newaxhq/dashboard-ui": "workspace:*",
+    "@newaxhq/shell": "workspace:*",
+    "@newaxhq/ui": "workspace:*",
     "next": "16.2.12",
     "react": "19.2.8",
     "react-dom": "19.2.7"
