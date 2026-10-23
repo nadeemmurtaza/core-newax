@@ -1,7 +1,7 @@
 {
   "name": "@newaxhq/shell",
-  "version": "1.0.0",
-  "description": "Shared application frame for NEWAX apps: header, footer, breadcrumbs with GitHub-style overflow dropdown, two independently collapsible sidebars, and a secondary horizontal nav under the header. Structure and navigation state only -- page content, business logic, and permission enforcement stay with each application.",
+  "version": "1.1.1",
+  "description": "Shared application frame for NEWAX apps: header, footer, breadcrumbs with GitHub-style overflow dropdown, two independently collapsible sidebars, a secondary horizontal nav with overflow, content-width containers, back navigation, and app-wide error/loading boundaries. Structure and navigation state only -- page content, business logic, and permission enforcement stay with each application.",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",

@@ -48,3 +48,24 @@ export type { MobileNavDrawerProps } from './mobile-nav-drawer';
 
 export { AppShell } from './app-shell';
 export type { AppShellProps } from './app-shell';
+
+export { isValidNavItem, isValidBreadcrumbItem } from './nav-item-validation';
+
+export { collapseNavItems } from './nav-overflow';
+export type { CollapsedNavItems } from './nav-overflow';
+
+export { PageContainer } from './page-container';
+export type { PageContainerWidth, PageContainerProps } from './page-container';
+
+export { buildBreadcrumbsFromPath } from './breadcrumb-from-path';
+
+export { BackLink, parentPath } from './back-link';
+export type { BackLinkProps } from './back-link';
+
+export { prefersReducedMotion } from './reduced-motion';
+
+export { ShellErrorBoundary } from './shell-error-boundary';
+export type { ShellErrorBoundaryProps } from './shell-error-boundary';
+
+export { ShellLoadingBoundary } from './shell-loading-boundary';
+export type { ShellLoadingBoundaryProps } from './shell-loading-boundary';

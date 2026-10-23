@@ -28,10 +28,16 @@ permission enforcement stay with each application -- see
 | `StatusBanner`                                           | Maintenance/announcement/connectivity banners                                            |
 | `SkipLink`                                               | Keyboard skip-to-content                                                                 |
 | `MobileNavDrawer`                                        | Built on `<dialog>` for free focus-trap/Escape/backdrop                                  |
+| `PageContainer`                                          | Content-width mode (narrow/default/wide/full) for the main region                        |
+| `BackLink`                                               | One-level-up navigation control                                                          |
+| `ShellErrorBoundary`                                     | App-wide render-crash fallback (scoped to `AppShell`'s `children`)                       |
+| `ShellLoadingBoundary`                                   | App-wide `Suspense` fallback                                                             |
 
-`isNavItemActive` and `collapseBreadcrumbs` are exported as pure
-functions so active-route and overflow logic are unit-testable without
-rendering.
+Pure functions, unit-tested without rendering: `isNavItemActive`,
+`collapseBreadcrumbs`, `collapseNavItems` (same overflow shape, for
+`HorizontalNav`'s "More" dropdown), `isValidNavItem` /
+`isValidBreadcrumbItem`, `buildBreadcrumbsFromPath`, `parentPath`,
+`prefersReducedMotion`.
 
 ## Usage
 
