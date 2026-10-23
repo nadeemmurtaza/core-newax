@@ -1,0 +1,46 @@
+{
+  "name": "@newaxhq/shell",
+  "version": "1.0.0",
+  "description": "Shared application frame for NEWAX apps: header, footer, breadcrumbs with GitHub-style overflow dropdown, two independently collapsible sidebars, and a secondary horizontal nav under the header. Structure and navigation state only -- page content, business logic, and permission enforcement stay with each application.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nadeemmurtaza/core-newax.git",
+    "directory": "packages/shell"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": "24.18.0",
+    "pnpm": "11.11.0"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@newaxhq/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "@types/react": "19.0.0",
+    "@vitest/coverage-v8": "4.1.10",
+    "react": "19.0.0",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}

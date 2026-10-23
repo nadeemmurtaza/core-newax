@@ -3,8 +3,10 @@
 Rules for every package under `packages/*` that other NEWAX repos are
 meant to depend on. Applies starting with Phase 1
 (`@newaxhq/eslint-config`, `@newaxhq/typescript-config`,
-`@newaxhq/prettier-config`, `@newaxhq/ui`); extend it to later packages as
-they're built, don't restart it per package.
+`@newaxhq/prettier-config`, `@newaxhq/ui`) through Phase 2
+(`@newaxhq/dashboard-core`, `@newaxhq/dashboard-ui`) and the application
+shell (`@newaxhq/shell`); extend it to later packages as they're built,
+don't restart it per package.
 
 ## 1. Owner
 
