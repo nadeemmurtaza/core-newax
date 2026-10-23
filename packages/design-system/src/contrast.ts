@@ -1,4 +1,4 @@
-import { hexToRgb } from './color';
+import { hexToRgb, rgbToHex, type Hex } from './color';
 
 /**
  * WCAG 2.x contrast, as a function -- one implementation for whatever spec
@@ -49,4 +49,50 @@ export function wcagLevel(ratio: number, large = false): 'AAA' | 'AA' | 'fail' {
     return 'AA';
   }
   return 'fail';
+}
+
+/** One colour pair a product's palette is checked against. */
+export interface ContrastPair {
+  readonly label: string;
+  readonly fg: Hex;
+  readonly bg: Hex;
+  /** 4.5 for body text, 3 for large text / non-text UI (WCAG 2.x). */
+  readonly floor: number;
+}
+
+export interface ContrastResult extends ContrastPair {
+  readonly ratio: number;
+  readonly level: 'AAA' | 'AA' | 'fail';
+  readonly ok: boolean;
+}
+
+/**
+ * Checks a whole palette against its floors in one pass -- the shape every
+ * product's own `scripts/check-contrast.mjs` wants, so that script is a
+ * data table (its own colour pairs) plus one call here, not a hand-rolled
+ * loop reinvented per repo.
+ */
+export function checkContrastPairs(pairs: readonly ContrastPair[]): ContrastResult[] {
+  return pairs.map((p) => {
+    const ratio = contrastRatioHex(p.fg, p.bg);
+    return { ...p, ratio, level: wcagLevel(ratio, p.floor <= 3), ok: ratio >= p.floor };
+  });
+}
+
+/**
+ * Darkens `fg` toward black -- uniform RGB scaling, which preserves hue for
+ * the near-neutral greys a border/faint-ink token actually is -- until it
+ * clears `floor` against `bg`, or gives up after 200 steps (an unreachable
+ * floor, e.g. requesting AAA text contrast from a near-white starting
+ * colour). Same philosophy as darkening a brand accent for a text pair
+ * elsewhere in this ecosystem: same hue, lightness only, smallest change
+ * that clears the floor.
+ */
+export function darkenToContrastHex(fg: Hex, bg: Hex, floor: number): Hex {
+  const bgRgb = hexToRgb(bg);
+  let rgb = hexToRgb(fg);
+  for (let i = 0; i < 200 && contrastRatio(rgb, bgRgb) < floor; i++) {
+    rgb = rgb.map((v) => v * 0.97) as [number, number, number];
+  }
+  return rgbToHex(rgb);
 }

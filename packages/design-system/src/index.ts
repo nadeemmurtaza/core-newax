@@ -43,7 +43,10 @@ export {
   compositeRgb,
   contrastRatioHex,
   wcagLevel,
+  checkContrastPairs,
+  darkenToContrastHex,
 } from './contrast';
+export type { ContrastPair, ContrastResult } from './contrast';
 
 export {
   THEME_PREFERENCES,

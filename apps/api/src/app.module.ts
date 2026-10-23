@@ -8,6 +8,7 @@ import { AuditModule } from './audit/audit.module';
 import { AuthenticationHttpController } from './authentication-http/authentication-http.controller';
 import { OAuthHttpController } from './authentication-http/oauth-http.controller';
 import { AuthenticationModule } from './authentication/authentication.module';
+import { CatalogueModule } from './catalogue/catalogue.module';
 import { validateEnvironment } from './config/environment';
 import { ContactsModule } from './contacts/contacts.module';
 import { DatabaseModule } from './database/database.module';
@@ -50,6 +51,7 @@ import { UsersModule } from './users/users.module';
     RequestContextModule,
     HttpSecurityModule,
     AccountAccessModule,
+    CatalogueModule,
   ],
   controllers: [HealthController, AuthenticationHttpController, OAuthHttpController],
   providers: [],

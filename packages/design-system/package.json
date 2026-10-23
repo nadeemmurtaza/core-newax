@@ -1,6 +1,6 @@
 {
   "name": "@nadeemmurtaza/design-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Brand-agnostic design-token engine (colour maths, type/space/motion scales, Tailwind theme builder, WCAG contrast, theme-preference runtime) shared across every NEWAX product. Each product keeps its own brand.ts with the actual values; this package only knows the shape and the derivations.",
   "license": "UNLICENSED",
   "repository": {

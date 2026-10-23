@@ -1,0 +1,492 @@
+/**
+ * Dense app-shell visual language for the /workspace routes (screens 4-7
+ * + the two extra screens from NEWAX_IDENTITY_UI_UX_DESIGN_BRIEF_v1).
+ *
+ * globals.css's h1/h2/button rules are tuned for the marketing homepage's
+ * huge hero typography and pill buttons -- wrong for a dense workspace
+ * shell. This file overrides just within `.ws` (scoped to these routes)
+ * rather than forking the shared token layer; every color/radius/space
+ * value below still comes from globals.css's :root custom properties.
+ */
+
+.ws {
+  min-height: 100dvh;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.ws h1,
+.ws h2,
+.ws h3 {
+  letter-spacing: -0.01em;
+  font-weight: 650;
+}
+
+.ws h1 {
+  max-width: none;
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+}
+
+.ws h2 {
+  max-width: none;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+
+.ws p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.ws button,
+.ws a.ws-btn {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid var(--color-accent);
+  border-radius: 10px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
+}
+
+.ws button:hover,
+.ws a.ws-btn:hover {
+  border-color: var(--color-accent-strong);
+  background: var(--color-accent-strong);
+  transform: none;
+}
+
+.ws button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ws button.ws-btn-secondary,
+.ws a.ws-btn.ws-btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.ws button.ws-btn-secondary:hover,
+.ws a.ws-btn.ws-btn-secondary:hover {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+}
+
+.ws-page {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.ws-page-narrow {
+  width: min(100%, 560px);
+}
+
+/* Top bar: shared by every /workspace screen */
+.ws-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 20px;
+  height: 56px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.ws-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ws-wordmark {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text);
+  text-decoration: none;
+  flex: none;
+}
+
+.ws-crumb {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.ws-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ws-topbar-right {
+  flex: none;
+}
+
+.ws-profile-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Secondary nav row (ERP / Mail / CRM / Documents / Analytics) */
+.ws-nav {
+  display: flex;
+  gap: 4px;
+  padding: 0 20px;
+  height: 44px;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  overflow-x: auto;
+}
+
+.ws-nav a {
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ws-nav a:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.ws-nav a.ws-nav-active {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+/* Personal / Business chooser */
+.ws-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.ws-choice-card {
+  padding: 24px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+  text-align: left;
+}
+
+.ws-choice-card h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ws-choice-card p {
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+}
+
+/* Search + list (organization selector) */
+.ws-search {
+  width: 100%;
+  margin: 20px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.ws-search:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.ws-org-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.ws-org-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ws-org-row:last-child {
+  border-bottom: none;
+}
+
+.ws-org-identity {
+  min-width: 0;
+}
+
+.ws-org-name {
+  font-weight: 650;
+  font-size: 0.92rem;
+  color: var(--color-text);
+}
+
+.ws-org-meta {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.ws-org-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+/* Status / role pills */
+.ws-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.ws-pill-neutral {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.ws-pill-positive {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+
+.ws-pill-warning {
+  background: color-mix(in srgb, #b58900 15%, transparent);
+  color: #8a6800;
+}
+
+.ws-pill-negative {
+  background: color-mix(in srgb, var(--color-danger) 15%, transparent);
+  color: var(--color-danger);
+}
+
+/* Cards / sections */
+.ws-card {
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+}
+
+.ws-card + .ws-card {
+  margin-top: 16px;
+}
+
+.ws-field {
+  margin: 16px 0;
+}
+
+.ws-field dt {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.ws-field dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+/* Empty / loading / error state */
+.ws-empty {
+  padding: 48px 24px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-medium);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.ws-alert {
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.ws-alert-error {
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  color: var(--color-danger);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
+}
+
+.ws-alert-info {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-text);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+/* Form */
+.ws-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.ws-form-row label {
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.ws-form-row input,
+.ws-form-row select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.ws-form-row input:focus,
+.ws-form-row select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.ws-form-hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* Table (invite management) */
+.ws-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.ws-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ws-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ws-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Transition / loading state (brief's "brief, calm transition") */
+.ws-transition {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 10px;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.ws-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  animation: ws-spin 0.7s linear infinite;
+}
+
+@keyframes ws-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .ws-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ws-org-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ws-topbar {
+    padding: 0 12px;
+  }
+
+  .ws-page {
+    padding: 20px 14px 48px;
+  }
+}

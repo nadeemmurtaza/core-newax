@@ -64,6 +64,7 @@ model CoreOrganization {
   peopleIntakes         CorePeopleIntake[]
   peopleIntakeEvidence  CorePeopleIntakeEvidence[]
   certificateImports    CoreCertificateImport[]
+  brands                CoreBrand[]
 
   @@unique([tenantId, id])
   @@index([tenantId, parentOrganizationId])
@@ -792,4 +793,93 @@ model CoreExternalReference {
   @@index([tenantId, organizationId, domainCode, entityType, entityId], map: "core_external_refs_scope_entity_idx")
   @@index([tenantId, organizationId, id], map: "core_external_refs_scope_cursor_idx")
   @@map("core_external_references")
+}
+
+// ---------------------------------------------------------------------------
+// NEWAX Core service catalogue (NEWAX_CORE_SERVICE_CATALOGUE_AND_MODULE_PAGES
+// _ADDENDUM_v1 section 4's conceptual model, reconciled against this file's
+// existing Core* naming/UUID/tenant-scoping conventions). Brand is a distinct
+// identity belonging to an Organization -- not automatically a legal entity,
+// and not 1:1 with it (one organization can own several brands).
+// ---------------------------------------------------------------------------
+
+model CoreBrand {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  displayName    String    @map("display_name") @db.VarChar(255)
+  slug           String    @db.VarChar(128)
+  status         String    @default("active") @db.VarChar(32)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  organization  CoreOrganization                @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  serviceConfig CoreBrandServiceConfiguration[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+  @@map("core_brands")
+}
+
+model CoreServiceCategory {
+  id               String    @id @default(uuid()) @db.Uuid
+  code             String    @unique @db.VarChar(96)
+  label            String    @db.VarChar(128)
+  description      String?   @db.Text
+  parentCategoryId String?   @map("parent_category_id") @db.Uuid
+  sortOrder        Int       @default(0) @map("sort_order")
+  status           String    @default("active") @db.VarChar(32)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  parentCategory  CoreServiceCategory?  @relation("ServiceCategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  childCategories CoreServiceCategory[] @relation("ServiceCategoryHierarchy")
+  services        CoreService[]
+
+  @@index([status, sortOrder])
+  @@map("core_service_categories")
+}
+
+model CoreService {
+  id                 String   @id @default(uuid()) @db.Uuid
+  code               String   @unique @db.VarChar(96)
+  displayName        String   @map("display_name") @db.VarChar(160)
+  outcomeDescription String   @map("outcome_description") @db.Text
+  categoryId         String   @map("category_id") @db.Uuid
+  parentApplication  String   @map("parent_application") @db.VarChar(96)
+  /// A stable key the destination application resolves server-side -- never
+  /// a raw URL. See CoreBrandServiceConfiguration's doc comment on why.
+  destinationKey     String   @map("destination_key") @db.VarChar(96)
+  iconKey            String?  @map("icon_key") @db.VarChar(64)
+  sortOrder          Int      @default(0) @map("sort_order")
+  lifecycleStatus    String   @default("active") @map("lifecycle_status") @db.VarChar(32)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  category      CoreServiceCategory            @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  brandConfig   CoreBrandServiceConfiguration[]
+
+  @@index([categoryId, lifecycleStatus, sortOrder])
+  @@map("core_services")
+}
+
+/// Activation (is this service turned on for this brand) is a separate
+/// concern from access policy (who, within the brand, may use it) -- see
+/// CORE-SVC-07's acceptance criteria: "Service activation and user
+/// authorization remain separate controls." This table only owns the former.
+model CoreBrandServiceConfiguration {
+  id              String   @id @default(uuid()) @db.Uuid
+  brandId         String   @map("brand_id") @db.Uuid
+  serviceId       String   @map("service_id") @db.Uuid
+  activationState String   @default("not_configured") @map("activation_state") @db.VarChar(32)
+  setupState      String   @default("not_required") @map("setup_state") @db.VarChar(32)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  brand   CoreBrand   @relation(fields: [brandId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  service CoreService @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([brandId, serviceId])
+  @@index([brandId, activationState])
+  @@map("core_brand_service_configurations")
 }
