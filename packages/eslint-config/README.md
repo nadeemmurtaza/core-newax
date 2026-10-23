@@ -1,4 +1,4 @@
-# @newax/eslint-config
+# @newaxhq/eslint-config
 
 Shared ESLint flat configs for every NEWAX project.
 
@@ -6,7 +6,7 @@ Shared ESLint flat configs for every NEWAX project.
 
 ```js
 // eslint.config.mjs
-import nextjs from '@newax/eslint-config/nextjs';
+import nextjs from '@newaxhq/eslint-config/nextjs';
 
 export default [
   ...nextjs,
@@ -19,7 +19,7 @@ export default [
 Non-Next.js (API, scripts, library packages):
 
 ```js
-import base from '@newax/eslint-config/base';
+import base from '@newaxhq/eslint-config/base';
 
 export default base;
 ```

@@ -1,12 +1,16 @@
 {
-  "name": "@newax/ui",
+  "name": "@newaxhq/ui",
   "version": "1.0.0",
-  "description": "Shared UI primitives for NEWAX applications: Button, Input, Card, and the class-merge utility every surface should import instead of hand-rolling its own. Built on @newax/design-system tokens; brand values stay in each app's own brand.ts.",
+  "description": "Shared UI primitives for NEWAX applications: Button, Input, Card, and the class-merge utility every surface should import instead of hand-rolling its own. Built on the design-system tokens package; brand values stay in each app's own brand.ts.",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
     "url": "https://github.com/nadeemmurtaza/core-newax.git",
     "directory": "packages/ui"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

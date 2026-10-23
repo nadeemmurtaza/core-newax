@@ -1,5 +1,5 @@
 {
-  "name": "@newax/typescript-config",
+  "name": "@newaxhq/typescript-config",
   "version": "1.0.0",
   "description": "Shared tsconfig bases for every NEWAX project.",
   "license": "UNLICENSED",
@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/nadeemmurtaza/core-newax.git",
     "directory": "packages/typescript-config"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   },
   "files": [
     "base.json",

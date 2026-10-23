@@ -2,8 +2,8 @@
 
 Rules for every package under `packages/*` that other NEWAX repos are
 meant to depend on. Applies starting with Phase 1
-(`@newax/eslint-config`, `@newax/typescript-config`,
-`@newax/prettier-config`, `@newax/ui`); extend it to later packages as
+(`@newaxhq/eslint-config`, `@newaxhq/typescript-config`,
+`@newaxhq/prettier-config`, `@newaxhq/ui`); extend it to later packages as
 they're built, don't restart it per package.
 
 ## 1. Owner
@@ -13,8 +13,8 @@ The owner approves breaking changes and answers "can I depend on this".
 
 ## 2. One responsibility
 
-A package has one job. `@newax/ui` is structure/state primitives, not
-colour — colour is `@newax/design-system`. If a package starts doing two
+A package has one job. `@newaxhq/ui` is structure/state primitives, not
+colour — colour is `@newaxhq/design-system`. If a package starts doing two
 things, split it before it grows a third.
 
 ## 3. No overlapping packages
@@ -56,7 +56,7 @@ package with no tests is not done, it's a draft.
 ## 8. Security boundary
 
 A shared package may provide client-side helpers for auth/permissions
-(`@newax/auth`, `@newax/access-control`), but it is never the enforcement
+(`@newaxhq/auth`, `@newaxhq/access-control`), but it is never the enforcement
 point. The server that owns the protected resource rejects unauthorized
 requests regardless of what the shared package's UI renders. Don't let a
 shared package's green tests be mistaken for a security guarantee.
@@ -79,7 +79,7 @@ Published to GitHub Packages:
 - Org scope: `@newaxhq/*` — https://github.com/orgs/newaxhq/packages
 - Personal scope (pre-org packages, still in use): `@nadeemmurtaza/*`
 
-New packages publish under `@newax/*` internally (workspace name) and
+New packages publish under `@newaxhq/*` internally (workspace name) and
 `@newaxhq/*` when actually released — see each package's own
 `publishConfig` once it has one. Public npmjs.com publication is a Phase 5
 decision per package, not a default.

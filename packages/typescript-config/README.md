@@ -1,4 +1,4 @@
-# @newax/typescript-config
+# @newaxhq/typescript-config
 
 Shared `tsconfig` bases for every NEWAX project.
 
@@ -12,6 +12,6 @@ Shared `tsconfig` bases for every NEWAX project.
 
 ```json
 {
-  "extends": "@newax/typescript-config/nextjs.json"
+  "extends": "@newaxhq/typescript-config/nextjs.json"
 }
 ```

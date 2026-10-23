@@ -1,5 +1,5 @@
 {
-  "name": "@newax/eslint-config",
+  "name": "@newaxhq/eslint-config",
   "version": "1.0.0",
   "description": "Shared ESLint flat configs for every NEWAX project.",
   "license": "UNLICENSED",
@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/nadeemmurtaza/core-newax.git",
     "directory": "packages/eslint-config"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   },
   "type": "module",
   "exports": {
