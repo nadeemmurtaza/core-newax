@@ -1,4 +1,4 @@
-# @nadeemmurtaza/dashboard-contracts
+# @newaxhq/dashboard-contracts
 
 Versioned TypeScript contracts for NEWAX Core's shared dashboard shell
 (`NEWAX_UNIFIED_IDENTITY_SSO_DASHBOARD_BRIEF`, sections 4-5). This package

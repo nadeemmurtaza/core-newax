@@ -1,5 +1,5 @@
 {
-  "name": "@nadeemmurtaza/dashboard-contracts",
+  "name": "@newaxhq/dashboard-contracts",
   "version": "1.0.0",
   "description": "Versioned contracts for NEWAX Core's shared dashboard shell: service registration, navigation, widget metadata, data-adapter references, layout persistence/validation, and shared render states.",
   "license": "UNLICENSED",
