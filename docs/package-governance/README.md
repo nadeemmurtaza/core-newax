@@ -79,7 +79,9 @@ Published to GitHub Packages:
 - Org scope: `@newaxhq/*` — https://github.com/orgs/newaxhq/packages
 - Personal scope (pre-org packages, still in use): `@nadeemmurtaza/*`
 
-New packages publish under `@newaxhq/*` internally (workspace name) and
-`@newaxhq/*` when actually released — see each package's own
-`publishConfig` once it has one. Public npmjs.com publication is a Phase 5
-decision per package, not a default.
+Every new publishable package is named `@newaxhq/*` from the start — in
+`package.json#name`, in its `.npmrc` scope, everywhere. `@newax/*` is
+retired for new packages; older internal (non-published) workspace
+modules like `@newax/auth` keep their existing name until they're
+published, at which point they rename too. Public npmjs.com publication
+is a Phase 5 decision per package, not a default.

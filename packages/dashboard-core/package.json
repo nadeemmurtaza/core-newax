@@ -1,0 +1,41 @@
+{
+  "name": "@newaxhq/dashboard-core",
+  "version": "1.0.0",
+  "description": "Dashboard widget/service registry and layout composition built on @newaxhq/dashboard-contracts. Core owns this registration/composition logic; each service owns its own widget data and content.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nadeemmurtaza/core-newax.git",
+    "directory": "packages/dashboard-core"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": "24.18.0",
+    "pnpm": "11.11.0"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.spec.json --noEmit"
+  },
+  "dependencies": {
+    "@newaxhq/dashboard-contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "@vitest/coverage-v8": "4.1.10",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}

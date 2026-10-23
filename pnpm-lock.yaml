@@ -308,6 +308,53 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@types/node@26.1.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
 
+  packages/dashboard-core:
+    dependencies:
+      '@newaxhq/dashboard-contracts':
+        specifier: workspace:*
+        version: link:../dashboard-contracts
+    devDependencies:
+      '@types/node':
+        specifier: 26.1.1
+        version: 26.1.1
+      '@vitest/coverage-v8':
+        specifier: 4.1.10
+        version: 4.1.10(vitest@4.1.10)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@26.1.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
+
+  packages/dashboard-ui:
+    dependencies:
+      '@newaxhq/dashboard-contracts':
+        specifier: workspace:*
+        version: link:../dashboard-contracts
+      '@newaxhq/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@types/node':
+        specifier: 26.1.1
+        version: 26.1.1
+      '@types/react':
+        specifier: 19.0.0
+        version: 19.0.0
+      '@vitest/coverage-v8':
+        specifier: 4.1.10
+        version: 4.1.10(vitest@4.1.10)
+      react:
+        specifier: 19.0.0
+        version: 19.0.0
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@26.1.1)(@vitest/coverage-v8@4.1.10)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)
+
   packages/design-system:
     devDependencies:
       '@types/node':
