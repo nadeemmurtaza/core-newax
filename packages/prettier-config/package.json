@@ -1,0 +1,20 @@
+{
+  "name": "@newax/prettier-config",
+  "version": "1.0.0",
+  "description": "Shared Prettier configuration for every NEWAX project.",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nadeemmurtaza/core-newax.git",
+    "directory": "packages/prettier-config"
+  },
+  "main": "index.json",
+  "files": [
+    "index.json",
+    "README.md"
+  ],
+  "engines": {
+    "node": "24.18.0",
+    "pnpm": "11.11.0"
+  }
+}
