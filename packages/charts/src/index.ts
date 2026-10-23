@@ -40,3 +40,9 @@ export type { ScatterChartProps, ScatterSeries } from './scatter-chart';
 
 export { Sparkline } from './sparkline';
 export type { SparklineProps } from './sparkline';
+
+export { ComposedChart } from './composed-chart';
+export type { ComposedChartProps, ComposedSeriesConfig } from './composed-chart';
+
+export { RadarChart } from './radar-chart';
+export type { RadarChartProps } from './radar-chart';

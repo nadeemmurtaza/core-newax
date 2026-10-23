@@ -20,6 +20,8 @@ export interface LineChartProps {
   readonly series: readonly SeriesConfig[];
   readonly palette?: readonly string[];
   readonly thresholds?: readonly ThresholdLine[];
+  readonly gridColor?: string;
+  readonly axisColor?: string;
   readonly accessibilityDescription: string;
   readonly height?: number;
 }
@@ -30,6 +32,8 @@ export function LineChart({
   series,
   palette,
   thresholds = [],
+  gridColor,
+  axisColor,
   accessibilityDescription,
   height = 320,
 }: LineChartProps) {
@@ -39,9 +43,10 @@ export function LineChart({
     <div role="img" aria-label={accessibilityDescription}>
       <ResponsiveContainer width="100%" height={height}>
         <RechartsLineChart data={data as Record<string, unknown>[]}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xKey} />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <XAxis dataKey={xKey} stroke={axisColor} />
           <YAxis
+            stroke={axisColor}
             tickFormatter={(value: number) => formatChartValue(value, series[0]?.valueFormat)}
           />
           <Tooltip

@@ -25,6 +25,7 @@ export interface PieChartProps {
   readonly valueFormat?: ValueFormat;
   readonly accessibilityDescription: string;
   readonly height?: number;
+  readonly onSliceClick?: (slice: PieSlice) => void;
 }
 
 const DEFAULT_PALETTE = ['#0097b2', '#f5b841', '#0f7a4d', '#b42318', '#4b5566', '#8a9aa6'];
@@ -36,6 +37,7 @@ export function PieChart({
   valueFormat = 'number',
   accessibilityDescription,
   height = 320,
+  onSliceClick,
 }: PieChartProps) {
   return (
     <div role="img" aria-label={accessibilityDescription}>
@@ -52,6 +54,7 @@ export function PieChart({
               <Cell
                 key={slice.id}
                 fill={slice.color ?? (palette[index % palette.length] as string)}
+                {...(onSliceClick ? { onClick: () => onSliceClick(slice), cursor: 'pointer' } : {})}
               />
             ))}
           </Pie>

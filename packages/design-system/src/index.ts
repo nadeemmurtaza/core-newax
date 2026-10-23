@@ -60,3 +60,9 @@ export type { ThemePreference, ResolvedTheme } from './runtime';
 
 export { themeVars, staticVars, createThemeTailwind } from './tailwind';
 export type { CssRules } from './tailwind';
+
+export { BREAKPOINTS, BREAKPOINT_ORDER, minWidthMediaQuery } from './breakpoints';
+export type { Breakpoint } from './breakpoints';
+
+export { focusRingVars } from './focus-ring';
+export type { FocusRingVars } from './focus-ring';

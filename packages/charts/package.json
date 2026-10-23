@@ -1,6 +1,6 @@
 {
   "name": "@newaxhq/charts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Reusable charting for NEWAX applications: Line/Bar/Area/Pie/Scatter/Sparkline, shared chart containers (header/legend/footer/loading/error/empty states), and number/date formatters. Built on recharts rather than reimplementing chart math/SVG/interaction from scratch; themed from @newaxhq/design-system's chart palette, not a second colour system.",
   "license": "UNLICENSED",
   "repository": {

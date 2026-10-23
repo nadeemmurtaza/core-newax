@@ -3,6 +3,7 @@ import {
   BarChart as RechartsBarChart,
   CartesianGrid,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -11,7 +12,7 @@ import {
 import { AccessibleDataTable } from './accessible-data-table';
 import { formatChartValue } from './formatters';
 import { resolveSeriesColors } from './palette';
-import type { ChartDataPoint, SeriesConfig } from './types';
+import type { ChartDataPoint, SeriesConfig, ThresholdLine } from './types';
 
 export interface BarChartProps {
   readonly data: readonly ChartDataPoint[];
@@ -20,8 +21,15 @@ export interface BarChartProps {
   readonly palette?: readonly string[];
   readonly layout?: 'vertical' | 'horizontal';
   readonly stacked?: boolean;
+  readonly thresholds?: readonly ThresholdLine[];
+  /** Theme-aware grid/axis stroke -- pass the host theme's neutral token
+   * (e.g. neutral.200) instead of relying on recharts' hardcoded default,
+   * so the chart actually follows light/dark instead of looking wrong in one. */
+  readonly gridColor?: string;
+  readonly axisColor?: string;
   readonly accessibilityDescription: string;
   readonly height?: number;
+  readonly onDataPointClick?: (point: ChartDataPoint, seriesKey: string) => void;
 }
 
 /** One component covers grouped, stacked, and horizontal bars -- the
@@ -33,8 +41,12 @@ export function BarChart({
   palette,
   layout = 'horizontal',
   stacked = false,
+  thresholds = [],
+  gridColor,
+  axisColor,
   accessibilityDescription,
   height = 320,
+  onDataPointClick,
 }: BarChartProps) {
   const colors = resolveSeriesColors(series, palette);
   const isHorizontalBars = layout === 'vertical';
@@ -43,19 +55,21 @@ export function BarChart({
     <div role="img" aria-label={accessibilityDescription}>
       <ResponsiveContainer width="100%" height={height}>
         <RechartsBarChart data={data as Record<string, unknown>[]} layout={layout}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           {isHorizontalBars ? (
             <>
               <XAxis
                 type="number"
+                stroke={axisColor}
                 tickFormatter={(value: number) => formatChartValue(value, series[0]?.valueFormat)}
               />
-              <YAxis type="category" dataKey={xKey} />
+              <YAxis type="category" dataKey={xKey} stroke={axisColor} />
             </>
           ) : (
             <>
-              <XAxis dataKey={xKey} />
+              <XAxis dataKey={xKey} stroke={axisColor} />
               <YAxis
+                stroke={axisColor}
                 tickFormatter={(value: number) => formatChartValue(value, series[0]?.valueFormat)}
               />
             </>
@@ -67,6 +81,15 @@ export function BarChart({
             }}
           />
           <Legend />
+          {thresholds.map((threshold) => (
+            <ReferenceLine
+              key={threshold.label}
+              {...(isHorizontalBars ? { x: threshold.value } : { y: threshold.value })}
+              label={threshold.label}
+              stroke={threshold.color ?? '#b42318'}
+              strokeDasharray="4 4"
+            />
+          ))}
           {series.map((item) => (
             <Bar
               key={item.key}
@@ -74,6 +97,15 @@ export function BarChart({
               name={item.label}
               fill={colors.get(item.key) as string}
               {...(stacked ? { stackId: 'stack' } : {})}
+              {...(onDataPointClick
+                ? {
+                    onClick: (point: { payload?: ChartDataPoint }) => {
+                      if (point.payload) {
+                        onDataPointClick(point.payload, item.key);
+                      }
+                    },
+                  }
+                : {})}
             />
           ))}
         </RechartsBarChart>
