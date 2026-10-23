@@ -1,0 +1,31 @@
+{
+  "name": "@newax/dashboard-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Versioned contracts for NEWAX Core's shared dashboard shell: service registration, navigation, widget metadata, data-adapter references, layout persistence/validation, and shared render states.",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": "24.18.0",
+    "pnpm": "11.11.0"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist coverage",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --project tsconfig.json --noEmit && tsc --project tsconfig.spec.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "@vitest/coverage-v8": "4.1.10",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10"
+  }
+}
